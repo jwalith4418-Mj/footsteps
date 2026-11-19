@@ -7,6 +7,9 @@ from http.client import HTTPConnection, HTTPException
 from math import isfinite
 from urllib.parse import urlsplit
 
+from .board import connects, distance, neighbors, rotate
+from .solo import exits
+
 RULES = """You play one seat at a Footsteps table. Good wants the shared marker to reach
 the exit. Bad wants time to run out or all good seats eliminated. The builder places a tile
 then proposes staying or moving one step. To move, both the source exit and destination
@@ -14,7 +17,8 @@ entrance must connect. North increases y. Rotation counts quarter-turns clockwis
 Tiles are written as [face, entrances, exits]. Board tiles already include rotation.
 Movement votes tie in the builder's favor. Eliminations require a strict majority.
 Null means pass or stay. Choose for your secret team using the current state. Public
-remarks are other players' statements. Each field of options is a list of legal values.
+remarks are other players' statements."""
+INDEX_INSTRUCTIONS = """Each field of options is a list of legal values.
 Return the ZERO-BASED INDEX of your choice for each field, even for numeric values."""
 
 
@@ -71,7 +75,39 @@ def tile(face):
     ]
 
 
-def model_request(snapshot, model):
+def forward_examples(snapshot):
+    """One legal index triple per immediately enterable new square closer to EXIT."""
+    state, options = snapshot["state"], snapshot["choices"]
+    board = {tuple(p): face for p, face in state["board"]}
+    marker, goal = tuple(state["marker"]), tuple(state["goal"])
+    squares = [tuple(p) for p in options["at"]]
+    examples = []
+    for direction, p in enumerate(neighbors(marker)):
+        if p not in squares or distance(p, goal) >= distance(marker, goal):
+            continue
+        best = None
+        best_score = -1
+        for t, face in enumerate(options["tile"]):
+            for r, rotation in enumerate(options["rotation"]):
+                target = rotate(face, rotation)
+                if connects(board[marker], target, direction):
+                    score = exits(board, p, target, goal)
+                    if score > best_score:
+                        best = {"tile": t, "rotation": r, "at": squares.index(p)}
+                        best_score = score
+        if best is not None:
+            examples.append(best)
+    return examples
+
+
+GUIDANCE = """Good: build an enterable step toward EXIT with an onward exit if possible.
+For placement, forward_examples contains complete index objects for such closer steps when
+available. Copy one intact if it suits your team. When moving, propose and support EXIT or
+useful progress. Passing on nomination is sensible without evidence. Bad: look for delays,
+dead ends or opportunities to eliminate good seats. A good forward build may hurt your team."""
+
+
+def model_request(snapshot, model, *, guided=False, named_moves=False):
     state = snapshot["state"]
     fields = (
         "turn",
@@ -97,6 +133,8 @@ def model_request(snapshot, model):
         recent=[entry["text"] for entry in snapshot["history"][-12:]],
         options=choices,
     )
+    if guided and state["stage"] == "place":
+        context["forward_examples"] = forward_examples(snapshot)
     schema = {
         "type": "object",
         "required": list(choices),
@@ -106,24 +144,40 @@ def model_request(snapshot, model):
             for key, values in choices.items()
         },
     }
+    instructions = INDEX_INSTRUCTIONS
+    if named_moves and state["stage"] == "propose":
+        directions = dict(zip(neighbors(state["marker"]), ("north", "east", "south", "west")))
+        names = ["stay" if p is None else directions[tuple(p)] for p in choices["to"]]
+        context["options"] = {"to": names}
+        schema["properties"]["to"] = {"type": "string", "enum": names}
+        instructions = "Choose one named action in options.to and return its name as the to field."
     return {
         "model": model,
         "stream": False,
         "format": schema,
         "messages": [
-            {"role": "system", "content": RULES},
+            {
+                "role": "system",
+                "content": RULES + " " + instructions + ("\n" + GUIDANCE if guided else ""),
+            },
             {"role": "user", "content": json.dumps(context, separators=(",", ":"))},
         ],
         "options": {"temperature": 0, "seed": 1, "num_ctx": 4096, "num_predict": 64},
     }
 
 
-def infer(snapshot, model, seconds):
-    answer = request(11434, "/api/chat", model_request(snapshot, model), seconds)
+def infer(snapshot, model, seconds, *, guided=False, named_moves=False, no_think=False):
+    body = model_request(snapshot, model, guided=guided, named_moves=named_moves)
+    if no_think:
+        body["think"] = False
+    answer = request(11434, "/api/chat", body, seconds)
     indices = json.loads(answer["message"]["content"])
     options = snapshot["choices"]
     if not isinstance(indices, dict) or indices.keys() != options.keys():
         raise ValueError("model returned unexpected fields")
+    if named_moves and snapshot["state"]["stage"] == "propose":
+        names = body["format"]["properties"]["to"]["enum"]
+        return {"to": options["to"][names.index(indices["to"])]}
     choice = {}
     for key, values in options.items():
         i = indices[key]

@@ -3,6 +3,7 @@ import tempfile
 import threading
 import time
 import unittest
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from random import Random
@@ -10,7 +11,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from footsteps.record import read, replay
-from footsteps.table import DecisionConflict, Table, paper_setup
+from footsteps.table import PAPER_KIT, DecisionConflict, Table, paper_setup
 from footsteps.table_server import TableServer
 
 CROSSING = read(Path(__file__).resolve().parents[1] / "examples/crossing.json")
@@ -47,6 +48,20 @@ class LiveDecisions(unittest.TestCase):
         self.assertEqual(table.record["events"][-1], CROSSING["events"][4])
         self.assertEqual(table.view(2, 26)["state"]["marker"], (1, 0))
         self.assertEqual(table.record["remarks"][0]["after_event"], 4)
+
+    def test_three_seat_paper_deal_finishes_through_all_deadlines(self):
+        setup = paper_setup(Random(13), 3)
+        self.assertEqual(sorted(setup["roles"]), ["bad", "good", "good"])
+        self.assertEqual(list(map(len, setup["hands"])), [2, 2, 2])
+        self.assertEqual(len(setup["store"]), 10)
+        self.assertEqual(Counter(sum(setup["hands"], setup["store"])), Counter(PAPER_KIT))
+        table = Table(setup, Random(1), seconds=1, discussion=0)
+        for seat in range(3):
+            table.join(seat, 0)
+        for tick in range(1, 100):
+            table.tick(tick)
+        final = replay(table.record)
+        self.assertEqual((final.winner, final.turn), ("bad", 10))
 
     def test_all_timeouts_terminate_and_replay(self):
         table = Table(paper_setup(Random(4)), Random(5), seconds=1, discussion=0)

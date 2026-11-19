@@ -1,6 +1,6 @@
 # One localhost table
 
-Start a host with `python -m footsteps table --save /tmp/game.json`. The normal game shuffles the sixteen printed tiles and three good roles plus one bad role. For a rules walkthrough, `--crossing` uses the known seating, deal and first draw from the worked example. Players make all subsequent choices.
+Start a host with `python -m footsteps table --save /tmp/game.json`. The default game shuffles the sixteen printed tiles and three good roles plus one bad role. Use `--seats 3` to deal two tiles to each of two good players and one bad player, leaving ten in the bag. For a rules walkthrough, `--crossing` uses the known seating, deal and first draw from the worked example. Players make all subsequent choices.
 
 The server binds to 127.0.0.1 and prints a separate browser link for each seat. Give each participant only their own link. A local group can use separate browser tabs or profiles, arranged so players can read their own screen privately. Remote devices would need an independently configured loopback tunnel. The host terminal and the on-disk record contain referee secrets. Reopening a link reconnects to the same seat while that host process is running.
 
@@ -29,8 +29,10 @@ For the first nomination, record the nominator, target, turn, marker distance to
 
 ## Join with Ollama
 
-Run `python -m footsteps ollama --model qwen2.5:3b` in a second terminal and paste one private seat link at the hidden prompt. The client marks that seat ready. Use an installed model served by Ollama on 127.0.0.1 port 11434. Each model needs its own seat. The other seats can be people or programs.
+Run `python -m footsteps ollama --model qwen2.5:3b` in a second terminal and paste one private seat link at the hidden prompt. The client marks that seat ready. Use an installed model served by Ollama on 127.0.0.1 port 11434. Each player process needs its own seat link. Processes can share an Ollama model or use different local tags. The other seats can be people or programs.
 
 For each decision the client sends the seat’s current board, own hand and team information, legal choices, and its latest twelve history entries. That history includes public discussion. This first player listens during discussion and makes one inference when a decision opens. Each prompt starts fresh. The response selects a zero-based index for each field of the legal choices. The client verifies the fields and indices before submitting to the referee. [Ollama chat API](https://docs.ollama.com/api/chat) · [Structured outputs](https://docs.ollama.com/capabilities/structured-outputs)
+
+Add `--guided` for role guidance and worked forward-build options, `--named-moves` for compass-direction proposals, and `--no-think` to ask Ollama for direct answers on a short clock. Each switch is independent. [Matched games and proposal probes](../experiments/model-panel/README.md)
 
 The inference budget defaults to 30 seconds and is capped by the host’s remaining time. Set it with `--budget 10`, for example. Each revision gets one attempt. A missing, invalid or late response leaves the decision open for the host’s usual timeout. A ballot remains visibly missing when the votes are revealed. The client can answer again on the next revision. The client terminal reports its own accepted choices, including private returns. [Two-turn model trial and replay](../experiments/ollama-crossing.md)
