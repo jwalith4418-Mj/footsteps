@@ -9,7 +9,9 @@ from .record import describe, replay
 WEB = Path(__file__).with_name("web")
 
 
-def transcript(record, seat=None):
+def transcript(record, seat=None, *, omniscient=False):
+    if omniscient and seat is not None:
+        raise ValueError("choose a seat or an omniscient view")
     # Validate before interpreting events for display (including the reported event index).
     replay(record)
     game = Game(record["setup"])
@@ -21,6 +23,9 @@ def transcript(record, seat=None):
         # The floor is write-once. Encode placements once and reconstruct their display by index.
         for key in ("board", "placements", "player_count", "bad_count", "goal"):
             del view[key]
+        if omniscient:
+            view["hands"] = [hand.copy() for hand in game.hands]
+            view["roles"] = game.roles.copy()
         view["marker"] = tuple(map(str, view["marker"]))
         if view["stage"] == "move_vote":
             view["pending"] = tuple(map(str, view["pending"]))
@@ -31,7 +36,7 @@ def transcript(record, seat=None):
     capture("setup", 1, "The marker starts at (0, 0). The floor is ready for the first draw.")
     for event in record["events"]:
         kind, turn = event["kind"], game.turn
-        message = describe(game, event, seat)
+        message = describe(game, event, game.actor if omniscient else seat)
         ballots = list(zip(game.alive, event.get("votes", [])))
         marker, nominee = game.marker, game.pending
         game.apply(event)
@@ -50,6 +55,7 @@ def transcript(record, seat=None):
 
     return {
         "seat": seat,
+        "omniscient": omniscient,
         "goal": tuple(map(str, setup["goal"])),
         "players": setup["player_count"],
         "bad": setup["bad_count"],
@@ -57,8 +63,8 @@ def transcript(record, seat=None):
     }
 
 
-def export_html(record, title, seat=None):
-    data = transcript(record, seat)
+def export_html(record, title, seat=None, *, omniscient=False):
+    data = transcript(record, seat, omniscient=omniscient)
     data["title"] = title
     payload = json.dumps(data, separators=(",", ":")).replace("<", "\\u003c")
     return (

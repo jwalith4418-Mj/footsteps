@@ -32,6 +32,18 @@ function make(tag, className, text) {
   return node;
 }
 
+function drawEdges(element, face) {
+  directions.forEach((_, d) => {
+    const inward = face & (1 << d);
+    const outward = face & (16 << d);
+    if (!inward && !outward) return;
+    const side = make("span", "side");
+    side.style.setProperty("--angle", (90 * d) + "deg");
+    side.append(make("span", "", inward && outward ? "↕" : inward ? "↓" : "↑"));
+    element.append(side);
+  });
+}
+
 function drawTile(tile, f, selected) {
   const button = make("button", "tile");
   button.type = "button";
@@ -49,15 +61,7 @@ function drawTile(tile, f, selected) {
   if (proposed) label.push("proposed destination");
   button.title = label.join(" · ");
   button.setAttribute("aria-label", button.title);
-  directions.forEach((_, d) => {
-    const inward = tile.face & (1 << d);
-    const outward = tile.face & (16 << d);
-    if (!inward && !outward) return;
-    const side = make("span", "side");
-    side.style.setProperty("--angle", (90 * d) + "deg");
-    side.append(make("span", "", inward && outward ? "↕" : inward ? "↓" : "↑"));
-    button.append(side);
-  });
+  drawEdges(button, tile.face);
   if (isExit) button.append(make("span", "exit-glyph", "◇"));
   if (isStart && !marked) button.append(make("span", "origin-glyph", "S"));
   if (marked) button.append(make("span", "piece"));
@@ -119,6 +123,31 @@ function decision(f) {
   return "P" + f.actor + " " + actions[f.stage];
 }
 
+function handGroup(seat, hand, alive) {
+  const group = make("section", "hand-group");
+  const label = "P" + seat + (alive ? "" : " · Set aside");
+  group.append(make("h3", "", label));
+  if (!hand.length) {
+    group.append(make("p", "", "Empty hand"));
+    return group;
+  }
+  const list = make("ul", "hand-tiles");
+  for (const face of hand) {
+    const card = make("li", "hand-card");
+    const tile = make("span", "hand-face", String(face));
+    tile.setAttribute("aria-hidden", "true");
+    drawEdges(tile, face);
+    const edges = make("span", "hand-edges");
+    edges.append(make("span", "sr", "Face " + face + ". "),
+      make("span", "", "In: " + permitted(face & 15)),
+      make("span", "", "Out: " + permitted(face >> 4)));
+    card.append(tile, edges);
+    list.append(card);
+  }
+  group.append(list);
+  return group;
+}
+
 function showState(f) {
   el("decision-label").textContent = f.winner ? "Outcome" : "Next decision";
   el("decision").textContent = decision(f);
@@ -137,10 +166,17 @@ function showState(f) {
     row.append(make("strong", "", "P" + i), make("small", "", tags.join(" · ")));
     el("roster").append(row);
   }
-  if (data.seat !== null) {
+  if (data.omniscient || data.seat !== null) {
     el("private").hidden = false;
-    el("hand").textContent = f.hand.length ? f.hand.join(" · ") : "Empty";
-    el("allies").textContent = f.teammates ? "Bad teammates: " + (f.teammates.map((i) => "P" + i).join(", ") || "none") : "";
+    el("hand-heading").textContent = data.omniscient ? "All hands" : "Your hand";
+    const hands = data.omniscient
+      ? f.hands.map((hand, seat) => handGroup(seat, hand, f.alive.includes(seat)))
+      : [handGroup(data.seat, f.hand, f.alive.includes(data.seat))];
+    el("hand").replaceChildren(...hands);
+  }
+  if (f.teammates) {
+    el("allies").hidden = false;
+    el("allies").textContent = "Bad teammates: " + (f.teammates.map((i) => "P" + i).join(", ") || "none");
   }
 }
 
@@ -179,7 +215,7 @@ function go(to) {
 document.title = data.title + " · Footsteps";
 el("title").textContent = data.title;
 el("summary").textContent = data.players + (data.players === 1 ? " player" : " players") + " · " + data.bad + " bad · Goal " + coordinate(data.goal);
-el("perspective").textContent = data.seat === null ? "Public view" : "P" + data.seat + " · Private view";
+el("perspective").textContent = data.omniscient ? "Omniscient · All hands and roles" : data.seat === null ? "Public view" : "P" + data.seat + " · Private view";
 const turns = new Map();
 frames.forEach((f, i) => { if (!turns.has(f.turn)) turns.set(f.turn, i); });
 for (const turn of turns.keys()) el("turn").add(new Option("Turn " + turn, turn));
