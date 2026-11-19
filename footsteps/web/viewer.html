@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Footsteps · Transcript</title>
+<style>/* VIEWER_STYLE */</style>
+</head>
+<body>
+<header class="mast"><div class="wrap mast-inner">
+  <div class="brand"><i class="mark" aria-hidden="true"></i>Footsteps</div>
+  <span class="product">Transcript viewer</span><span id="perspective" class="perspective"></span>
+</div></header>
+<main class="wrap">
+  <section class="intro"><div><h1 id="title"></h1><p id="summary"></p></div>
+    <label class="jump">Jump to turn <select id="turn"></select></label>
+  </section>
+  <div class="layout">
+    <section class="floor-panel panel" aria-labelledby="floor-heading">
+      <div class="panel-head"><h2 id="floor-heading">Floor plan</h2><span class="north">North ↑</span></div>
+      <div class="floor" id="floor" role="group" aria-label="Floor tiles"></div>
+      <div class="legend"><span><b class="dot"></b>Marker</span><span><b class="exit-icon"></b>Exit</span><span><b class="proposal-icon"></b>Proposed move</span></div>
+      <div class="inspect"><label for="tile">Inspect tile</label><select id="tile"></select><p id="edges"></p></div>
+    </section>
+    <section class="panel state" aria-labelledby="state-heading">
+      <div class="panel-head"><h2 id="state-heading">Table state</h2><span id="turn-tag"></span></div>
+      <div class="state-body">
+        <div class="next-label" id="decision-label">Next decision</div><p id="decision"></p>
+        <dl class="metrics"><div><dt>Tiles in store</dt><dd id="bag"></dd></div><div><dt>Marker</dt><dd id="marker"></dd></div></dl>
+        <h3>Seats</h3><ul id="roster"></ul>
+        <section id="private" hidden><h3>Your hand</h3><div id="hand"></div><p id="allies"></p></section>
+      </div>
+    </section>
+    <section class="panel playback" aria-label="Replay controls">
+      <div class="position"><strong id="event-count"></strong><label class="sr" for="scrub">Event position</label><input type="range" id="scrub" min="0" value="0"></div>
+      <div class="controls"><button id="prev" type="button">Previous</button><button id="next" type="button">Next event</button></div>
+    </section>
+  </div>
+  <section class="journal" aria-labelledby="journal-heading"><div class="journal-head"><h2 id="journal-heading">Event log</h2><span>Latest first</span></div>
+    <div id="current" aria-live="polite"></div><ol id="log"></ol>
+  </section>
+</main>
+<script id="transcript" type="application/json"><!-- TRANSCRIPT --></script>
+<script>/* VIEWER_SCRIPT */</script>
+</body></html>

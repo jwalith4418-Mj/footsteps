@@ -1,0 +1,62 @@
+"""The embedded data is the privacy boundary of a shared offline transcript."""
+
+import json
+import unittest
+from pathlib import Path
+
+from footsteps.record import read
+from footsteps.viewer import export_html, transcript
+
+EXAMPLE = Path(__file__).resolve().parents[1] / "examples/crossing.json"
+
+
+class TranscriptViewer(unittest.TestCase):
+    def test_public_prefix_and_ballot(self):
+        r = read(EXAMPLE)
+        r["events"] = r["events"][:5]
+        frames = transcript(r)["frames"]
+        for f in frames:
+            self.assertTrue({"hand", "role", "roles", "teammates", "store"}.isdisjoint(f))
+        self.assertNotIn("18", frames[1]["message"])
+        self.assertNotIn("18", frames[3]["message"])
+        self.assertEqual(frames[2]["placed"], [("1", "0"), 40, 40, 0])
+        self.assertEqual(frames[4]["pending"], ("1", "0"))
+        self.assertEqual(frames[4]["marker"], ("0", "0"))
+        self.assertEqual(frames[5]["marker"], ("1", "0"))
+        self.assertEqual(frames[5]["ballots"], [(0, True), (1, True), (2, None), (3, False)])
+        self.assertIsNone(frames[-1]["winner"])
+
+    def test_perspective_across_elimination_and_reveal(self):
+        r = read(EXAMPLE)
+        data = transcript(r, 3)
+        self.assertNotIn("setup", data)
+        self.assertNotIn("events", data)
+        frames = data["frames"]
+        self.assertEqual(frames[0]["hand"], [0])
+        self.assertEqual(frames[0]["role"], "bad")
+        self.assertNotIn("18", frames[1]["message"])
+        self.assertNotIn(3, frames[7]["alive"])
+        self.assertNotIn("roles", frames[-2])
+        self.assertEqual(frames[-1]["roles"], r["setup"]["roles"])
+        self.assertEqual(transcript(r, 0)["frames"][1]["hand"], [40, 18, 12])
+
+    def test_export_setup_only_and_html_delimiters(self):
+        r = read(EXAMPLE)
+        r["events"].clear()
+        r["setup"]["goal"] = [2**60 + 1, -1]
+        title = "</script><script>alert(1)</script>"
+        page = export_html(r, title)
+        self.assertNotIn(title, page)
+        payload = page.split('type="application/json">', 1)[1].split("</script>", 1)[0]
+        data = json.loads(payload)
+        self.assertEqual(data["title"], title)
+        self.assertEqual(data["goal"][0], str(2**60 + 1))
+        self.assertEqual(len(data["frames"]), 1)
+        with self.assertRaisesRegex(ValueError, "invalid seat"):
+            export_html(r, "test", -1)
+
+    def test_referee_rejects_invalid_history(self):
+        r = read(EXAMPLE)
+        r["events"][3]["to"] = [0, 1]
+        with self.assertRaisesRegex(ValueError, "event 4"):
+            transcript(r)
