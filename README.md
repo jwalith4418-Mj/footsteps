@@ -39,11 +39,12 @@ Export a single HTML file and open it in a browser. It works offline. The viewer
 ```sh
 python -m footsteps view examples/crossing.json -o /tmp/crossing.html
 python -m footsteps view examples/crossing.json --seat 0 -o /tmp/crossing-p0.html
+python -m footsteps view examples/crossing.json --omniscient -o /tmp/crossing-referee.html
 ```
 
 In the crossing, stop at event 4 to inspect the proposed destination. Select face 40 to see its west entrance and east exit. Advance once to reveal the ballots and watch the marker move on the builder’s tie-break. Use the slider to rewind or jump directly to a turn.
 
-The default export contains the public history. A seat export also contains that player’s role, known teammates, hand and private observations. A completed file includes the eventual outcome and role reveal. Export a record prefix when sharing an unresolved decision with playtesters.
+The default export contains the public history. A seat export also contains that player’s role, known teammates, hand and private observations. Hand tiles show their printed orientation and list their entry and exit edges. In P0’s export, step through the first draw, placement and return to see three tiles become one. The omniscient export contains every hand, role, private draw and return from setup onward, including hands set aside at elimination. Share that file with anyone entitled to see all seats’ secrets. A completed file includes the eventual outcome and role reveal. Export a record prefix when sharing an unresolved decision with playtesters.
 
 ## First solitaire results
 

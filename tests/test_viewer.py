@@ -16,7 +16,7 @@ class TranscriptViewer(unittest.TestCase):
         r["events"] = r["events"][:5]
         frames = transcript(r)["frames"]
         for f in frames:
-            self.assertTrue({"hand", "role", "roles", "teammates", "store"}.isdisjoint(f))
+            self.assertTrue({"hand", "hands", "role", "roles", "teammates", "store"}.isdisjoint(f))
         self.assertNotIn("18", frames[1]["message"])
         self.assertNotIn("18", frames[3]["message"])
         self.assertEqual(frames[2]["placed"], [("1", "0"), 40, 40, 0])
@@ -39,6 +39,30 @@ class TranscriptViewer(unittest.TestCase):
         self.assertNotIn("roles", frames[-2])
         self.assertEqual(frames[-1]["roles"], r["setup"]["roles"])
         self.assertEqual(transcript(r, 0)["frames"][1]["hand"], [40, 18, 12])
+
+    def test_hands_at_each_event_and_export_boundaries(self):
+        record = read(EXAMPLE)
+        for hand in record["setup"]["hands"]:
+            hand.append(18)
+        referee = transcript(record, omniscient=True)["frames"]
+        player = transcript(record, 0)["frames"]
+        public = transcript(record)["frames"]
+        self.assertEqual(
+            [f["hands"][0] for f in referee[:4]],
+            [[40, 18], [40, 18, 18, 12], [18, 18, 12], [18, 12]],
+        )
+        for i, frame in enumerate(referee):
+            self.assertEqual(frame["hands"][0], player[i]["hand"])
+            self.assertNotIn("hands", player[i])
+            self.assertTrue({"hands", "hand"}.isdisjoint(public[i]))
+            self.assertEqual(frame["roles"], record["setup"]["roles"])
+        self.assertNotIn(3, referee[7]["alive"])
+        self.assertEqual(referee[7]["hands"][3], [0, 18])
+        self.assertIn("returned 18", referee[3]["message"])
+        self.assertIn("[18]", referee[10]["message"])
+        self.assertNotIn("[18]", player[10]["message"])
+        with self.assertRaisesRegex(ValueError, "choose a seat"):
+            transcript(record, 0, omniscient=True)
 
     def test_export_setup_only_and_html_delimiters(self):
         r = read(EXAMPLE)

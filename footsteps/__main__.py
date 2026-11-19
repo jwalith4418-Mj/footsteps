@@ -27,7 +27,9 @@ def main():
     view.add_argument("--full", action="store_true", help="embed all secrets for import")
     viewer = sub.add_parser("view", help="export an offline interactive HTML transcript")
     viewer.add_argument("path", type=Path, help="JSON record or full Markdown account")
-    viewer.add_argument("--seat", type=int, help="include this seat's private information")
+    perspective = viewer.add_mutually_exclusive_group()
+    perspective.add_argument("--omniscient", action="store_true", help="show every hand and role")
+    perspective.add_argument("--seat", type=int, help="include this seat's private information")
     viewer.add_argument("-o", "--output", type=Path, required=True, help="destination HTML file")
     table = sub.add_parser("table", help="host a four-seat table on localhost")
     table.add_argument("--save", required=True, type=Path, help="new private referee JSON path")
@@ -61,7 +63,9 @@ def main():
                 args.output.exists() and args.output.samefile(args.path)
             ):
                 parser.error("choose an HTML output file separate from the input record")
-            document = export_html(read(args.path), args.path.stem, args.seat)
+            document = export_html(
+                read(args.path), args.path.stem, args.seat, omniscient=args.omniscient
+            )
             args.output.write_text(document, encoding="utf-8")
             print(args.output.resolve())
         else:
