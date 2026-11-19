@@ -1,0 +1,28 @@
+# One localhost table
+
+Start a host with `python -m footsteps table --save /tmp/game.json`. The normal game shuffles the sixteen printed tiles and three good roles plus one bad role. For a rules walkthrough, `--crossing` uses the known seating, deal and first draw from the worked example. Players make all subsequent choices.
+
+The server binds to 127.0.0.1 and prints a separate browser link for each seat. Give each participant only their own link. A local group can use separate browser tabs or profiles, arranged so players can read their own screen privately. Remote devices would need an independently configured loopback tunnel. The host terminal and the on-disk record contain referee secrets. Reopening a link reconnects to the same seat while that host process is running.
+
+## Decisions
+
+A program can use the same interface as the browser. Split a seat link at the fragment marker. Send requests to the origin with `Authorization: Bearer <fragment>`. Use JSON objects for POST bodies.
+
+| Request | Result |
+|---|---|
+| GET /state | Own seat number, referee view, perspective-specific history, phase and remaining time. |
+| POST /ready with `{}` | Mark the authenticated seat ready. Timers begin after all seats are ready. |
+| POST /choice with `{"revision":4,"choice":{"vote":true}}` | Submit a decision for the specified revision. |
+| POST /say with `{"revision":4,"text":"Face 40 leads east."}` | Offer one public remark in this ballot's discussion window. |
+
+All successful endpoints return the caller's current snapshot. `choices` is null while waiting. Otherwise its keys give the exact fields to submit, with legal values per field. For placement, combine one tile, one square and one clockwise rotation. For a pass or stay the relevant value is JSON null. A player submits their own boolean ballot. The host assembles the complete vote array in living-seat order. `state` includes the current actor, nominator, proposal or nominee, board, own hand and role, plus teammates for a bad seat. The history supplies public ballots and the player's own draws and returns.
+
+The revision is the count of committed referee events, including automatic draws. A failed or late submission cannot fill a later decision. HTTP 409 means the opportunity is closed for this seat; refresh the snapshot before deciding again. HTTP 400 reports malformed or illegal input. If a POST response is lost, fetch the latest state. A committed ballot sets `voted` only in the voter's own view until the collective reveal.
+
+By default a ballot opens after 15 seconds of discussion and every decision has a 60-second response period. All living seats can speak once during discussion (500 characters maximum). The host checks its own monotonic clock even when clients disconnect. At a deadline it reveals missing ballots as timeouts counted as no, or applies the base rules' individual fallback. The server remains available after game end so seats can inspect the outcome.
+
+## Playtest record
+
+The host saves a complete base-1 prefix after each committed event and public remark. It creates a fresh owner-readable file and replaces checkpoints atomically. Unrevealed individual ballots are kept in host memory. A saved prefix replays in the existing record tools. Optional top-level `remarks` contain public text, seat, and the preceding event count. Remarks are annotations outside rules adjudication; the live history displays them and the host JSON preserves them for analysis.
+
+For the first nomination, record the nominator, target, turn, marker distance to EXIT, stated evidence, and how many subsequent builds any eliminated player sat out. Ask players which tile edges they found hard to read. Keep a scripted walkthrough distinct from observations of people making decisions. [First nomination playtest](https://github.com/othercriteria/footsteps/issues/3)

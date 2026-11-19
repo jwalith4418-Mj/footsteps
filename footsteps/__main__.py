@@ -4,6 +4,7 @@ from pathlib import Path
 
 from .record import read, render
 from .solo import POLICIES, setup, simulate
+from .table_server import serve
 from .terminal import play
 from .viewer import export_html
 
@@ -28,9 +29,23 @@ def main():
     viewer.add_argument("path", type=Path, help="JSON record or full Markdown account")
     viewer.add_argument("--seat", type=int, help="include this seat's private information")
     viewer.add_argument("-o", "--output", type=Path, required=True, help="destination HTML file")
+    table = sub.add_parser("table", help="host a four-seat table on localhost")
+    table.add_argument("--save", required=True, type=Path, help="new private referee JSON path")
+    table.add_argument(
+        "--port", default=0, type=int, help="loopback port (default: choose a free port)"
+    )
+    table.add_argument("--seconds", default=60, type=float, help="seconds per decision")
+    table.add_argument(
+        "--discussion", default=15, type=float, help="discussion seconds before each ballot"
+    )
+    table.add_argument("--crossing", action="store_true", help="use the public two-turn demo setup")
     args = parser.parse_args()
     try:
-        if args.command == "solo":
+        if args.command == "table":
+            if not 0 <= args.port <= 65535:
+                parser.error("--port must be between 0 and 65535")
+            serve(args)
+        elif args.command == "solo":
             if args.hand < 0 or args.store < 1 or not 0 <= args.density <= 1:
                 parser.error("hand >= 0, store >= 1, density between 0 and 1 required")
             initial = setup(args.seed, args.goal, args.hand, args.store, args.density)

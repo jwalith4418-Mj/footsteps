@@ -2,7 +2,7 @@
 
 Footsteps is a turn-based game of laying floor tiles and deciding whom to trust. One player expands the floor, everyone votes on where to step, and the exit gets harder to reach as the tile bag empties. Some players want the expedition to run out of time.
 
-The first playable model includes a deterministic multiplayer referee, replayable public and private game accounts, a terminal solitaire game, and five automated solitaire players. The multiplayer referee currently accepts event records. The localhost table and Ollama seats are planned work.
+The first playable model includes a deterministic multiplayer referee, replayable public and private game accounts, a terminal solitaire game, and five automated solitaire players. A localhost referee hosts private browser seats and exposes the same decisions to automated players.
 
 ## Try a game
 
@@ -21,6 +21,16 @@ python -m unittest discover -s tests -v
 ```
 
 Read the two-turn example to see a tied vote, an elimination and a win on the final draw. Its JSON is an editable scenario. A full Markdown account embeds the secret referee record and can be imported again. [Rulebook](docs/rules.md) · [Worked game](examples/crossing.md) · [JSON](examples/crossing.json) · [Record format](docs/records.md)
+
+## Host a local table
+
+```sh
+python -m footsteps table --save /tmp/footsteps-game.json
+```
+
+Open the four private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
+
+The host checkpoints the secret referee record. Only the selected seat's view and history go to its browser. Use the exported record for postgame review or a public transcript. [Local seat API and timing](docs/table.md)
 
 ## Inspect a transcript
 

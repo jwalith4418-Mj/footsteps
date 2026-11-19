@@ -1,0 +1,189 @@
+"""Single live table. The transport serializes calls and supplies a monotonic clock."""
+
+from copy import copy
+from math import isfinite
+
+from .board import frontier, moves
+from .fallback import timeout
+from .game import Game, require
+from .record import describe, new_record
+
+# Print order in playtest/kit.typ. Equal faces are separate physical pieces.
+PAPER_KIT = (188, 153, 16, 71, 45, 91, 121, 41, 234, 12, 44, 16, 74, 107, 41, 182)
+BALLOTS = {"move_vote", "eliminate_vote"}
+
+
+def paper_setup(rng):
+    tiles = list(PAPER_KIT)
+    rng.shuffle(tiles)
+    roles = ["good"] * 3 + ["bad"]
+    rng.shuffle(roles)
+    return {
+        "goal": [4, 2],
+        "roles": roles,
+        "hands": [tiles[i : i + 2] for i in range(0, 8, 2)],
+        "store": tiles[8:],
+    }
+
+
+class DecisionConflict(ValueError):
+    """The client's decision window has closed or is not open to that seat."""
+
+
+class Table:
+    def __init__(self, setup, rng, seconds=60, discussion=15):
+        require(isfinite(seconds) and seconds > 0, "decision time must be positive")
+        require(isfinite(discussion) and discussion >= 0, "discussion time must be nonnegative")
+        self.game = Game(setup)
+        self.rng = rng
+        self.seconds = seconds
+        self.discussion = discussion
+        self.record = new_record(setup)
+        self.history = [[] for _ in self.game.roles]
+        self.ready = set()
+        self.started = False
+        self.votes = {}
+        self.speakers = set()
+        self.opens = self.deadline = 0
+
+    @property
+    def revision(self):
+        return len(self.record["events"])
+
+    def join(self, seat, now):
+        self.ready.add(seat)
+        if not self.started and len(self.ready) == len(self.game.roles):
+            self.started = True
+            self.open_decision(now)
+
+    def commit(self, event):
+        game = self.game
+        before = copy(game)
+        before.alive = game.alive.copy()
+        before.queue = game.queue.copy()
+        game.apply(event)
+        self.record["events"].append(event)
+        for seat, log in enumerate(self.history):
+            message = describe(before, event, seat)
+            if event["kind"] == "eliminate_vote":
+                message += (
+                    f" P{before.pending} was eliminated."
+                    if before.pending not in game.alive
+                    else " Nomination failed."
+                )
+            if event["kind"] == "move_vote":
+                message += f" Marker at {game.marker}."
+            log.append({"turn": before.turn, "event": self.revision, "text": message})
+
+    def open_decision(self, now):
+        game = self.game
+        if game.stage == "draw":
+            self.commit(
+                {"kind": "draw", "tiles": self.rng.sample(game.store, min(2, len(game.store)))}
+            )
+        self.votes.clear()
+        self.speakers.clear()
+        self.opens = now + (self.discussion if game.stage in BALLOTS else 0)
+        self.deadline = self.opens + self.seconds
+
+    def reveal(self):
+        self.commit(
+            {"kind": self.game.stage, "votes": [self.votes.get(s) for s in self.game.alive]}
+        )
+
+    def tick(self, now):
+        if self.started and not self.game.winner and now >= self.deadline:
+            if self.game.stage in BALLOTS:
+                self.reveal()
+            else:
+                self.commit(timeout(self.game, self.rng))
+            self.open_decision(now)
+
+    def choices(self, seat, now):
+        game = self.game
+        if not self.started or game.winner or seat not in game.alive or now < self.opens:
+            return None
+        if game.stage in BALLOTS:
+            return None if seat in self.votes else {"vote": [True, False]}
+        if game.stage == "nominate":
+            return (
+                {"target": [None, *[s for s in game.alive if s != seat]]}
+                if seat == game.queue[0]
+                else None
+            )
+        if seat != game.actor:
+            return None
+        if game.stage == "propose":
+            return {"to": [None, *moves(game.board, game.marker)]}
+        fields = {"tile": sorted(set(game.hands[seat]))}
+        if game.stage == "place":
+            fields.update(at=frontier(game.board, game.goal), rotation=list(range(4)))
+        return fields
+
+    def speaking(self, seat, now):
+        return (
+            self.started
+            and not self.game.winner
+            and self.game.stage in BALLOTS
+            and now < self.opens
+            and seat in self.game.alive
+            and seat not in self.speakers
+        )
+
+    def view(self, seat, now):
+        self.tick(now)
+        game = self.game
+        phase = (
+            "lobby"
+            if not self.started
+            else "over"
+            if game.winner
+            else ("discussion" if now < self.opens else "decision")
+        )
+        end = self.opens if phase == "discussion" else self.deadline
+        return {
+            "seat": seat,
+            "phase": phase,
+            "revision": self.revision,
+            "seconds_left": max(0, end - now) if phase in ("discussion", "decision") else None,
+            "ready_count": len(self.ready),
+            "ready": seat in self.ready,
+            "voted": seat in self.votes,
+            "can_speak": self.speaking(seat, now),
+            "state": game.view(seat),
+            "choices": self.choices(seat, now),
+            "history": list(self.history[seat]),
+        }
+
+    def submit(self, seat, revision, choice, now):
+        self.tick(now)
+        fields = self.choices(seat, now)
+        if type(revision) is not int or revision != self.revision or fields is None:
+            raise DecisionConflict("Decision is closed for this seat")
+        require(
+            isinstance(choice, dict) and choice.keys() == fields.keys(), "invalid choice fields"
+        )
+        if self.game.stage in BALLOTS:
+            require(type(choice["vote"]) is bool, "expected a yes/no vote")
+            self.votes[seat] = choice["vote"]
+            if len(self.votes) < len(self.game.alive):
+                return
+            self.reveal()
+        else:
+            self.commit({"kind": self.game.stage, **choice})
+        self.open_decision(now)
+
+    def say(self, seat, revision, message, now):
+        self.tick(now)
+        if type(revision) is not int or revision != self.revision or not self.speaking(seat, now):
+            raise DecisionConflict("Discussion is closed for this seat")
+        require(
+            isinstance(message, str) and 0 < len(message.strip()) <= 500, "use 1–500 characters"
+        )
+        self.speakers.add(seat)
+        note = {"after_event": revision, "seat": seat, "text": message.strip()}
+        self.record.setdefault("remarks", []).append(note)
+        for log in self.history:
+            log.append(
+                {"turn": self.game.turn, "event": revision, "text": f"P{seat}: {note['text']}"}
+            )

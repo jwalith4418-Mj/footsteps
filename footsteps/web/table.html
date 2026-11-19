@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Footsteps · Live table</title>
+  <link rel="stylesheet" href="/table.css"><script defer src="/table.js"></script>
+</head>
+<body>
+  <header><div class="wrap"><strong>Footsteps</strong><span>Live table</span><b id="seat"></b></div></header>
+  <main class="wrap">
+    <h1 id="status">Connecting…</h1>
+    <p id="facts"></p><p id="error" role="alert"></p>
+    <div class="columns">
+      <section><h2>Floor plan</h2><p id="positions"></p><div class="floor-scroll"><div id="floor"></div></div>
+        <p class="key">North is up. An arrow points in the direction of travel. A dot marks the group's position.</p>
+      </section>
+      <section><h2>Your seat</h2><p id="identity"></p><div id="hand"></div>
+        <h2 id="action-title">Decision</h2><p id="clock"></p><div id="controls"></div>
+      </section>
+    </div>
+    <section class="history"><h2>Table history</h2><ol id="log"></ol></section>
+  </main>
+</body>
+</html>

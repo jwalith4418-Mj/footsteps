@@ -13,9 +13,8 @@ from footsteps.board import OPEN, START, frontier, moves, rotate
 from footsteps.game import Game
 from footsteps.record import new_record
 from footsteps.solo import best, movement, placement
+from footsteps.table import PAPER_KIT as KIT
 
-# Print order in playtest/kit.typ. Repeated values represent separate physical pieces.
-KIT = (188, 153, 16, 71, 45, 91, 121, 41, 234, 12, 44, 16, 74, 107, 41, 182)
 GOALS = (
     (1, 0),
     (2, 0),
