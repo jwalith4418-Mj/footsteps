@@ -6,6 +6,8 @@ The first playable model includes a deterministic multiplayer referee, replayabl
 
 ## Try a game
 
+For a four-person table, print the [three-page playtest kit](playtest/kit.pdf). It includes cut tiles, role cards, simultaneous ballots, and an observer sheet. [Paper setup and tile mix](playtest/README.md)
+
 From this directory use Python 3.13+ or enter the pinned shell with `nix develop`.
 
 ```sh
