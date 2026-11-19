@@ -1,0 +1,17 @@
+game,seed,seats,models,guided,named_moves,no_think,voice
+qwen-plain-11,11,4,qwen2.5:3b,0,0,0,on
+qwen-guided-11,11,4,qwen2.5:3b,1,0,0,on
+qwen-guided-12,12,4,qwen2.5:3b,1,0,0,on
+qwen-plain-12,12,4,qwen2.5:3b,0,0,0,on
+llama-plain-11,11,4,llama3.1:8b,0,0,0,on
+llama-guided-11,11,4,llama3.1:8b,1,0,0,on
+llama-guided-12,12,4,llama3.1:8b,1,0,0,on
+llama-plain-12,12,4,llama3.1:8b,0,0,0,on
+qwen-index-13,13,4,qwen2.5:3b,1,0,0,on
+qwen-names-13,13,4,qwen2.5:3b,1,1,0,on
+qwen-names-14,14,4,qwen2.5:3b,1,1,0,on
+qwen-index-14,14,4,qwen2.5:3b,1,0,0,on
+qwen4-names-13,13,4,qwen3.5:4b,1,1,1,on
+mixed-four,13,4,qwen3.5:4b qwen3.5:9b-q8_0 qwen3.5:4b qwen3.5:9b-q8_0,1,1,1,paused
+mixed-three-large-bad,13,3,qwen2.5:3b qwen3.5:4b qwen3.5:9b-q8_0,1,1,1,paused
+mixed-three-small-bad,13,3,qwen3.5:9b-q8_0 qwen3.5:4b qwen2.5:3b,1,1,1,paused

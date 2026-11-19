@@ -13,16 +13,17 @@ PAPER_KIT = (188, 153, 16, 71, 45, 91, 121, 41, 234, 12, 44, 16, 74, 107, 41, 18
 BALLOTS = {"move_vote", "eliminate_vote"}
 
 
-def paper_setup(rng):
+def paper_setup(rng, seats=4):
+    require(seats in (3, 4), "use three or four paper-kit seats")
     tiles = list(PAPER_KIT)
     rng.shuffle(tiles)
-    roles = ["good"] * 3 + ["bad"]
+    roles = ["good"] * (seats - 1) + ["bad"]
     rng.shuffle(roles)
     return {
         "goal": [4, 2],
         "roles": roles,
-        "hands": [tiles[i : i + 2] for i in range(0, 8, 2)],
-        "store": tiles[8:],
+        "hands": [tiles[i : i + 2] for i in range(0, 2 * seats, 2)],
+        "store": tiles[2 * seats :],
     }
 
 

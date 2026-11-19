@@ -138,7 +138,7 @@ def serve(args):
     if args.crossing:
         setup = read(WEB.parents[1] / "examples" / "crossing.json")["setup"]
     else:
-        setup = paper_setup(rng)
+        setup = paper_setup(rng, args.seats)
     table = Table(setup, rng, args.seconds, args.discussion)
     with TableServer(table, args.save, args.port) as server:
         print(f"Referee record: {args.save.resolve()}")

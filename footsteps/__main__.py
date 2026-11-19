@@ -1,9 +1,10 @@
 import argparse
 import json
+from functools import partial
 from getpass import getpass
 from pathlib import Path
 
-from .ollama import Seat, play_seat
+from .ollama import Seat, infer, play_seat
 from .record import read, render
 from .solo import POLICIES, setup, simulate
 from .table_server import serve
@@ -33,10 +34,13 @@ def main():
     perspective.add_argument("--omniscient", action="store_true", help="show every hand and role")
     perspective.add_argument("--seat", type=int, help="include this seat's private information")
     viewer.add_argument("-o", "--output", type=Path, required=True, help="destination HTML file")
-    table = sub.add_parser("table", help="host a four-seat table on localhost")
+    table = sub.add_parser("table", help="host a paper-kit table on localhost")
     table.add_argument("--save", required=True, type=Path, help="new private referee JSON path")
     table.add_argument(
         "--port", default=0, type=int, help="loopback port (default: choose a free port)"
+    )
+    table.add_argument(
+        "--seats", type=int, choices=(3, 4), default=4, help="paper-kit player count"
     )
     table.add_argument("--seconds", default=60, type=float, help="seconds per decision")
     table.add_argument(
@@ -46,16 +50,34 @@ def main():
     model = sub.add_parser("ollama", help="join a private seat with a local Ollama model")
     model.add_argument("--model", required=True, help="installed Ollama model name")
     model.add_argument("--budget", type=float, default=30, help="maximum seconds per inference")
+    model.add_argument(
+        "--guided", action="store_true", help="supply forward-build examples and team guidance"
+    )
+    model.add_argument(
+        "--named-moves",
+        action="store_true",
+        help="ask for compass directions when proposing movement",
+    )
+    model.add_argument(
+        "--no-think", action="store_true", help="disable Ollama thinking for this seat"
+    )
     args = parser.parse_args()
     try:
         if args.command == "ollama":
             winner = play_seat(
-                Seat(getpass("Private seat link: ").strip()), args.model, args.budget
+                Seat(getpass("Private seat link: ").strip()),
+                args.model,
+                args.budget,
+                decide=partial(
+                    infer, guided=args.guided, named_moves=args.named_moves, no_think=args.no_think
+                ),
             )
             print(f"{winner.capitalize()} team wins.")
         elif args.command == "table":
             if not 0 <= args.port <= 65535:
                 parser.error("--port must be between 0 and 65535")
+            if args.crossing and args.seats != 4:
+                parser.error("the crossing example requires four seats")
             serve(args)
         elif args.command == "solo":
             if args.hand < 0 or args.store < 1 or not 0 <= args.density <= 1:

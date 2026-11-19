@@ -1,0 +1,87 @@
+{
+  "format": 1,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      4,
+      2
+    ],
+    "roles": [
+      "bad",
+      "good",
+      "good",
+      "good"
+    ],
+    "hands": [
+      [
+        41,
+        182
+      ],
+      [
+        188,
+        41
+      ],
+      [
+        153,
+        121
+      ],
+      [
+        91,
+        12
+      ]
+    ],
+    "store": [
+      16,
+      71,
+      74,
+      16,
+      107,
+      44,
+      45,
+      234
+    ]
+  },
+  "events": [
+    {"kind": "draw", "tiles": [74, 45]},
+    {"kind": "place", "tile": 41, "at": [0, 1], "rotation": 3},
+    {"kind": "discard", "tile": 74},
+    {"kind": "propose", "to": [0, 1]},
+    {"kind": "move_vote", "votes": [true, false, true, true]},
+    {"kind": "nominate", "target": 2},
+    {"kind": "eliminate_vote", "votes": [false, false, false, false]},
+    {"kind": "nominate", "target": 0},
+    {"kind": "eliminate_vote", "votes": [true, true, true, true]},
+    {"kind": "nominate", "target": null},
+    {"kind": "draw", "tiles": [74, 107]},
+    {"kind": "place", "tile": 74, "at": [0, 2], "rotation": 3},
+    {"kind": "discard", "tile": 41},
+    {"kind": "propose", "to": [0, 2]},
+    {"kind": "move_vote", "votes": [true, true, true]},
+    {"kind": "nominate", "target": 1},
+    {"kind": "eliminate_vote", "votes": [true, true, true]},
+    {"kind": "nominate", "target": null},
+    {"kind": "draw", "tiles": [16, 44]},
+    {"kind": "place", "tile": 44, "at": [1, 2], "rotation": 0},
+    {"kind": "discard", "tile": 16},
+    {"kind": "propose", "to": [1, 2]},
+    {"kind": "move_vote", "votes": [true, true]},
+    {"kind": "nominate", "target": null},
+    {"kind": "nominate", "target": 3},
+    {"kind": "eliminate_vote", "votes": [true, true]},
+    {"kind": "draw", "tiles": [41, 16]},
+    {"kind": "place", "tile": 41, "at": [2, 2], "rotation": 0},
+    {"kind": "discard", "tile": 121},
+    {"kind": "propose", "to": [2, 2]},
+    {"kind": "move_vote", "votes": [true]},
+    {"kind": "draw", "tiles": [71, 16]},
+    {"kind": "place", "tile": 71, "at": [3, 2], "rotation": 3},
+    {"kind": "discard", "tile": 16},
+    {"kind": "propose", "to": [3, 2]},
+    {"kind": "move_vote", "votes": [true]},
+    {"kind": "draw", "tiles": [234, 121]},
+    {"kind": "place", "tile": 153, "at": [-1, 1], "rotation": 0},
+    {"kind": "discard", "tile": 234},
+    {"kind": "propose", "to": [4, 2]},
+    {"kind": "move_vote", "votes": [true]}
+  ]
+}

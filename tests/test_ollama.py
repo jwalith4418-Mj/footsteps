@@ -33,6 +33,43 @@ class ModelSeat(unittest.TestCase):
         self.assertEqual(context["pending"], [1, 0])
         self.assertEqual(payload["format"]["properties"]["vote"]["enum"], [0, 1])
 
+    def test_guided_placement_supplies_legal_forward_triples(self):
+        body = model_request(self.build, "test", guided=True)
+        context = json.loads(body["messages"][1]["content"])
+        options = context["options"]
+        self.assertEqual(len(context["forward_examples"]), 1)
+        (hint,) = context["forward_examples"]
+        placement = {k: values[hint[k]] for k, values in options.items()}
+        game = Table(read(CROSSING)["setup"], Random(1), discussion=0)
+        for seat in range(4):
+            game.join(seat, 0)
+        game.submit(0, 1, placement, 0)
+        game.submit(0, 2, {"tile": game.game.hands[0][0]}, 0)
+        self.assertIn(tuple(placement["at"]), game.choices(0, 0)["to"])
+        self.assertEqual(tuple(placement["at"]), (1, 0))
+        plain = model_request(self.build, "test")
+        self.assertNotIn("forward_examples", plain["messages"][1]["content"])
+
+    @patch("footsteps.ollama.request")
+    def test_named_moves_keep_legal_destinations_under_reordering(self, request):
+        snap = {
+            **self.ballot,
+            "state": {**self.ballot["state"], "stage": "propose"},
+            "choices": {"to": [[1, 0], None]},
+        }
+        for name, dest in (("east", [1, 0]), ("stay", None)):
+            request.return_value = {"message": {"content": json.dumps({"to": name})}}
+            self.assertEqual(infer(snap, "test", 1, named_moves=True, no_think=True), {"to": dest})
+            body = request.call_args.args[2]
+            self.assertIs(body["think"], False)
+            self.assertEqual(body["format"]["properties"]["to"]["enum"], ["east", "stay"])
+        request.return_value = {"message": {"content": '{"to":"west"}'}}
+        with self.assertRaises(ValueError):
+            infer(snap, "test", 1, named_moves=True)
+        self.assertEqual(
+            model_request(self.ballot, "test", named_moves=True), model_request(self.ballot, "test")
+        )
+
     @patch("footsteps.ollama.request")
     def test_boolean_vote_and_multi_field_indices(self, request):
         request.return_value = {"message": {"content": '{"vote":1}'}}
