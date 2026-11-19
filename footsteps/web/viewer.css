@@ -453,6 +453,13 @@ h2 {
   color: white;
 }
 
+.keys-hint {
+  margin: 0;
+  font-size: .75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .journal {
   margin: 24px 0 40px;
 }
