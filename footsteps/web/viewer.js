@@ -61,6 +61,7 @@ function drawTile(tile, f, selected) {
   if (proposed) label.push("proposed destination");
   button.title = label.join(" · ");
   button.setAttribute("aria-label", button.title);
+  button.dataset.coord = coordinate(tile.p);
   drawEdges(button, tile.face);
   if (isExit) button.append(make("span", "exit-glyph", "◇"));
   if (isStart && !marked) button.append(make("span", "origin-glyph", "S"));
@@ -211,6 +212,50 @@ function go(to) {
   for (let i = index - 1; i >= 0; i--) history.append(entry(i, false));
   el("log").replaceChildren(history);
 }
+
+function fallbackFocus() {
+  for (const control of [el("prev"), el("next"), el("scrub"), el("turn"), el("tile")]) {
+    if (control && !control.disabled) {
+      control.focus();
+      return;
+    }
+  }
+}
+
+function restoreFocus(active) {
+  if (!active) return;
+  if (active.classList && active.classList.contains("tile")) {
+    // The floor is redrawn on every step; keep the same tile focused while it exists.
+    const still = document.querySelector('.tile[data-coord="' + active.dataset.coord + '"]');
+    if (still) {
+      still.focus();
+      return;
+    }
+    fallbackFocus();
+    return;
+  }
+  if (!active.isConnected) {
+    fallbackFocus();
+    return;
+  }
+  if ((active.id === "prev" || active.id === "next") && active.disabled) fallbackFocus();
+}
+
+function step(dir) {
+  const active = document.activeElement;
+  go(index + dir);
+  restoreFocus(active);
+}
+
+// Arrow keys step the transcript; form controls keep their native arrow-key behavior.
+document.addEventListener("keydown", (event) => {
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.defaultPrevented) return;
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  const active = document.activeElement;
+  if (active && /^(INPUT|SELECT|TEXTAREA)$/.test(active.tagName)) return;
+  event.preventDefault();
+  step(event.key === "ArrowLeft" ? -1 : 1);
+});
 
 document.title = data.title + " · Footsteps";
 el("title").textContent = data.title;
