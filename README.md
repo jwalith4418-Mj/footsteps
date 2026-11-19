@@ -39,6 +39,8 @@ The default export contains the public history. A seat export also contains that
 
 Across 800 ten-turn games per policy, the player that checked onward exits reached the goal 789 times. The player that searched reachable floor and could backtrack won 792, including 258 wins after the earliest possible turn. Random play won zero. The experiment includes tight budgets, two exit offsets, two hand sizes and a shared-prefix endgame comparison. [Experiment and reproduction](experiments/README.md) · [Counts](experiments/counts.md) · [Raw CSV](experiments/pilot.csv)
 
+A [four-seat exit-offset study](experiments/exit-offsets.md) holds the printed kit fixed and varies the goal. It includes a matched deal where a one-tile bridge works diagonally and a straight exit takes four moves.
+
 ## Development
 
 With Nix, nix-direnv, and the Codex CLI installed, run these commands in a host terminal at the project root:
