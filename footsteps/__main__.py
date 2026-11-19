@@ -5,6 +5,7 @@ from pathlib import Path
 from .record import read, render
 from .solo import POLICIES, setup, simulate
 from .terminal import play
+from .viewer import export_html
 
 
 def main():
@@ -23,6 +24,10 @@ def main():
     view = replay.add_mutually_exclusive_group()
     view.add_argument("--seat", type=int)
     view.add_argument("--full", action="store_true", help="embed all secrets for import")
+    viewer = sub.add_parser("view", help="export an offline interactive HTML transcript")
+    viewer.add_argument("path", type=Path, help="JSON record or full Markdown account")
+    viewer.add_argument("--seat", type=int, help="include this seat's private information")
+    viewer.add_argument("-o", "--output", type=Path, required=True, help="destination HTML file")
     args = parser.parse_args()
     try:
         if args.command == "solo":
@@ -36,6 +41,14 @@ def main():
             if args.save:
                 args.save.write_text(json.dumps(rec, indent=2) + "\n")
             print(render(rec), end="")
+        elif args.command == "view":
+            if args.output.resolve() == args.path.resolve() or (
+                args.output.exists() and args.output.samefile(args.path)
+            ):
+                parser.error("choose an HTML output file separate from the input record")
+            document = export_html(read(args.path), args.path.stem, args.seat)
+            args.output.write_text(document, encoding="utf-8")
+            print(args.output.resolve())
         else:
             print(render(read(args.path), seat=args.seat, full=args.full), end="")
     except (EOFError, KeyboardInterrupt):

@@ -20,6 +20,19 @@ python -m unittest discover -s tests -v
 
 Read the two-turn example to see a tied vote, an elimination and a win on the final draw. Its JSON is an editable scenario. A full Markdown account embeds the secret referee record and can be imported again. [Rulebook](docs/rules.md) · [Worked game](examples/crossing.md) · [JSON](examples/crossing.json) · [Record format](docs/records.md)
 
+## Inspect a transcript
+
+Export a single HTML file and open it in a browser. It works offline. The viewer accepts the same JSON records and full Markdown accounts as the replay command, including unfinished games.
+
+```sh
+python -m footsteps view examples/crossing.json -o /tmp/crossing.html
+python -m footsteps view examples/crossing.json --seat 0 -o /tmp/crossing-p0.html
+```
+
+In the crossing, stop at event 4 to inspect the proposed destination. Select face 40 to see its west entrance and east exit. Advance once to reveal the ballots and watch the marker move on the builder’s tie-break. Use the slider to rewind or jump directly to a turn.
+
+The default export contains the public history. A seat export also contains that player’s role, known teammates, hand and private observations. A completed file includes the eventual outcome and role reveal. Export a record prefix when sharing an unresolved decision with playtesters.
+
 ## First solitaire results
 
 Across 800 ten-turn games per policy, the player that checked onward exits reached the goal 789 times. The player that searched reachable floor and could backtrack won 792, including 258 wins after the earliest possible turn. Random play won zero. The experiment includes tight budgets, two exit offsets, two hand sizes and a shared-prefix endgame comparison. [Experiment and reproduction](experiments/README.md) · [Counts](experiments/counts.md) · [Raw CSV](experiments/pilot.csv)
