@@ -9,7 +9,7 @@
       let pkgs = import nixpkgs { inherit system; };
       in {
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [ python313 git gh ruff ];
+          packages = with pkgs; [ (python313.withPackages (ps: [ ps.coverage ])) git gh ruff ];
         };
       });
 }

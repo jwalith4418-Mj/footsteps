@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from copy import deepcopy
+from itertools import product
 from pathlib import Path
 from random import Random
 
@@ -54,6 +55,49 @@ class Rules(unittest.TestCase):
         g.apply({"kind": "eliminate_vote", "votes": [True, False, True, None]})
         self.assertEqual(g.alive, [0, 1, 2, 3])
         self.assertEqual(g.queue, [2, 3, 0])
+
+    def test_every_ballot_on_a_tie_capable_move_elimination_and_final_move(self):
+        for prefix in (4, 6, 12):
+            original = before(prefix)
+            chair = original.alive.index(original.actor)
+            for votes in product([None, False, True], repeat=len(original.alive)):
+                with self.subTest(prefix=prefix, votes=votes):
+                    game = deepcopy(original)
+                    game.apply({"kind": original.stage, "votes": list(votes)})
+                    yes = votes.count(True)
+                    majority = yes > len(votes) // 2
+                    if prefix == 6:
+                        self.assertEqual(original.pending not in game.alive, majority)
+                    else:
+                        approved = majority or (yes * 2 == len(votes) and votes[chair] is True)
+                        self.assertEqual(
+                            game.marker, original.pending if approved else original.marker
+                        )
+                        if prefix == 12:
+                            self.assertEqual(game.winner, "good" if approved else "bad")
+
+    def test_rejected_events_leave_each_phase_unchanged(self):
+        cases = [
+            (0, {"tiles": [18]}),
+            (1, {"rotation": True}),
+            (2, {"tile": 99}),
+            (3, {"to": [0, 1]}),
+            (3, {"timeout": True}),
+            (4, {"votes": [True, False, 1, None]}),
+            (5, {"target": 1}),
+            (5, {"timeout": True}),
+            (6, {"votes": [None] * 3}),
+        ]
+        for n, change in cases:
+            with self.subTest(n=n, change=change):
+                game = before(n)
+                saved = deepcopy(vars(game))
+                event = EXAMPLE["events"][n]
+                with self.assertRaises(ValueError):
+                    game.apply({**event, **change})
+                self.assertEqual(vars(game), saved)
+                game.apply(event)
+                self.assertEqual(vars(game), vars(before(n + 1)))
 
     def test_proposer_can_be_eliminated(self):
         g = before(5)
@@ -108,6 +152,20 @@ class Rules(unittest.TestCase):
         with self.assertRaises(ValueError):
             g.apply({"kind": "draw", "tiles": [18, 18]})
         self.assertEqual(g.store, [18, 12])
+
+    def test_unfinished_accounts_reveal_only_known_allies(self):
+        record = deepcopy(EXAMPLE)
+        record["setup"]["roles"] = ["good", "bad", "bad", "good"]
+        record["events"] = record["events"][:4]
+        for seat, teammate in [(1, 2), (2, 1)]:
+            account = render(record, seat)
+            self.assertIn(f"Fellow bad players: [{teammate}]", account)
+            self.assertIn("Next decision: **move_vote**", account)
+            self.assertNotIn("Roles revealed", account)
+            self.assertNotIn("returned 18", account)
+        self.assertNotIn("Fellow bad players", render(record))
+        with self.assertRaises(ValueError):
+            render(record, 1, full=True)
 
     def test_versioned_round_trip(self):
         account = render(EXAMPLE, full=True)

@@ -4,7 +4,7 @@ from pathlib import Path
 from random import Random
 from unittest.mock import Mock, patch
 
-from footsteps.ollama import infer, model_request, play_seat
+from footsteps.ollama import Seat, ServiceError, infer, model_request, play_seat
 from footsteps.record import read
 from footsteps.table import Table
 
@@ -81,6 +81,32 @@ class ModelSeat(unittest.TestCase):
             with self.subTest(bad=bad), self.assertRaises(ValueError):
                 request.return_value = {"message": {"content": bad}}
                 infer(self.ballot, "test", 1)
+
+    def test_seat_link_and_model_budget_validation(self):
+        for url in ["127.0.0.1", "http://127.0.0.1:8000/", "http://127.0.0.1:8000/state#token"]:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                Seat(url)
+        for budget in [0, -1, float("nan"), float("inf")]:
+            seat = Mock()
+            with self.subTest(budget=budget), self.assertRaises(ValueError):
+                play_seat(seat, "fixture", budget)
+            seat.call.assert_not_called()
+
+    @patch("footsteps.ollama.time.sleep")
+    def test_closed_window_refreshes_without_resubmitting(self, _sleep):
+        over = {"phase": "over", "state": {"winner": "bad"}}
+        seat = Mock()
+        seat.call.side_effect = [self.ballot, ServiceError(409), over]
+        decide = Mock(return_value={"vote": True})
+        self.assertEqual(play_seat(seat, "test", 10, decide=decide, report=Mock()), "bad")
+        self.assertEqual(
+            [c.args[0] for c in seat.call.call_args_list], ["/ready", "/choice", "/state"]
+        )
+        decide.assert_called_once()
+        seat.call.side_effect = [self.ballot, ServiceError(401)]
+        with self.assertRaises(ServiceError) as error:
+            play_seat(seat, "test", 10, decide=decide, report=Mock())
+        self.assertEqual(error.exception.status, 401)
 
     @patch("footsteps.ollama.time.sleep")
     @patch("footsteps.ollama.time.monotonic", side_effect=[0, 2, 3, 3.1])

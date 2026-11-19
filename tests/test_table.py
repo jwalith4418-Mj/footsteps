@@ -10,6 +10,7 @@ from random import Random
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
+from footsteps.ollama import Seat, ServiceError
 from footsteps.record import read, replay
 from footsteps.table import PAPER_KIT, DecisionConflict, Table, paper_setup
 from footsteps.table_server import TableServer
@@ -159,6 +160,46 @@ class LoopbackTable(unittest.TestCase):
         self.assertEqual(replay(read(self.path)).winner, "good")
         self.assertEqual(self.api(3)["state"]["roles"], CROSSING["setup"]["roles"])
         self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
+
+    def test_browser_assets_and_unknown_route(self):
+        root = f"http://127.0.0.1:{self.server.server_port}"
+        for path, mime, content in (
+            ("/", "text/html", b"/table.js"),
+            ("/table.js", "text/javascript", b"function render"),
+            ("/table.css", "text/css", b".face"),
+        ):
+            with self.subTest(path=path), urlopen(root + path, timeout=3) as response:
+                self.assertEqual(response.headers.get_content_type(), mime)
+                self.assertIn(content, response.read())
+        for request in (Request(root + "/missing"), Request(root + "/missing", data=b"{}")):
+            with self.assertRaises(HTTPError) as error:
+                urlopen(request, timeout=3)
+            self.assertEqual(error.exception.code, 404)
+
+    def test_model_seat_transport_and_discussion_checkpoint(self):
+        base = f"http://127.0.0.1:{self.server.server_port}/#"
+        seats = [Seat(base + self.tokens[i]) for i in range(4)]
+        self.table.discussion = 5
+        for i, seat in enumerate(seats):
+            self.assertEqual(seat.call("/ready", {})["seat"], i)
+        with self.assertRaises(ServiceError) as illegal:
+            seats[0].call("/choice", {"revision": 1, "choice": {}})
+        self.assertEqual(illegal.exception.status, 400)
+        self.assertEqual(seats[0].call("/state")["revision"], 1)
+        for rev, event in enumerate(CROSSING["events"][1:4], start=1):
+            choice = {k: v for k, v in event.items() if k != "kind"}
+            seats[0].call("/choice", {"revision": rev, "choice": choice})
+        seats[1].call("/say", {"revision": 4, "text": "  Face 40 leads east.  "})
+        saved = read(self.path)
+        self.assertEqual(
+            saved["remarks"], [{"after_event": 4, "seat": 1, "text": "Face 40 leads east."}]
+        )
+        self.assertEqual(replay(saved).stage, "move_vote")
+        self.assertEqual(seats[2].call("/state")["history"][-1]["text"], "P1: Face 40 leads east.")
+        with self.assertRaises(ServiceError) as repeated:
+            seats[1].call("/say", {"revision": 4, "text": "another remark"})
+        self.assertEqual(repeated.exception.status, 409)
+        self.assertEqual(read(self.path), saved)
 
     def test_existing_record_is_preserved(self):
         with self.assertRaises(FileExistsError):
