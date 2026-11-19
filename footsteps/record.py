@@ -19,7 +19,9 @@ def new_record(setup):
 def read(path):
     body = Path(path).read_text()
     if FENCE in body:
-        body, end, tail = body.split(FENCE, 1)[1].partition("\n```")
+        # The importable record is the final labeled block: prose may quote
+        # the block syntax earlier, so split at the last fence label.
+        body, end, tail = body.rsplit(FENCE, 1)[1].partition("\n```")
         require(end and not tail.strip(), "malformed full account")
     return json.loads(body)
 
