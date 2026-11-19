@@ -1,7 +1,9 @@
 import argparse
 import json
+from getpass import getpass
 from pathlib import Path
 
+from .ollama import Seat, play_seat
 from .record import read, render
 from .solo import POLICIES, setup, simulate
 from .table_server import serve
@@ -41,9 +43,17 @@ def main():
         "--discussion", default=15, type=float, help="discussion seconds before each ballot"
     )
     table.add_argument("--crossing", action="store_true", help="use the public two-turn demo setup")
+    model = sub.add_parser("ollama", help="join a private seat with a local Ollama model")
+    model.add_argument("--model", required=True, help="installed Ollama model name")
+    model.add_argument("--budget", type=float, default=30, help="maximum seconds per inference")
     args = parser.parse_args()
     try:
-        if args.command == "table":
+        if args.command == "ollama":
+            winner = play_seat(
+                Seat(getpass("Private seat link: ").strip()), args.model, args.budget
+            )
+            print(f"{winner.capitalize()} team wins.")
+        elif args.command == "table":
             if not 0 <= args.port <= 65535:
                 parser.error("--port must be between 0 and 65535")
             serve(args)
