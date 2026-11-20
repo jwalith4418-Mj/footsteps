@@ -23,6 +23,18 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
     setup = game.view(seat)
     frames = []
 
+    def attach_rotations(frame, revision):
+        for row in grouped.get(revision, []):
+            if row.get("kind") == "hand_rotation":
+                seat = row["seat"]
+                require(
+                    not game.winner and seat in game.alive and row["face"] in game.hands[seat],
+                    "rotation does not match a living hand",
+                )
+                frame.setdefault("hand_rotations", []).append(
+                    {k: row[k] for k in ("seat", "piece", "face", "from", "to")}
+                )
+
     def capture(kind, turn, message):
         view = game.view(seat)
         # The floor is write-once. Encode placements once and reconstruct their display by index.
@@ -35,6 +47,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
         if view["stage"] == "move_vote":
             view["pending"] = tuple(map(str, view["pending"]))
         frame = {**view, "kind": kind, "event_turn": turn, "message": message}
+        attach_rotations(frame, len(frames))
         frames.append(frame)
         return frame
 
@@ -42,7 +55,11 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
         "setup", 1, f"The marker starts at {game.start}. The floor is ready for the first draw."
     )
     for revision, event in enumerate(record["events"]):
-        attached = [applied_note(game, event, row) for row in grouped.get(revision, [])]
+        attached = [
+            applied_note(game, event, row)
+            for row in grouped.get(revision, [])
+            if row.get("kind") != "hand_rotation"
+        ]
         kind, turn = event["kind"], game.turn
         message = describe(game, event, game.actor if omniscient else seat)
         ballots = list(zip(game.alive, event.get("votes", [])))

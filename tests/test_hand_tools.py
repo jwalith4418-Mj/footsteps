@@ -256,3 +256,45 @@ class PrivateHand(unittest.TestCase):
                 )
                 self.assertTrue(log[0]["result"]["can_step_here"])
                 self.assertEqual(log[0]["result"]["possible_route_in_time"], count == 2)
+
+
+class RotationTranscript(unittest.TestCase):
+    def test_private_attachment_orders_off_turn_changes_and_accepts_a_live_checkpoint(self):
+        from footsteps.viewer import transcript
+
+        t = Table(
+            {
+                "roles": ["good", "bad"],
+                "hands": [[40, 40], [65, 65]],
+                "store": [40, 40],
+                "goal": [2, 0],
+            },
+            Random(1),
+        )
+        t.record["table_id"] = "rotation-test"
+        t.rotation_log = io.StringIO()
+        t.join(0, 0)
+        t.join(1, 0)
+        revision = t.revision
+        t.orient(1, revision, "H2", 2, 0)
+        t.orient(1, revision, "H2", 2, 0)
+        t.orient(1, revision, "H1", 3, 0)
+        t.orient(1, revision, "H2", 0, 0)
+        notes = [json.loads(line) for line in t.rotation_log.getvalue().splitlines()]
+        self.assertEqual(len(notes), 3)
+        for complete in (False, True):
+            if complete:
+                t.submit(0, revision, {"piece": "H1", "at": [1, 0]}, 0)
+            frames = transcript(t.record, omniscient=True, notes=notes)["frames"]
+            changes = frames[revision]["hand_rotations"]
+            self.assertEqual(
+                [(r["seat"], r["piece"], r["from"], r["to"]) for r in changes],
+                [(1, "H2", 0, 2), (1, "H1", 0, 3), (1, "H2", 2, 0)],
+            )
+            for seat in (None, 0, 1):
+                plain = transcript(t.record, seat)["frames"]
+                self.assertFalse(any("hand_rotations" in f for f in plain))
+                with self.assertRaises(ValueError):
+                    transcript(t.record, seat, notes=notes)
+        with self.assertRaises(ValueError):
+            transcript(t.record, omniscient=True, notes=[{**notes[0], "table_id": "other"}])
