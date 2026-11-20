@@ -81,11 +81,13 @@ def run(path, model, arms, tactics_only, *, panels=None, paired_order=False):
                             if arm in ("literal", "single"):
                                 result = one_call(view, model, task, arm == "literal", log)
                             else:
+                                mode = {"informed": "draft", "cued": "hand"}.get(arm, arm)
                                 result = native_decision(
                                     view,
                                     model,
                                     30,
-                                    mode="draft" if arm == "informed" else arm,
+                                    mode=mode,
+                                    cue=arm == "cued",
                                     trace=log,
                                     task=task,
                                     prospects=arm == "informed",
@@ -137,7 +139,7 @@ if __name__ == "__main__":
     p.add_argument(
         "--arms",
         nargs="+",
-        choices=("menu", "direct", "hand", "literal", "single", "draft", "informed", "fit"),
+        choices=("menu", "direct", "hand", "literal", "single", "draft", "informed", "fit", "cued"),
         default=("menu", "direct", "hand"),
     )
     p.add_argument("--tactics-only", action="store_true")

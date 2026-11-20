@@ -229,7 +229,7 @@ def apply_call(name, args, state, choices, pieces, mode, orient):
     return result, choice, canonical
 
 
-def action_request(snapshot, model, tools, *, guided=False, task=None):
+def action_request(snapshot, model, tools, *, guided=False, task=None, cue=False):
     state, choices, pieces = snapshot["state"], snapshot["choices"], snapshot["pieces"]
     body = model_request(snapshot, model)
     body["messages"][0]["content"] = RULES
@@ -271,6 +271,10 @@ def action_request(snapshot, model, tools, *, guided=False, task=None):
         "A blocked or remote build is legal. Use one call at a time."
     )
     body["messages"][1]["content"] = json.dumps(context, separators=(",", ":"))
+    if cue:
+        body["messages"].append(
+            {"role": "user", "content": "Send exactly one native function call now."}
+        )
     return body
 
 
@@ -288,6 +292,7 @@ def native_decision(
     max_calls=6,
     request_fn=request,
     prospects=False,
+    cue=False,
 ):
     """Return a transport choice on the first valid action. The host commits it once."""
     deadline = time.monotonic() + seconds
@@ -302,7 +307,7 @@ def native_decision(
                     "type": "string",
                     "description": "Optional short private reason for this choice.",
                 }
-    body = action_request(snapshot, model, tools, guided=guided, task=task)
+    body = action_request(snapshot, model, tools, guided=guided, task=task, cue=cue)
     if mode == "draft" and snapshot["state"]["stage"] == "place":
         body["messages"][0]["content"] += (
             " Before committing, preview a candidate, then read its effect. You may change the "

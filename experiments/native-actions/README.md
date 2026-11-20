@@ -18,7 +18,7 @@ The native loop permits six replies under one 30-second decision deadline. Its l
 
 ## Frozen decisions
 
-The eight port puzzles request a specific entrance and exit on a straight or an elbow. Each was presented twice with reversed option and piece order. The seven archived tactical positions use the earlier Blue and Red prefixes and the turn-three escape on deal 8602. Blue scores for building a board with an immediately legal step and an optimistic onward path within the remaining turns. Red scores for permanently sealing the reachable component. Each is a sufficient tactical witness for this probe. Neither test measures the value of every legal strategy. Missing commitments score zero. [Position sources and scoring](../rotation_probe.py)
+The eight port puzzles request a specific entrance and exit on a straight or an elbow. Each was presented twice with reversed option and piece order. The seven archived tactical positions use the earlier Blue and Red prefixes and the turn-three escape on deal 8602. Blue scores for building a board with an immediately legal step and an optimistic onward path within the remaining turns. Red scores for permanently sealing the reachable component. Each is a sufficient tactical witness for this probe. Neither test measures the value of every legal strategy. Missing commitments score zero. A uniform pick across distinct faces, turns and legal squares has 0.91 expected hits over 14 archived presentations and 0.55 over eight fresh role swaps. [Position sources and scoring](../rotation_probe.py)
 
 | Interface | Requested compass ports / 16 | Tactical witnesses / 14 | Tactical commitments / 14 |
 |---|---:|---:|---:|
@@ -40,6 +40,18 @@ Before running a model on them, we selected a prefix from each of the first four
 
 Menu, direct and hand each scored 2/8, all on Blue. Their accepted commitments were 8/8, 7/8 and 5/8 respectively. The choice of interface changed *which* Blue plays succeeded. Red missed all four opportunities with each interface. A follow-up control gives the builder only the one square shared by all successful Blue and Red plays on that floor. It tests piece choice and rotation conditional on knowing where to look. Its restricted square list makes it unsuitable for estimating ordinary table performance.
 
+Restricting the same hand interface to that square yielded 4/8 (two Blue and two Red), including seven accepted commitments. For the three floors where both seats committed, changing the builder’s role left its piece and rotation identical every time. Face 29 helped Blue on seed 9600, face 150 sealed the marker for Red on 9601, and face 41 helped Blue on 9602. The extra Red hits therefore give little evidence of deliberate sabotage. The intervention helps distinguish “played a winning build” from “changed the build in pursuit of the assigned objective.”
+
+## First replies under the clock
+
+Across the ordinary native direct and hand arms, every initial reply on the tactical panels reached the 320-token cap without making a call (44/44). Retries often worked. We compared just the first reply on Red-guest, Blue-82-escape, and both seat assignments of fresh floor 9600. The original prompt produced 0/4 calls. Raising the cap to 768 produced 1/4. Appending a short user message after the state, “Send exactly one native function call now,” produced 4/4. Median wall times were 11.65, 14.93 and 4.89 seconds respectively. The measurement counts a single advertised function name. For playing strength, the follow-up cued hand uses the full decision loop and scores the actual placements.
+
+## Complete social tables
+
+Every table starts with deal 9501, three Blue seats and P1 Red, with EXIT two east and two north from START. The 16-tile supply contains exactly 29 entrances and 29 exits. Eight tiles remain after dealing. The same model plays every seat, including both ballots and nominations. The nominator can make a separate public argument before the removal ballot. Seats receive their own authenticated-view projection and twelve recent history entries. The experiment uses the live table's submission and fallback methods in process. Each model decision gets its own real 30-second budget and the table advances on a virtual clock, so concurrent ballot latency on a live server can differ.
+
+The build-only comparison changes the builder's interface and retains the shared structured client for all other decisions. A fourth table uses the hand for construction and native actions for every other mandatory choice. The ordinary client requests a private explanation and native commits accept an optional one. After the first divergent discard or public fallback the same chance seed may draw different faces. The saved records permit exact referee replay.
+
 ## Reproduce
 
 The commands create new files and take time on a local Ollama server. Use a new output directory per run. To inspect the saved evidence without a model, run `python -m experiments.native_summary` at the repository root. Every JSONL decision records the actual commitment or failure and each private operation the native model attempted. Complete game records contain referee chance results. Decision notes are separate, private while the table is live and optional on export.
@@ -47,6 +59,9 @@ The commands create new files and take time on a local Ollama server. Use a new 
 ```sh
 out=$(mktemp -d)
 python -m experiments.native_probe "$out/frozen.jsonl"
+python -m experiments.native_opening "$out/openings.jsonl"
+python -m experiments.native_transfer "$out/transfer-cued.jsonl" --arms cued
+python -m experiments.native_probe "$out/frozen-cued.jsonl" --arms cued
 python -m experiments.native_probe "$out/one-call.jsonl" --arms literal single
 python -m experiments.native_probe "$out/preview-commit.jsonl" --arms draft informed --tactics-only
 python -m experiments.native_probe "$out/rotation-fit.jsonl" --arms fit --tactics-only

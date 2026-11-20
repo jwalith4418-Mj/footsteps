@@ -137,7 +137,17 @@ if __name__ == "__main__":
         "directory", type=Path, nargs="?", default=Path(__file__).with_name("native-actions")
     )
     root = p.parse_args().directory
-    paths = sorted(root.glob("*.jsonl"))
+    opening = root / "openings.jsonl"
+    if opening.exists():
+        groups = defaultdict(list)
+        for row in rows(opening):
+            groups[row["arm"]].append(row)
+        print("Opening | one advertised call / replies | median seconds")
+        for arm, trials in sorted(groups.items()):
+            names = {"place_tile", "preview_placement", "orient_tile"}
+            count = sum(len(r.get("names", [])) == 1 and r["names"][0] in names for r in trials)
+            print(arm, count, "/", len(trials), "|", round(median(r["seconds"] for r in trials), 2))
+    paths = sorted(p for p in root.glob("*.jsonl") if p != opening)
     for path in paths:
         probe_results(path)
     placement_diagnosis(paths)
