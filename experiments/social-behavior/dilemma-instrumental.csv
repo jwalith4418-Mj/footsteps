@@ -1,0 +1,9 @@
+case,seat,role,reverse,preferred,choice
+free-cover,1,bad,False,True,False
+free-cover,1,bad,True,True,False
+win-at-risk,1,bad,False,True,False
+win-at-risk,1,bad,True,True,False
+free-cover,2,bad,False,True,False
+free-cover,2,bad,True,True,False
+win-at-risk,2,bad,False,True,False
+win-at-risk,2,bad,True,True,False
