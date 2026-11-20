@@ -1,0 +1,297 @@
+{
+  "format": 1,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      4,
+      2
+    ],
+    "hands": [
+      [
+        8,
+        27
+      ]
+    ],
+    "store": [
+      90,
+      163,
+      185,
+      249,
+      215,
+      163,
+      74,
+      247,
+      226,
+      254
+    ],
+    "roles": [
+      "good"
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        163,
+        163
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        0
+      ],
+      "tile": 27,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 8
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        247,
+        249
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        1
+      ],
+      "tile": 163,
+      "rotation": 1
+    },
+    {
+      "kind": "discard",
+      "tile": 163
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        1
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        254,
+        90
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        2
+      ],
+      "tile": 90,
+      "rotation": 1
+    },
+    {
+      "kind": "discard",
+      "tile": 249
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        226,
+        8
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        2,
+        2
+      ],
+      "tile": 226,
+      "rotation": 2
+    },
+    {
+      "kind": "discard",
+      "tile": 8
+    },
+    {
+      "kind": "propose",
+      "to": [
+        2,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        8,
+        185
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        3,
+        2
+      ],
+      "tile": 185,
+      "rotation": 3
+    },
+    {
+      "kind": "discard",
+      "tile": 8
+    },
+    {
+      "kind": "propose",
+      "to": [
+        3,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        249,
+        74
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        3,
+        3
+      ],
+      "tile": 74,
+      "rotation": 3
+    },
+    {
+      "kind": "discard",
+      "tile": 249
+    },
+    {
+      "kind": "propose",
+      "to": [
+        3,
+        3
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        8,
+        163
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        4,
+        3
+      ],
+      "tile": 163,
+      "rotation": 3
+    },
+    {
+      "kind": "discard",
+      "tile": 8
+    },
+    {
+      "kind": "propose",
+      "to": [
+        4,
+        3
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        8,
+        249
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 8,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 249
+    },
+    {
+      "kind": "propose",
+      "to": [
+        4,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    }
+  ]
+}
