@@ -63,12 +63,14 @@ function drawFloor(s, available) {
   }
 }
 
-function optionLabel(key, v) {
+function optionLabel(key, v, state) {
   if (v === null) return key === "to" ? "Stay" : "Pass";
   if (key === "tile") return "Face " + v;
   if (key === "rotation") return (90*v) + "° clockwise";
   if (key === "target") return "P" + v;
-  if (key === "vote") return v ? "Yes" : "No";
+  if (key === "vote" && state.stage === "move_vote")
+    return v ? "Move marker to " + point(state.pending) : "Keep marker at " + point(state.marker);
+  if (key === "vote") return (v ? "Remove P" : "Keep P") + state.pending + (v ? "" : " in play");
   return point(v);
 }
 
@@ -89,12 +91,12 @@ function controls(d) {
     form.append(label, node("button", "Speak"));
     form.onsubmit = e => { e.preventDefault(); send("/say", {revision: d.revision, text: input.value}); };
   } else if (d.choices) {
-    const names = {tile: "Tile", at: "Square", rotation: "Rotation", vote: "Ballot", to: "Move to", target: "Nominee"};
+    const names = {tile: "Tile", at: "Square", rotation: "Rotation", vote: "Ballot", to: "Propose marker step", target: "Nominee"};
     const selects = {};
     for (const [key, values] of Object.entries(d.choices)) {
       const label = node("label", names[key]), select = node("select");
       if (key === "at") select.id = "square";
-      for (const value of values) select.add(new Option(optionLabel(key, value), JSON.stringify(value)));
+      for (const value of values) select.add(new Option(optionLabel(key, value, d.state), JSON.stringify(value)));
       label.append(select);
       form.append(label);
       selects[key] = select;

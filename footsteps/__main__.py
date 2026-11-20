@@ -96,6 +96,11 @@ def main():
         type=Path,
         help="save short model explanations to a new private JSONL file",
     )
+    model.add_argument(
+        "--action-brief",
+        action="store_true",
+        help="describe the effect of the current action and name ballot outcomes",
+    )
     args = parser.parse_args()
     try:
         if args.command == "ollama":
@@ -113,7 +118,8 @@ def main():
                         outcome_policy=args.social_policy == "assisted",
                         named_moves=args.named_moves,
                         no_think=args.no_think,
-                        named_ballots=args.named_ballots,
+                        named_ballots=args.named_ballots or args.action_brief,
+                        explicit_actions=args.action_brief,
                         use_tools=args.tools,
                         note_file=notes,
                     ),

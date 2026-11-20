@@ -1,0 +1,33 @@
+role,rotated_hand,arm,reversed,at,tile,rotation,sealed,route_open,tools
+bad,False,legacy,False,"(1, 0)",58,0,False,False,[]
+bad,False,legacy,True,"(0, -2)",41,3,False,False,[]
+bad,False,brief,False,"(1, 0)",58,0,False,False,[]
+bad,False,brief,True,"(1, 0)",41,3,False,False,[]
+bad,False,voluntary,False,"(1, 1)",58,0,False,True,"[{""name"": ""preview_placement"", ""ok"": true}]"
+bad,False,voluntary,True,"(1, 0)",41,0,False,False,"[{""name"": ""preview_placement"", ""ok"": true}]"
+bad,False,shown,False,"(1, 0)",58,1,False,False,[]
+bad,False,shown,True,"(1, 0)",41,3,False,False,[]
+bad,True,legacy,False,"(1, 0)",58,0,False,False,[]
+bad,True,legacy,True,"(0, -2)",41,3,False,False,[]
+bad,True,brief,False,"(1, 0)",58,0,False,False,[]
+bad,True,brief,True,"(0, -2)",41,3,False,False,[]
+bad,True,voluntary,False,"(-1, -1)",58,3,False,False,"[{""name"": ""preview_placement"", ""ok"": true}]"
+bad,True,voluntary,True,"(1, 1)",41,0,False,True,"[{""name"": ""preview_placement"", ""ok"": true}]"
+bad,True,shown,False,"(1, 0)",58,1,False,False,[]
+bad,True,shown,True,"(1, 0)",41,0,False,False,[]
+good,False,legacy,False,"(1, 0)",58,0,False,False,[]
+good,False,legacy,True,"(1, 1)",41,2,True,False,[]
+good,False,brief,False,"(-1, 0)",58,0,False,False,[]
+good,False,brief,True,"(1, 0)",41,3,False,False,[]
+good,False,voluntary,False,"(1, 1)",58,0,False,True,"[{""name"": ""preview_placement"", ""ok"": true}]"
+good,False,voluntary,True,"(1, 0)",41,0,False,False,"[{""name"": ""preview_placement"", ""ok"": true}]"
+good,False,shown,False,"(-1, 0)",58,0,False,False,[]
+good,False,shown,True,"(1, 0)",41,3,False,False,[]
+good,True,legacy,False,"(1, 0)",58,0,False,False,[]
+good,True,legacy,True,"(0, -2)",41,3,False,False,[]
+good,True,brief,False,"(-1, 0)",58,0,False,False,[]
+good,True,brief,True,"(1, 0)",41,3,False,False,[]
+good,True,voluntary,False,"(1, 1)",29,0,False,True,"[{""name"": ""preview_placement"", ""ok"": true}]"
+good,True,voluntary,True,"(1, 1)",41,0,False,True,"[{""name"": ""preview_placement"", ""ok"": true}]"
+good,True,shown,False,"(-1, 0)",58,0,False,False,[]
+good,True,shown,True,"(1, 0)",41,0,False,False,[]

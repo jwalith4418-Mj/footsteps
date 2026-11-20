@@ -4,6 +4,7 @@ import json
 import re
 
 from experiments.behavior_context import apply_strategy
+from footsteps.action_language import action_brief
 from footsteps.board import distance
 from footsteps.decision_notes import save_note
 from footsteps.ollama import model_request, request
@@ -110,7 +111,7 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, str
     return chosen
 
 
-def advocate(snap, model, *, audience=False):
+def advocate(snap, model, *, audience=False, explicit_actions=False):
     """Write a deliberately public statement, independently of any private note."""
     state = snap["state"]
     body = {
@@ -148,6 +149,8 @@ def advocate(snap, model, *, audience=False):
             },
         ],
     }
+    if explicit_actions:
+        body["messages"][0]["content"] += " " + action_brief(state)
     if audience:
         body["messages"][0]["content"] += (
             " Consider what listeners on the other team would infer about your allegiance and "

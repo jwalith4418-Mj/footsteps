@@ -22,11 +22,13 @@ The floor is a square grid with no boundary. Put the start tile at (0, 0), the e
 2. Place one tile from your hand, either newly drawn or previously held. Choose any quarter-turn rotation. The square must be empty and share an edge with the start or an ordinary placed tile. The exit alone gives no placement rights. The arrows along adjacent edges can disagree. Once placed, a tile keeps its position and rotation.
 3. If you drew two, privately choose one remaining tile from your hand and return it to the bag. Returning it makes it eligible on the very next draw. If you drew one, skip this step.
 
+A placement changes the floor. The marker remains on its current square throughout the build. Tile arrows restrict the marker's later step. They impose no matching requirement on placement.
+
 ## Move
 
 The builder proposes either staying put or moving one square. For a move east, the current tile needs an outgoing east arrow and the destination an incoming west arrow. Apply the same rule in the other three directions. Movement requires a tile at both ends.
 
-Staying skips the movement vote. Otherwise all living players, including the builder, cast ballots simultaneously and then reveal them by name. Move on a majority yes. On a tie, use the builder's ballot, which may be no. Reaching the exit ends the game with a good-team win. Otherwise an empty bag at this point ends the game with a bad-team win, even if every bad player has been eliminated.
+The proposed destination may be an older tile or the one just placed. On a movement ballot, vote to **move the marker** to the named square or **keep the marker here**. A rejected step leaves the newly placed tile on the floor. Staying skips the movement vote. Otherwise all living players, including the builder, cast ballots simultaneously and then reveal them by name. Move on a majority yes. On a tie, use the builder's ballot, which may be no. Reaching the exit ends the game with a good-team win. Otherwise an empty bag at this point ends the game with a bad-team win, even if every bad player has been eliminated.
 
 ## Discussion
 
@@ -36,7 +38,7 @@ A player can check a claim against the public floor and revealed ballots, and ag
 
 ## Nominate
 
-Starting with the next living player after the builder, go once around the table, builder last. Each surviving player may pass or name one other living player. Resolve each nomination immediately with a simultaneous public vote of all living players, including the nominee. A strict majority yes eliminates the nominee. A tie fails. Skip eliminated seats for all subsequent decisions. Set their hands aside privately. Roles stay hidden during play.
+Starting with the next living player after the builder, go once around the table, builder last. Each surviving player may pass or name one other living player. Resolve each nomination immediately with a simultaneous public vote of all living players, including the nominee. On this ballot, vote to **remove the nominee** or **keep the nominee in play**. Neither choice moves the marker. A strict majority yes eliminates the nominee. A tie fails. Skip eliminated seats for all subsequent decisions. Set their hands aside privately. Roles stay hidden during play.
 
 If the last good player is eliminated, the bad team wins immediately. Otherwise continue even if no bad players remain. When the round ends, the next living seat after the builder becomes the builder. A sole survivor skips nominations. Every member of the winning team shares the result, including eliminated players. Reveal roles at game end.
 
