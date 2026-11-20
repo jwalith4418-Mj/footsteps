@@ -26,6 +26,29 @@ class TranscriptViewer(unittest.TestCase):
         self.assertEqual(frames[5]["ballots"], [(0, True), (1, True), (2, None), (3, False)])
         self.assertIsNone(frames[-1]["winner"])
 
+    def test_public_discussion_on_pending_ballot_including_open_prefix(self):
+        record = read(EXAMPLE)
+        record["events"] = record["events"][:4]
+        record["remarks"] = [
+            {"after_event": 4, "seat": 1, "text": "</script> Watch the exit.", "extra": "hidden"},
+            {"after_event": 4, "seat": 2, "text": "I agree."},
+        ]
+        for perspective in ({}, {"seat": 0}, {"omniscient": True}):
+            frames = transcript(record, **perspective)["frames"]
+            self.assertFalse(any("remarks" in f for f in frames[:-1]))
+            self.assertEqual(
+                frames[-1]["remarks"],
+                [
+                    {"seat": 1, "text": "</script> Watch the exit."},
+                    {"seat": 2, "text": "I agree."},
+                ],
+            )
+        self.assertNotIn("</script> Watch", export_html(record, "Trial"))
+        for revision in (-1, 3, 5):
+            record["remarks"][0]["after_event"] = revision
+            with self.assertRaises(ValueError):
+                transcript(record)
+
     def test_perspective_across_elimination_and_reveal(self):
         r = read(EXAMPLE)
         data = transcript(r, 3)

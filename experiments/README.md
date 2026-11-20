@@ -44,3 +44,5 @@ The [ballot experiment](ballots/README.md) tests order sensitivity on frozen vot
 The [single-model solitaire benchmark](model-solitaire/README.md) uses the same private deals for local Qwen models and four scripted policies, plus reflected detours and rotated-replay checks.
 
 The [turn-plan comparison](solitaire-skills/README.md) traces a movement failure through frozen tactics to unseen deals, with uniform and shortest-path controls on the same menus.
+
+The [three-seat social experiment](social/README.md) pairs the same elimination ballot with silence, a truthful accusation, or a false one, then compares scripted and model-controlled floors.

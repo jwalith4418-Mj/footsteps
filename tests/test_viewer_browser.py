@@ -18,7 +18,9 @@ EXAMPLE = Path(__file__).resolve().parents[1] / "examples/crossing.json"
 @unittest.skipUnless(CHROME, "install Chrome or Chromium for the offline viewer interaction test")
 class OfflineViewer(unittest.TestCase):
     def test_hand_ballots_and_floor_follow_playback_in_both_directions(self):
-        document = export_html(read(EXAMPLE), "Crossing", seat=0)
+        record = read(EXAMPLE)
+        record["remarks"] = [{"after_event": 4, "seat": 2, "text": "Check the next landing."}]
+        document = export_html(record, "Crossing", seat=0)
         # Drive public controls, then return observations from the rendered page.
         observe = """
 <script>
@@ -29,6 +31,7 @@ const seen = {setup: hand()};
 next();
 seen.draw = hand();
 next(); next(); next();
+seen.discussion = find("#current").textContent;
 seen.proposed = find(".tile.proposed").title;
 next();
 seen.ballot = find("#current").textContent;
@@ -73,6 +76,8 @@ document.body.replaceChildren(result);
         obs = json.loads(unescape(text.split("</pre>", 1)[0]))
         self.assertEqual((obs["setup"], obs["draw"]), (1, 3))
         self.assertIn("(1, 0)", obs["proposed"])
+        self.assertIn("P2 · Public remark Check the next landing.", obs["discussion"])
+        self.assertNotIn("Public remark", obs["ballot"])
         self.assertIn("Timed out (no)", obs["ballot"])
         self.assertEqual((obs["marker"], obs["turn"]), ("(1, 0)", "Turn 2"))
         self.assertEqual(obs["outcome"], "Good team wins")

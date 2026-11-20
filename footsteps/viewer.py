@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from .decision_notes import applied_note, notes_for_record
-from .game import Game
+from .game import Game, require
 from .record import describe, replay
 
 WEB = Path(__file__).with_name("web")
@@ -59,6 +59,24 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
             frame["decision_notes"] = attached
         if ballots:
             frame["ballots"] = ballots
+
+    remarks = record.get("remarks", [])
+    require(isinstance(remarks, list), "expected a list of public remarks")
+    for remark in remarks:
+        require(isinstance(remark, dict), "invalid public remark")
+        revision, speaker, text = (remark.get(k) for k in ("after_event", "seat", "text"))
+        if type(revision) is not int or not 0 <= revision < len(frames):
+            raise ValueError("public remark outside this record")
+        frame = frames[revision]
+        if (
+            frame["stage"] not in ("move_vote", "eliminate_vote")
+            or type(speaker) is not int
+            or speaker not in frame["alive"]
+            or not isinstance(text, str)
+            or not 0 < len(text.strip()) <= 500
+        ):
+            raise ValueError("invalid public ballot remark")
+        frame.setdefault("remarks", []).append({"seat": speaker, "text": text})
 
     return {
         "seat": seat,
