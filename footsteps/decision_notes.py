@@ -91,6 +91,25 @@ def notes_for_record(record, notes):
     return grouped
 
 
+def tool_receipt(tool):
+    row = {k: tool[k] for k in ("name", "ok", "status", "tile") if k in tool}
+    args = tool.get("arguments")
+    if isinstance(args, dict):
+        if isinstance(args.get("piece"), str):
+            row["piece"] = args["piece"][:32]
+        if type(args.get("x")) is int and type(args.get("y")) is int:
+            row["at"] = [args["x"], args["y"]]
+        if type(args.get("rotation")) is int:
+            row["rotation"] = args["rotation"]
+    result = tool.get("result")
+    if isinstance(result, dict):
+        if type(result.get("face")) is int:
+            row["tile"] = result["face"]
+        if type(result.get("can_step_here")) is bool:
+            row["can_step_here"] = result["can_step_here"]
+    return row
+
+
 def applied_note(game, event, row):
     seat = row["seat"]
     stage = game.stage
@@ -106,7 +125,7 @@ def applied_note(game, event, row):
     # Only project the tool receipt fields. Sidecars can have additional private metadata.
     tools = (
         [
-            {k: tool[k] for k in ("name", "ok", "status", "tile") if k in tool}
+            tool_receipt(tool)
             for tool in row.get("tools", [])
             if isinstance(tool, dict) and isinstance(tool.get("name"), str)
         ]

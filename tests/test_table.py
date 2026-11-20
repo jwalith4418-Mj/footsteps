@@ -130,6 +130,30 @@ class LoopbackTable(unittest.TestCase):
         with urlopen(req, timeout=3) as response:
             return json.load(response)
 
+    def test_private_orient_endpoint_and_reconnected_commit(self):
+        for seat in range(4):
+            self.api(seat, "/ready")
+        other = self.api(1)
+        for _ in range(2):
+            snap = self.api(0, "/orient", revision=1, piece="H1", rotation=2)
+            self.assertEqual(snap["pieces"]["H1"], [40, 2])
+            self.assertEqual(snap["revision"], 1)
+        self.assertEqual(self.api(1), other)
+        self.assertEqual(self.api(0)["pieces"], snap["pieces"])
+        self.api(
+            0,
+            "/choice",
+            revision=1,
+            choice={"piece": "H1", "at": [1, 0], "expected_orientation": 2},
+        )
+        self.assertEqual(
+            read(self.path)["events"][-1],
+            {"kind": "place", "tile": 40, "at": [1, 0], "rotation": 2},
+        )
+        with self.assertRaises(HTTPError) as stale:
+            self.api(0, "/orient", revision=1, piece="H1", rotation=0)
+        self.assertEqual(stale.exception.code, 409)
+
     def test_note_identity_persisted_only_when_requested(self):
         self.assertNotIn("table_id", read(self.path))
         first = self.api(0, "/ready", request_note_id=True)

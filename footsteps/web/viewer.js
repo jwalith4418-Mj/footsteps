@@ -212,7 +212,11 @@ function entry(i, current) {
       line.append(document.createTextNode(note.reason || "No explanation supplied."));
       for (const tool of note.tools || []) {
         const face = Number.isInteger(tool.tile) ? " · face " + tool.tile : "";
-        line.append(make("small", "", tool.name + face + " · " + (tool.status || (tool.ok ? "answered" : "error"))));
+        const piece = tool.piece ? " " + tool.piece : "";
+        const at = tool.at ? " at (" + tool.at.join(", ") + ")" : "";
+        const rotation = Number.isInteger(tool.rotation) ? " · " + (90 * tool.rotation) + "°" : "";
+        const step = typeof tool.can_step_here === "boolean" ? (tool.can_step_here ? " · marker can enter" : " · no direct step") : "";
+        line.append(make("small", "", tool.name + piece + face + rotation + at + " · " + (tool.status || (tool.ok ? "answered" : "error")) + step));
       }
       details.append(line);
       if (!note.matches) {

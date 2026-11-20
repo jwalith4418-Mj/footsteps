@@ -5,6 +5,7 @@ from functools import partial
 from getpass import getpass
 from pathlib import Path
 
+from .action_tools import native_decision
 from .decision_notes import open_private, read_notes, save_private_export
 from .game import with_exit_origin
 from .ollama import Seat, infer, play_seat
@@ -134,30 +135,57 @@ def main():
         action="store_true",
         help="describe the effect of the current action and name ballot outcomes",
     )
+    model.add_argument(
+        "--action-tools",
+        choices=("direct", "hand"),
+        help="commit builds using native tools and literal coordinates",
+    )
+    model.add_argument(
+        "--all-decisions",
+        action="store_true",
+        help="use native commits on returns, proposals, ballots and nominations too",
+    )
     args = parser.parse_args()
+    if args.command == "ollama" and args.all_decisions and not args.action_tools:
+        parser.error("--all-decisions requires --action-tools")
     try:
         if args.command == "ollama":
             seat = Seat(getpass("Private seat link: ").strip())
             with open_private(args.private_notes) if args.private_notes else nullcontext() as notes:
+                ordinary = partial(
+                    infer,
+                    guided=args.guided,
+                    social_guidance=args.social_policy == "prompt",
+                    outcome_policy=args.social_policy == "assisted",
+                    named_moves=args.named_moves,
+                    no_think=args.no_think,
+                    named_ballots=args.named_ballots or args.action_brief,
+                    explicit_actions=args.action_brief,
+                    use_tools=args.tools,
+                    rotation_aid=args.rotation_aid,
+                    named_rotations=args.named_rotations,
+                    note_file=notes,
+                )
+
+                def decide(snap, model, seconds):
+                    if args.action_tools and (
+                        args.all_decisions or snap["state"]["stage"] == "place"
+                    ):
+                        return native_decision(
+                            snap,
+                            model,
+                            seconds,
+                            mode=args.action_tools,
+                            guided=args.guided,
+                            note_file=notes,
+                            orient=lambda h, r: seat.call(
+                                "/orient", {"revision": snap["revision"], "piece": h, "rotation": r}
+                            ),
+                        )
+                    return ordinary(snap, model, seconds)
+
                 play_seat(
-                    seat,
-                    args.model,
-                    args.budget,
-                    request_note_id=notes is not None,
-                    decide=partial(
-                        infer,
-                        guided=args.guided,
-                        social_guidance=args.social_policy == "prompt",
-                        outcome_policy=args.social_policy == "assisted",
-                        named_moves=args.named_moves,
-                        no_think=args.no_think,
-                        named_ballots=args.named_ballots or args.action_brief,
-                        explicit_actions=args.action_brief,
-                        use_tools=args.tools,
-                        rotation_aid=args.rotation_aid,
-                        named_rotations=args.named_rotations,
-                        note_file=notes,
-                    ),
+                    seat, args.model, args.budget, request_note_id=notes is not None, decide=decide
                 )
         elif args.command == "table":
             if not 0 <= args.port <= 65535:
