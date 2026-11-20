@@ -43,7 +43,7 @@ On four fresh solitaire deals (9101–9104), the same unaided model played const
 
 Both frames had two certified endgame traps. For 9103 the trap occurred only with EXIT at the origin, and for 9104 only with START at the origin. This panel supports EXIT coordinates as a reading aid. It supplies little evidence of a playing-strength gain. [Outcomes](solitaire/games.csv) · [START-origin records](solitaire/start) · [EXIT-origin records](solitaire/exit)
 
-We also replayed the five-seat 8602 deal from a new table with EXIT at (0, 0), START at (−2, −2), three Blue and two Red. Both this table and its [START-origin counterpart](../action-language/short-actions/8602-bad1+3.json) took one step physically south, removed nobody and lost to depletion. The southward step came on turn one in the original and turn five in the new game. The two tables had different discussions and histories from their first placement. [EXIT-origin game](social/8602-bad1+3.json) · [Social decisions](social/choices.csv)
+We also replayed the five-seat 8602 deal from a new table with EXIT at (0, 0), START at (−2, −2), three Blue and two Red. Both this table and its [START-origin counterpart](../action-language/short-actions/8602-red1+3.json) took one step physically south, removed nobody and lost to depletion. The southward step came on turn one in the original and turn five in the new game. The two tables had different discussions and histories from their first placement. [EXIT-origin game](social/8602-red1+3.json) · [Social decisions](social/choices.csv)
 
 **Turns four and five show exactly where the lower bound matters.** On event 34 all three Blue seats declined a move from (−2, −2) to (−2, −3). Four turns would remain. Staying could still work, while five squares would put EXIT out of time. The assisted payoff policy cast those ballots. On event 45 the table unanimously accepted the same move. By then only three turns would remain. Staying four squares away or stepping five squares away both assured Red a win. These votes came from the model. P0 described the southward step as moving closer.
 
@@ -59,7 +59,7 @@ python -m experiments.exit_origin bounds "$work/bounds.csv"
 python -m experiments.exit_origin bounds-check "$work/bounds-check.csv"
 python -m experiments.exit_origin probes "$work/moves.csv"
 python -m experiments.exit_origin games "$work/solo"
-python -m experiments.social_evidence --roles GBGBG --paired-fifth-hand --color-teams \
+python -m experiments.social_evidence --roles BRBRB --paired-fifth-hand \
   --arm receipt --debate --model-floor --outcome-policy --kit-counts 29 29 \
   --kit-seed 8700 --seeds 8602 --goal 2 2 --action-brief --exit-origin \
   --out "$work/social" --private-notes "$work/private"

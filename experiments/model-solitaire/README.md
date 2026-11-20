@@ -1,6 +1,6 @@
 # Can one model play the floor?
 
-A single good seat plays a complete solitaire game. It chooses each tile, square, rotation, discard and movement. The referee draws, rotates and enforces the same directed edges used at a social table. The sole seat automatically approves its proposal, as in the existing solitaire policies. There is no discussion. This removes self-vetoes, elimination and opponent play as explanations for a loss. [Protocol and amendments](https://github.com/othercriteria/footsteps/issues/38)
+A single Blue seat plays a complete solitaire game. It chooses each tile, square, rotation, discard and movement. The referee draws, rotates and enforces the same directed edges used at a social table. The sole seat automatically approves its proposal, as in the existing solitaire policies. There is no discussion. This removes self-vetoes, elimination and opponent play as explanations for a loss. [Protocol and amendments](https://github.com/othercriteria/footsteps/issues/38)
 
 ## What the seat sees
 

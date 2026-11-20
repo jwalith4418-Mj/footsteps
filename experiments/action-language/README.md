@@ -37,7 +37,7 @@ We then froze the named and payoff menus and tried the two archived three-seat d
 
 ## Verifying a public claim
 
-At event 23 of the [original discussion game](../public-discussion/five-colors/8602-bad1+3.json), P0 says P2 has stayed three times. P2 has yet to build. P1 stayed once. With the live-sized context, Qwen answered “3” for either builder, including when given the requested builder’s referee history. It never requested the optional lookup on these four questions. An independently prompted fact check with the same log and **only the verification task** got 4/4 with player claims omitted and 2/4 with the claims included. In both answer orders, restoring speech changed P2's count from zero to two. This is an opportunity to compute and present the exact public fact before asking what to say or how to vote. A seat can knowingly bluff after it has checked the floor. [Focused verification](verification.csv)
+At event 23 of the [original discussion game](../public-discussion/five-colors/8602-red1+3.json), P0 says P2 has stayed three times. P2 has yet to build. P1 stayed once. With the live-sized context, Qwen answered “3” for either builder, including when given the requested builder’s referee history. It never requested the optional lookup on these four questions. An independently prompted fact check with the same log and **only the verification task** got 4/4 with player claims omitted and 2/4 with the claims included. In both answer orders, restoring speech changed P2's count from zero to two. This is an opportunity to compute and present the exact public fact before asking what to say or how to vote. A seat can knowingly bluff after it has checked the floor. [Focused verification](verification.csv)
 
 When instructed which outcome to cast on two live ballots, the ordinary approve/reject interface realized the stated intention on 5/8 checks, the action-specific interface on 8/8. This includes both directions of each ballot and both orderings. The original missed both instructions to keep the nominee in play. These eight choices measure translating an intention into a ballot. Choosing a sound intention during a game is a separate test.
 
@@ -47,11 +47,11 @@ Deal 8602, P1 and P3 Red, fixed kit seed 8700 with 29 entrances and 29 exits amo
 
 | EXIT | Interface | Marker steps | Players removed | Winner |
 |---|---|---:|---:|---|
-| (4,2) | [Original wording](../public-discussion/five-colors/8602-bad1+3.json) | 1 | 3 | Red |
-| (4,2) | [Action-specific](long-actions/8602-bad1+3.json) | 2 | 0 | Red |
-| (2,2) | [Original wording](short-legacy/8602-bad1+3.json) | 1 | 3 | Red |
-| (2,2) | [Action-specific](short-actions/8602-bad1+3.json) | 1 | 0 | Red |
-| (2,2) | [Action-specific, social lookup offered](short-lookup/8602-bad1+3.json) | 1 | 0 | Red |
+| (4,2) | [Original wording](../public-discussion/five-colors/8602-red1+3.json) | 1 | 3 | Red |
+| (4,2) | [Action-specific](long-actions/8602-red1+3.json) | 2 | 0 | Red |
+| (2,2) | [Original wording](short-legacy/8602-red1+3.json) | 1 | 3 | Red |
+| (2,2) | [Action-specific](short-actions/8602-red1+3.json) | 1 | 0 | Red |
+| (2,2) | [Action-specific, social lookup offered](short-lookup/8602-red1+3.json) | 1 | 0 | Red |
 
 The lookup arm recorded zero calls in 35 nomination and 25 removal-vote decisions. A tool offer can also end without a selection if the consultation times out. All five games ended by depletion on turn eight. The shorter offset alone did little on this deal. Keeping all five seats alive was a substantial change in the two matched wording contrasts, but Blue still struggled to build and walk a route. Public discussion diverges after an early changed move, and all five games reuse the same hands, role layout and initial bag. These are traced examples rather than independent estimates of seat skill or balance.
 
@@ -86,7 +86,7 @@ play() {
   arm=$1
   x=$2
   shift 2
-  python -m experiments.social_evidence --start-origin --roles GBGBG --paired-fifth-hand --color-teams \
+  python -m experiments.social_evidence --start-origin --roles BRBRB --paired-fifth-hand \
     --arm receipt --debate --model-floor --outcome-policy --kit-counts 29 29 \
     --kit-seed 8700 --seeds 8602 --goal "$x" 2 --out "$work/$arm" \
     --private-notes "$work/notes/$arm" "$@"
@@ -97,8 +97,8 @@ play long-actions 4 --action-brief
 play short-actions 2 --action-brief
 play short-lookup 2 --action-brief --social-tools
 python -m experiments.social_summary "$work"
-python -m footsteps view "$work/short-actions/8602-bad1+3.json" --omniscient \
-  --notes "$work/notes/short-actions/8602-bad1+3.jsonl" -o "$work/short-actions.html"
+python -m footsteps view "$work/short-actions/8602-red1+3.json" --omniscient \
+  --notes "$work/notes/short-actions/8602-red1+3.jsonl" -o "$work/short-actions.html"
 ```
 
 The long legacy cell uses the already-published discussion game. The archived records, choices and probes are the observations. Re-running inference may differ across Ollama versions or hardware. For a skill comparison that can distinguish a stronger seat from an easier deal, see the [matched seat-substitution design](../../docs/ratings.md).

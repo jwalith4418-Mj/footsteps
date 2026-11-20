@@ -1,9 +1,10 @@
 {
-  "format": 1,
+  "format": 3,
   "rules": "base-1",
   "setup": {
+    "start": [0, 0],
     "goal": [2, 0],
-    "roles": ["good", "good", "good", "bad"],
+    "roles": ["blue", "blue", "blue", "red"],
     "hands": [[40], [9], [33], [0]],
     "store": [18, 12]
   },

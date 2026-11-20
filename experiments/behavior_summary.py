@@ -1,10 +1,10 @@
 """Audit saved cross-play games and summarize repeated presentations without a model server."""
 
 import argparse
-import csv
 from collections import Counter
 from pathlib import Path
 
+from experiments.archive_rows import csv_rows, current_id
 from experiments.behavior_crossplay import metrics
 from experiments.behavior_probe import cases, tradeoffs
 from experiments.social_summary import game_totals
@@ -13,7 +13,7 @@ from footsteps.record import read, replay
 
 def rows(path):
     with path.open() as f:
-        return list(csv.DictReader(f))
+        return list(csv_rows(f))
 
 
 def audit(root):
@@ -37,15 +37,16 @@ def audit(root):
             elif name == "quiet-opening":
                 counts[f"pass/{role}"] += row["choice"] == ""
             elif name == "ordinary-move":
-                counts["bad approaches"] += row["choice"] == "True"
+                counts["red approaches"] += row["choice"] == "True"
         print(path.stem, dict(counts))
     for path in sorted(root.glob("*/results.csv")):
         games = rows(path)
-        assert len(games) == len(list(path.parent.glob("*.json")))
+        records = {current_id(p.stem): p for p in path.parent.glob("*.json")}
+        assert len(games) == len(records)
         counts = Counter()
         for row in games:
             seat, role = int(row["seat"]), row["role"]
-            record = read(path.parent / f"{row['seed']}-P{seat}-{role}.json")
+            record = read(records[f"{row['seed']}-P{seat}-{role}"])
             assert replay(record).winner == row["winner"]
             assert record["setup"]["roles"][seat] == role
             for key, v in metrics(record, seat).items():

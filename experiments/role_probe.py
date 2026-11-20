@@ -26,9 +26,9 @@ def main():
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["brief", "roles", "seat", "question", "expected", "answer"])
         for roles in (
-            ["bad", "good", "bad", "good"],
-            ["good", "bad", "good", "bad"],
-            ["bad", "good", "good", "good"],
+            ["red", "blue", "red", "blue"],
+            ["blue", "red", "blue", "red"],
+            ["red", "blue", "blue", "blue"],
         ):
             setup = paper_setup(Random(8601))
             setup["roles"] = roles
@@ -44,13 +44,13 @@ def main():
                         *[
                             (
                                 f"What alignment can you establish for P{target} at setup?",
-                                ["good", "bad", "unknown"],
-                                roles[target] if roles[seat] == "bad" else "unknown",
+                                ["blue", "red", "unknown"],
+                                roles[target] if roles[seat] == "red" else "unknown",
                             )
                             for target in (2, 3)
                         ],
                         (
-                            "Is it common knowledge that each Bad player knows every player's alignment?",
+                            "Is it common knowledge that each Red player knows every player's alignment?",
                             ["yes", "no", "unknown"],
                             "yes",
                         ),

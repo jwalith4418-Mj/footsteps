@@ -10,7 +10,6 @@ from .game import checked_placement, require
 from .ollama import RULES, forward_examples, model_request, request
 from .seat_tools import tile
 from .solo import sealed
-from .team_names import color_brief
 
 PREPARATIONS = {"orient_tile", "preview_placement", "inspect_rotations_at"}
 
@@ -233,8 +232,6 @@ def action_request(snapshot, model, tools, *, guided=False, task=None, cue=False
     state, choices, pieces = snapshot["state"], snapshot["choices"], snapshot["pieces"]
     body = model_request(snapshot, model)
     body["messages"][0]["content"] = RULES
-    if snapshot.get("team_names") == "colors":
-        color_brief(body)
     context = json.loads(body["messages"][1]["content"])
     del context["options"], context["hand"]
     context["held_pieces"] = [receipt(h, *piece) for h, piece in pieces.items()]

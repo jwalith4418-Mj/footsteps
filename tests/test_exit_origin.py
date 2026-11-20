@@ -16,7 +16,7 @@ class ExitOrigin(unittest.TestCase):
     def test_shared_frame_from_setup_to_final_vote(self):
         crossing = read(CROSSING)
         table = Table(with_exit_origin(crossing["setup"]), Random(0))
-        self.assertEqual(table.record["format"], 2)
+        self.assertEqual(table.record["format"], 3)
         table.started = True
         for event in crossing["events"]:
             event = event.copy()
@@ -32,7 +32,7 @@ class ExitOrigin(unittest.TestCase):
         self.assertEqual((snap["state"]["start"], snap["state"]["marker"]), ((-2, 0), (0, 0)))
         vote = progress_ballots(snap)[0]
         self.assertEqual((vote["from_distance"], vote["to_distance"]), (2, 1))
-        self.assertEqual(replay(table.record).winner, "good")
+        self.assertEqual(replay(table.record).winner, "blue")
         self.assertIn("Start (-2, 0), goal (0, 0)", render(table.record))
         for seat in (None, 1):
             view = transcript(table.record, seat)
@@ -42,14 +42,18 @@ class ExitOrigin(unittest.TestCase):
         self.assertNotIn("hands", json.dumps(transcript(table.record)))
 
     def test_format_selects_the_coordinate_contract(self):
-        legacy = read(CROSSING)
+        legacy = json.loads((Path(__file__).parent / "fixtures/crossing-v1.json").read_text())
         legacy["setup"]["start"] = [10, -20]  # Previously ignored extra metadata.
         self.assertEqual(replay(legacy).start, (0, 0))
         self.assertEqual(transcript(legacy)["start"], ("0", "0"))
-        missing = read(CROSSING) | {"format": 2}
+        missing = {
+            **legacy,
+            "format": 2,
+            "setup": {k: v for k, v in legacy["setup"].items() if k != "start"},
+        }
         with self.assertRaisesRegex(ValueError, "explicit start"):
             replay(missing)
-        setup = legacy["setup"] | {"start": [2, 0]}
+        setup = read(CROSSING)["setup"] | {"start": [2, 0]}
         with self.assertRaisesRegex(ValueError, "must differ"):
             replay(new_record(setup))
         with self.assertRaisesRegex(ValueError, "coordinate"):

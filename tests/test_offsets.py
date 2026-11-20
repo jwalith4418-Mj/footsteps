@@ -27,6 +27,6 @@ class ExitOffsetStudy(unittest.TestCase):
         for goal, turn in [((1, 0), 1), ((1, 1), 2), ((2, 0), 4)]:
             row, record = trial(goal, 1040, "route")
             game = replay(record)
-            self.assertEqual((row["turns"], game.turn, game.winner), (turn, turn, "good"))
+            self.assertEqual((row["turns"], game.turn, game.winner), (turn, turn, "blue"))
             self.assertEqual(game.actor, turn - 1)
             self.assertEqual(game.marker, goal)

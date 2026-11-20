@@ -1,6 +1,6 @@
 # From a stalled decision to a solitaire policy
 
-The [previous traces](../model-solitaire/traces.md) distinguish an inability to move from a choice to stay. We tested changes first on frozen decisions, then on complete games. The public goal, tile distribution, hand size, post-deal store and draw stream match the single-model benchmark. Each role here is a sole good player. [Movement protocol](https://github.com/othercriteria/footsteps/issues/45) · [Complete-plan protocol](https://github.com/othercriteria/footsteps/issues/46)
+The [previous traces](../model-solitaire/traces.md) distinguish an inability to move from a choice to stay. We tested changes first on frozen decisions, then on complete games. The public goal, tile distribution, hand size, post-deal store and draw stream match the single-model benchmark. Each role here is a sole Blue player. [Movement protocol](https://github.com/othercriteria/footsteps/issues/45) · [Complete-plan protocol](https://github.com/othercriteria/footsteps/issues/46)
 
 ## Movement
 

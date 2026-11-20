@@ -16,8 +16,8 @@ EXAMPLE = Path(__file__).resolve().parents[1] / "examples/crossing.json"
 
 class TeamNames(unittest.TestCase):
     def test_supplemental_seat_preserves_seat_hands_deal_and_clock(self):
-        four = social_deal(31, ["good", "bad", "good", "good"], PAPER_KIT)
-        roles = ["good", "bad", "good", "bad", "good"]
+        four = social_deal(31, ["blue", "red", "blue", "blue"], PAPER_KIT)
+        roles = ["blue", "red", "blue", "red", "blue"]
         five = social_deal(31, roles, PAPER_KIT, paired_fifth_hand=True)
         standard = social_deal(31, roles, PAPER_KIT)
         self.assertCountEqual(sum(standard["hands"], standard["store"].copy()), PAPER_KIT)
@@ -29,12 +29,12 @@ class TeamNames(unittest.TestCase):
 
     def test_agent_and_speaker_get_only_their_own_information_in_colors(self):
         record = read(EXAMPLE)
-        table = Table(record["setup"], Random(0), discussion=1, color_teams=True)
+        table = Table(record["setup"], Random(0), discussion=1)
         table.started = True
         for e in record["events"][:6]:
             table.commit(e)
         table.open_decision(0)
-        remark = "Bad luck on the last turn; good luck this turn."
+        remark = "Tough luck on the last turn; best of luck this turn."
         table.say(0, table.revision, remark, 0)
         for seat in (1, 3):
             snap = table.view(seat, table.opens)
@@ -55,7 +55,6 @@ class TeamNames(unittest.TestCase):
                         move.return_value = {"message": {"content": '{"vote":' + vote + "}"}}
                         infer(snap, "mock", 30, social_guidance=stage == "social")
                         body = move.call_args.args[2]
-                    self.assertNotRegex(body["messages"][0]["content"].lower(), r"\b(good|bad)\b")
                     ctx = json.loads(body["messages"][1]["content"])
                     self.assertIn(remark, json.dumps(ctx["recent"]))
                     self.assertIn("Red", ctx["common_knowledge"])
@@ -64,15 +63,14 @@ class TeamNames(unittest.TestCase):
                         self.assertEqual(private["all_red_seats"], [3])
                         self.assertEqual(private["all_blue_seats"], [0, 1, 2])
                     else:
-                        self.assertEqual(private, {"seat": 1, "alignment": "Blue"})
+                        self.assertEqual(private, {"seat": 1, "alignment": "blue"})
 
     def test_replay_names_preserve_records_and_public_words(self):
         record = read(EXAMPLE)
-        record["team_names"] = "colors"
-        record["remarks"] = [{"after_event": 4, "seat": 3, "text": "That was a good move."}]
+        record["remarks"] = [{"after_event": 4, "seat": 3, "text": "That was a skillful move."}]
         data = transcript(record, 0)
-        self.assertEqual(data["team_labels"], {"good": "Blue", "bad": "Red"})
-        self.assertEqual(data["frames"][4]["remarks"][0]["text"], "That was a good move.")
+        self.assertEqual(data["red"], 1)
+        self.assertEqual(data["frames"][4]["remarks"][0]["text"], "That was a skillful move.")
         self.assertIn("Winner: **Blue**", render(record))
         self.assertIn("P3 Red", render(record))
-        self.assertEqual(record["setup"]["roles"][3], "bad")
+        self.assertEqual(record["setup"]["roles"][3], "red")

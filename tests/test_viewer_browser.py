@@ -80,7 +80,7 @@ document.body.replaceChildren(result);
         self.assertNotIn("Public remark", obs["ballot"])
         self.assertIn("Timed out (no)", obs["ballot"])
         self.assertEqual((obs["marker"], obs["turn"]), ("(1, 0)", "Turn 2"))
-        self.assertEqual(obs["outcome"], "Good team wins")
+        self.assertEqual(obs["outcome"], "Blue team wins")
         self.assertEqual(obs["rewind"], [1, "(0, 0)", True, 2])
 
     def test_arrow_keys_step_events_and_keep_focus_usable(self):

@@ -38,7 +38,7 @@ python -m footsteps view /tmp/straight.json --seat 0 -o /tmp/straight.html
 
 ## What four cooperating builders did
 
-We played 5,200 games across 13 offsets using the printed sixteen-piece mix, four two-tile private hands, and eight tiles left in the bag. Each offset and policy used the same 200 shuffled deals (seeds 1000–1199). Four good players rotate through the builder seat. All use the same policy within a game, accept legal proposals, and pass nominations. Each builder's choice receives its own hand and public floor. The referee alone samples from the bag. Shuffling, drawing and policy choices use separate random streams. Once policies discard different tiles, later draws may diverge.
+We played 5,200 games across 13 offsets using the printed sixteen-piece mix, four two-tile private hands, and eight tiles left in the bag. Each offset and policy used the same 200 shuffled deals (seeds 1000–1199). Four Blue players rotate through the builder seat. All use the same policy within a game, accept legal proposals, and pass nominations. Each builder's choice receives its own hand and public floor. The referee alone samples from the bag. Shuffling, drawing and policy choices use separate random streams. Once policies discard different tiles, later draws may diverge.
 
 | Exit | Exit-aware wins / 200 | Route-search wins / 200 | Route wins at earliest turn | Route median winning turn |
 |---|---:|---:|---:|---:|

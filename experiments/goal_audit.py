@@ -9,7 +9,7 @@ from experiments.goal_pursuit import budget, choices_for, floor_report
 from experiments.native_summary import game_results, rows
 from footsteps.board import frontier, rotate
 from footsteps.decision_notes import applied_note, notes_for_record, read_notes
-from footsteps.record import replay, starting_game
+from footsteps.record import read, replay, starting_game
 
 
 def history_window(record, decisions):
@@ -46,7 +46,7 @@ def history_window(record, decisions):
 def social_floor(record):
     """Use the builder's actual hand to distinguish actionable opportunities from a lost floor."""
     game = starting_game(record)
-    result = {"good": Counter(), "bad": Counter()}
+    result = {"blue": Counter(), "red": Counter()}
     ballots = []
     builds = []
     for index, e in enumerate(record["events"], 1):
@@ -69,7 +69,7 @@ def social_floor(record):
             team = s["role"]
             if can_keep and can_cut:
                 result[team]["decisive_builds"] += 1
-                result[team]["role_aligned_builds"] += (team == "good") == open_chosen
+                result[team]["role_aligned_builds"] += (team == "blue") == open_chosen
                 builds.append([index, game.turn, game.actor, "preserved" if open_chosen else "cut"])
         elif e["kind"] == "move_vote":
             rows = choices_for({"state": s, "choices": {"vote": [True, False]}})
@@ -84,7 +84,7 @@ def social_floor(record):
                     team = game.roles[seat]
                     result[team]["decisive_ballots"] += 1
                     result[team]["role_aligned_ballots"] += v is not None and v == (
-                        (team == "good") == (yes > no)
+                        (team == "blue") == (yes > no)
                     )
                 ballots.append([index, game.turn, yes, no, e["votes"]])
         game.apply(e)
@@ -115,12 +115,12 @@ def report(root, private=None):
     games = root / "games"
     totals = defaultdict(Counter)
     for p in sorted([*games.glob("*.json"), *(root / "clear-checks").glob("*.json")]):
-        record = json.loads(p.read_text())
+        record = read(p)
         game = replay(record)
         group = p.stem.split("-")[-1]
         if p.parent == games and p.stem.startswith("solo-"):
             totals[group]["games"] += 1
-            totals[group]["wins"] += game.winner == "good"
+            totals[group]["wins"] += game.winner == "blue"
         game_results(p)
         if private:
             print(

@@ -242,7 +242,7 @@ def run_game(
     result = [
         seed,
         model,
-        int(g.winner == "good"),
+        int(g.winner == "blue"),
         g.turn,
         distance(g.marker, g.goal),
         int(sealed(g.board, g.marker, g.goal)),
@@ -261,7 +261,7 @@ def detour_table(sx, sy, store):
     detour = (4 if sy == 1 else 1) | (32 if sx == 1 else 128)
     goal = [2 * sx, 0]
     table = Table(
-        {"goal": goal, "roles": ["good"], "hands": [[trap, detour]], "store": [255] * store},
+        {"goal": goal, "roles": ["blue"], "hands": [[trap, detour]], "store": [255] * store},
         Random(0),
     )
     for pos, face in [([sx, 0], trap), ([0, sy], detour)]:

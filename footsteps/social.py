@@ -10,8 +10,8 @@ from .role_knowledge import role_information
 from .solo import sealed
 
 TRUST = (
-    "Good players use behavior to infer loyalties the rules leave uncertain. A bad player who acts "
-    "like a good player can earn trust and keep the freedom to act later. One helpful "
+    "Blue players use behavior to infer loyalties the rules leave uncertain. A Red player who acts "
+    "like a Blue player can earn trust and keep the freedom to act later. One helpful "
     "move or suspicious vote is evidence, and can have more than one explanation."
 )
 SOCIAL_STAGES = {"propose", "move_vote", "nominate", "eliminate_vote"}
@@ -52,7 +52,7 @@ def consequences(snap):
     stage, role = state["stage"], state["role"]
     goal, marker = tuple(state["goal"]), tuple(state["marker"])
     board = {tuple(p): face for p, face in state["board"]}
-    secret_bad = {me, *state.get("teammates", [])} if role == "bad" else set()
+    secret_red = {me, *state.get("teammates", [])} if role == "red" else set()
     options = next(iter(snap["choices"].values()))
     for value in options:
         winner = None
@@ -66,10 +66,10 @@ def consequences(snap):
                 else ("stay" if dest is None else f"propose_{at[0]}_{at[1]}")
             )
             if at == goal:
-                winner = "good"
+                winner = "blue"
                 immediate = True
             elif distance(at, goal) > state["store_count"] or sealed(board, at, goal):
-                winner = "bad"
+                winner = "red"
                 immediate = state["store_count"] == 0
         elif stage == "eliminate_vote":
             target = state["pending"]
@@ -77,12 +77,12 @@ def consequences(snap):
             name = ("yes_remove_" if value else "no_keep_") + subject
             if value:
                 survivors = set(state["alive"]) - {target}
-                if (role == "bad" and survivors <= secret_bad) or (
+                if (role == "red" and survivors <= secret_red) or (
                     target == me
-                    and role == "good"
-                    and state["player_count"] - state["bad_count"] == 1
+                    and role == "blue"
+                    and state["player_count"] - state["red_count"] == 1
                 ):
-                    winner = "bad"
+                    winner = "red"
                     immediate = True
         else:
             name = "pass" if value is None else f"nominate_P{value}"
@@ -115,9 +115,9 @@ def social_request(body, snap, *, explain, trust=True, human=False, explicit_act
     goal = tuple(state["goal"])
     marker = tuple(state["marker"])
     objective = (
-        "I win if the expedition runs out of tiles or eliminates every Good player. Entering EXIT makes me lose."
-        if role == "bad"
-        else "I win when the marker enters EXIT. Depletion or elimination of all Good players makes me lose."
+        "I win if the expedition runs out of tiles or eliminates every Blue player. Entering EXIT makes me lose."
+        if role == "red"
+        else "I win when the marker enters EXIT. Depletion or elimination of all Blue players makes me lose."
     )
     system = f"You are P{me} on team {role.upper()}. Your private objective: {objective} Your team result counts even after removal."
     if trust:
@@ -125,7 +125,7 @@ def social_request(body, snap, *, explain, trust=True, human=False, explicit_act
     system += " Choose an option for your own team's result. Weigh its effect if pivotal and the public impression it leaves."
     if human:
         system += " You want your team to win. While the result is open, stay in play and make a difference. A posthumous team win still counts."
-        if state["stage"] == "nominate" and role == "good":
+        if state["stage"] == "nominate" and role == "blue":
             system += " Pass without concrete public evidence against a particular player. You may need their next build."
     if explicit_actions:
         system += " " + action_brief(state)
@@ -141,7 +141,7 @@ def social_request(body, snap, *, explain, trust=True, human=False, explicit_act
         "stage": stage,
         "turn": state["turn"],
         "alive": state["alive"],
-        "initial_bad_count": state["bad_count"],
+        "initial_red_count": state["red_count"],
         "initial_player_count": state["player_count"],
         "builder": state["actor"],
         "marker": marker,
@@ -149,8 +149,8 @@ def social_request(body, snap, *, explain, trust=True, human=False, explicit_act
         "moves_after_this_turn": state["store_count"],
         "recent": snap["history"][-12:],
     }
-    if role == "bad":
-        context["known_bad_allies"] = state["teammates"]
+    if role == "red":
+        context["known_red_allies"] = state["teammates"]
     specific = (
         ballot_names(state, snap["choices"]["vote"]) if explicit_actions and key == "vote" else None
     )

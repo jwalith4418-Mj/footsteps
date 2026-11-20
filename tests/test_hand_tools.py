@@ -12,7 +12,7 @@ class PrivateHand(unittest.TestCase):
     def table(self):
         t = Table(
             {
-                "roles": ["good", "bad"],
+                "roles": ["blue", "red"],
                 "hands": [[33, 33], [40, 40]],
                 "store": [33, 33, 33],
                 "goal": [4, 2],
@@ -123,7 +123,7 @@ class PrivateHand(unittest.TestCase):
 
     def test_unplaced_piece_survives_and_returned_face_gets_a_fresh_handle(self):
         t = Table(
-            {"roles": ["good"], "hands": [[33, 33]], "store": [33, 33, 33], "goal": [4, 2]},
+            {"roles": ["blue"], "hands": [[33, 33]], "store": [33, 33, 33], "goal": [4, 2]},
             Random(4),
         )
         t.join(0, 0)
@@ -230,7 +230,7 @@ class PrivateHand(unittest.TestCase):
         for count in (1, 2):
             with self.subTest(count=count):
                 t = Table(
-                    {"roles": ["good"], "hands": [[40]], "store": [40] * count, "goal": [2, 0]},
+                    {"roles": ["blue"], "hands": [[40]], "store": [40] * count, "goal": [2, 0]},
                     Random(1),
                 )
                 t.join(0, 0)
@@ -264,7 +264,7 @@ class RotationTranscript(unittest.TestCase):
 
         t = Table(
             {
-                "roles": ["good", "bad"],
+                "roles": ["blue", "red"],
                 "hands": [[40, 40], [65, 65]],
                 "store": [40, 40],
                 "goal": [2, 0],

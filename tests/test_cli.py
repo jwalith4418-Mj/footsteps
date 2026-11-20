@@ -73,7 +73,7 @@ class Commands(unittest.TestCase):
             r["events"][1], {"kind": "place", "tile": 255, "rotation": 1, "at": [-1, 0]}
         )
         self.assertEqual([e["votes"] for e in r["events"] if "votes" in e], [[True], [True]])
-        self.assertEqual(replay(r).winner, "good")
+        self.assertEqual(replay(r).winner, "blue")
         self.assertTrue(output.endswith(self.ok("replay", path)))
 
     def test_human_stays_and_store_runs_out(self):
@@ -93,7 +93,7 @@ class Commands(unittest.TestCase):
             stdin="1\n1\n1\n1\n",
         )
         self.assertIn("in –, out –", output)
-        self.assertIn("Winner: **bad**", output)
+        self.assertIn("Winner: **Red**", output)
         self.assertEqual(read(path)["events"][-1], {"kind": "propose", "to": None})
 
     def test_policy_game_account_import_and_view(self):
@@ -130,13 +130,13 @@ class Commands(unittest.TestCase):
             if path == "/api/chat":
                 self.assertEqual((port, token, body["model"]), (11434, None, "test-model"))
                 self.assertIs(body["think"], False)
-                self.assertIn("Good: build", body["messages"][0]["content"])
+                self.assertIn("Blue: build", body["messages"][0]["content"])
                 self.assertEqual(body["format"]["properties"]["to"]["enum"], ["stay", "east"])
                 self.assertLessEqual(timeout, 4)
                 return {"message": {"content": '{"to":"east"}'}}
             self.assertEqual((port, path, token), (9090, "/choice", "seat0"))
             self.assertEqual(body, {"revision": 3, "choice": {"to": [1, 0]}})
-            return {"phase": "over", "state": {"winner": "good"}}
+            return {"phase": "over", "state": {"winner": "blue"}}
 
         with (
             patch("getpass.getpass", return_value="http://127.0.0.1:9090/#seat0"),
@@ -152,7 +152,7 @@ class Commands(unittest.TestCase):
                 "--budget",
                 4,
             )
-        self.assertIn("Good team wins.", output)
+        self.assertIn("Blue team wins.", output)
 
     def test_output_alias_leaves_input_readable(self):
         path = self.tmp / "game.json"
@@ -191,7 +191,7 @@ class Commands(unittest.TestCase):
         for flags, seats in [
             (("--start-origin", "--crossing"), 4),
             (("--crossing",), 4),
-            (("--seats", "3", "--color-teams"), 3),
+            (("--seats", "3"), 3),
             (("--kit-counts", "29", "29", "--kit-seed", "8700"), 4),
         ]:
             path = self.tmp / f"host-{flags[0]}.json"
@@ -207,14 +207,12 @@ class Commands(unittest.TestCase):
                 record = read(path)
                 self.assertEqual(len(record["setup"]["roles"]), seats)
                 self.assertEqual(replay(record).stage, "draw")
-                if "--color-teams" in flags:
-                    self.assertEqual(record["team_names"], "colors")
                 if "--kit-counts" in flags:
                     tiles = sum(record["setup"]["hands"], record["setup"]["store"].copy())
                     self.assertEqual(sum((t & 15).bit_count() for t in tiles), 29)
                     self.assertEqual(sum((t >> 4).bit_count() for t in tiles), 29)
                 if "--crossing" in flags and "--start-origin" not in flags:
-                    self.assertEqual((record["format"], replay(record).marker), (2, (-2, 0)))
+                    self.assertEqual((record["format"], replay(record).marker), (3, (-2, 0)))
                     self.assertEqual(replay(record).goal, (0, 0))
                 elif "--crossing" in flags:
                     self.assertEqual(record["setup"], read(EXAMPLE)["setup"])

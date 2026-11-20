@@ -11,7 +11,6 @@ from footsteps.board import moves, optimistic_length, rotate
 from footsteps.ollama import consultation, model_request, request
 from footsteps.seat_tools import blocking_tile
 from footsteps.solo import sealed
-from footsteps.team_names import color_brief
 
 
 def run(path):
@@ -44,7 +43,6 @@ def run(path):
                         body = model_request(
                             view, MODEL, guided=True, explicit_actions=arm != "legacy", explain=True
                         )
-                        color_brief(body)
                         body["think"] = False
                         used = []
                         if arm == "shown":

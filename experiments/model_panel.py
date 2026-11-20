@@ -21,7 +21,7 @@ def reference_vote(state):
     if state["stage"] == "eliminate_vote":
         return False
     closer = distance(state["pending"], state["goal"]) < distance(state["marker"], state["goal"])
-    return closer == (state["role"] == "good")
+    return closer == (state["role"] == "blue")
 
 
 def run(

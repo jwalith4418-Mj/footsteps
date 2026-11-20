@@ -13,6 +13,7 @@ from experiments.native_transfer import transfer_panel
 from experiments.plan_tactics import detour_table, viable
 from experiments.rotation_probe import success
 from experiments.skill_probe import MODEL
+from footsteps.record import read
 
 
 class Order(Random):
@@ -75,7 +76,7 @@ def social(model, arm, max_reply=140):
 
 def ballots(model, arm):
     source = Path(__file__).with_name("native-actions") / "games" / "9501-hand-all.json"
-    record = json.loads(source.read_text())
+    record = read(source)
     for revision in (4, 15, 25):
         event = record["events"][revision]
         assert event["kind"] == "move_vote"

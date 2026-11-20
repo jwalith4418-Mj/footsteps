@@ -30,8 +30,8 @@ def ballot_names(snap):
     if state["stage"] == "eliminate_vote":
         if seat == target:
             subject = f"myself_P{seat}"
-        elif state["role"] == "bad":
-            known = "bad_teammate" if target in state["teammates"] else "good_player"
+        elif state["role"] == "red":
+            known = "red_teammate" if target in state["teammates"] else "blue_player"
             subject = f"{known}_P{target}"
         else:
             subject = f"P{target}"
@@ -62,14 +62,14 @@ def outcomes(snap):
                 "still_playing": [f"P{s}" for s in alive],
                 "I_still_act": seat in alive,
             }
-            if state["role"] == "bad":
-                bad = {seat, *state["teammates"]}
-                facts[names[vote]]["known_good_still_playing"] = [
-                    f"P{s}" for s in alive if s not in bad
+            if state["role"] == "red":
+                red = {seat, *state["teammates"]}
+                facts[names[vote]]["known_blue_still_playing"] = [
+                    f"P{s}" for s in alive if s not in red
                 ]
-                facts[names[vote]]["bad_wins_immediately"] = not any(s not in bad for s in alive)
-            elif state["player_count"] - state["bad_count"] == 1:
-                facts[names[vote]]["bad_wins_immediately"] = seat not in alive
+                facts[names[vote]]["red_wins_immediately"] = not any(s not in red for s in alive)
+            elif state["player_count"] - state["red_count"] == 1:
+                facts[names[vote]]["red_wins_immediately"] = seat not in alive
     return facts
 
 
@@ -77,9 +77,9 @@ def perspective(body, snap, trust):
     state = snap["state"]
     seat, role = snap["seat"], state["role"]
     objective = (
-        "I win if time runs out or all Good seats are eliminated. If the marker enters EXIT I lose."
-        if role == "bad"
-        else "I win if the marker enters EXIT. If time runs out first or all Good seats are removed I lose."
+        "I win if time runs out or all Blue seats are eliminated. If the marker enters EXIT I lose."
+        if role == "red"
+        else "I win if the marker enters EXIT. If time runs out first or all Blue seats are removed I lose."
     )
     system = f"I am P{seat}, a {role.upper()} player. {objective} Removed players still share their team's result."
     if trust:
@@ -91,7 +91,7 @@ def perspective(body, snap, trust):
         **role_information(snap),
         "my_seat": f"P{seat}",
         "my_team": role,
-        "initial_bad_count": state["bad_count"],
+        "initial_red_count": state["red_count"],
         "initial_player_count": state["player_count"],
         "living": [f"P{s}" for s in state["alive"]],
         "marker": state["marker"],
@@ -100,8 +100,8 @@ def perspective(body, snap, trust):
         "recent": [entry["text"] for entry in snap["history"][-12:]],
         "options": choices,
     }
-    if role == "bad":
-        context["my_bad_teammates"] = [f"P{s}" for s in state["teammates"]]
+    if role == "red":
+        context["my_red_teammates"] = [f"P{s}" for s in state["teammates"]]
     stage = state["stage"]
     if stage == "nominate":
         context["decision"] = "Nominate a living player for removal, or pass."
@@ -113,9 +113,9 @@ def perspective(body, snap, trust):
             fact = effects[names[vote]]
             if stage == "move_vote":
                 if fact["enter_EXIT_now"]:
-                    effect = "Good wins immediately."
+                    effect = "Blue wins immediately."
                 elif fact["EXIT_unreachable_even_with_perfect_future_tiles"]:
-                    effect = "Good cannot reach EXIT before depletion; Bad is assured of winning."
+                    effect = "Blue cannot reach EXIT before depletion; Red is assured of winning."
                 else:
                     effect = f"The marker is {fact['distance_after']} squares from EXIT with {fact['turns_after']} more moves."
             else:
@@ -126,8 +126,8 @@ def perspective(body, snap, trust):
                     if vote
                     else f"{who} would keep playing."
                 )
-                if fact.get("bad_wins_immediately"):
-                    effect += " The last Good seat is gone. Bad wins immediately."
+                if fact.get("red_wins_immediately"):
+                    effect += " The last Blue seat is gone. Red wins immediately."
             lines["approve" if vote else "reject"] = effect
         context["decision"] = (
             "Vote on moving to " + str(state["pending"])
@@ -179,7 +179,7 @@ def intentions(body, snap):
     ]
     context["options"] = dict(zip(names, actions, strict=True))
     field["enum"] = names
-    if snap["state"]["role"] == "good" and snap["state"]["stage"] in ("nominate", "eliminate_vote"):
+    if snap["state"]["role"] == "blue" and snap["state"]["stage"] in ("nominate", "eliminate_vote"):
         context["team_consideration"] = (
             "Removal costs a possible ally. Weigh public behavior and whether a useful builder would be lost. Passing is a legal decision."
         )

@@ -17,7 +17,7 @@ from footsteps.table import Table
 
 def decisions(path):
     record = read(path)
-    if record["setup"]["roles"] != ["good"]:
+    if record["setup"]["roles"] != ["blue"]:
         raise ValueError("expected a one-seat solitaire record")
     table = Table(record["setup"], Random(0))
     table.started = True

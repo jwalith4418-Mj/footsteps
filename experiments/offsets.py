@@ -39,7 +39,7 @@ def deal(seed, goal, kit=KIT):
     Random(f"deal/{seed}").shuffle(tiles)
     return {
         "goal": list(goal),
-        "roles": ["good"] * 4,
+        "roles": ["blue"] * 4,
         "hands": [tiles[i : i + 2] for i in range(0, 8, 2)],
         "store": tiles[8:],
     }
@@ -58,7 +58,7 @@ def trial(goal, seed, policy, *, kit=KIT, rotations=range(4)):
         "y": goal[1],
         "seed": seed,
         "policy": policy,
-        "win": int(game.winner == "good"),
+        "win": int(game.winner == "blue"),
         "turns": game.turn,
     }, record
 

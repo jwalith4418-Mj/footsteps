@@ -2,8 +2,8 @@
 
 COMMON_KNOWLEDGE = (
     "The starting team sizes and this information rule are common knowledge. Every seat knows "
-    "them and knows that everyone else knows them. Good players are told only their own "
-    "alignment. Every Bad player knows the complete lineup of both teams from setup. "
+    "them and knows that everyone else knows them. Blue players are told only their own "
+    "alignment. Every Red player knows the complete lineup of both teams from setup. "
     "An elimination is public. Roles are revealed publicly at game end. "
     "Discussion is public: every seat sees each remark and who said it. You and players on "
     "either team may tell the truth, lie, bluff, or stay silent. Check claims against public "
@@ -15,8 +15,8 @@ COMMON_KNOWLEDGE = (
 def role_information(snapshot):
     state, seat = snapshot["state"], snapshot["seat"]
     private = {"seat": seat, "alignment": state["role"]}
-    if state["role"] == "bad":
-        bad = {seat, *state["teammates"]}
-        private["all_bad_seats"] = sorted(bad)
-        private["all_good_seats"] = [s for s in range(state["player_count"]) if s not in bad]
+    if state["role"] == "red":
+        red = {seat, *state["teammates"]}
+        private["all_red_seats"] = sorted(red)
+        private["all_blue_seats"] = [s for s in range(state["player_count"]) if s not in red]
     return {"common_knowledge": COMMON_KNOWLEDGE, "your_private_role_information": private}

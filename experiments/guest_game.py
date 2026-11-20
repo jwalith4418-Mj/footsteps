@@ -13,7 +13,6 @@ from experiments.social_evidence import social_game, write_rows
 from footsteps.decision_notes import open_private, save_note
 from footsteps.ollama import tile
 from footsteps.table import fixed_kit
-from footsteps.team_names import COLORS
 
 HERE = Path(__file__).resolve().parent
 
@@ -45,8 +44,8 @@ class Guest:
             )
         else:
             packet.update(
-                role=COLORS[state["role"]],
-                initial_red=state["bad_count"],
+                role=state["role"].capitalize(),
+                initial_red=state["red_count"],
                 players=state["player_count"],
                 turn=state["turn"],
                 stage=state["stage"],
@@ -57,7 +56,7 @@ class Guest:
                 board=state["board"],
                 hand=[tile(f) for f in state["hand"]],
             )
-            if state["role"] == "bad":
+            if state["role"] == "red":
                 packet["other_red_seats"] = state["teammates"]
             if kind == "choice":
                 packet["legal"] = snap["choices"]
@@ -104,11 +103,11 @@ def main():
     args.out.mkdir(parents=True, exist_ok=False)
     args.private.mkdir(parents=True, exist_ok=False, mode=0o700)
     seed = secrets.randbits(32) if args.seed is None else args.seed
-    roles = ["good"] * 3 + ["bad"] * 2
+    roles = ["blue"] * 3 + ["red"] * 2
     Random(f"roles/{seed}").shuffle(roles)
     seat = Random(f"guest/{seed}").randrange(len(roles))
     guest = Guest(args.exchange, seat, args.private / "guest-debrief.md")
-    stem = f"{seed}-bad" + "+".join(str(s) for s, r in enumerate(roles) if r == "bad")
+    stem = f"{seed}-red" + "+".join(str(s) for s, r in enumerate(roles) if r == "red")
     (args.private / "run.json").write_text(json.dumps({"seed": seed, "guest": seat}))
     rows = social_game(
         seed,
@@ -120,7 +119,6 @@ def main():
         debate=True,
         model_floor=True,
         outcome_policy=True,
-        color_teams=True,
         paired_fifth_hand=True,
         kit=fixed_kit(Random(8700), 16, 29, 29),
         guest=guest,

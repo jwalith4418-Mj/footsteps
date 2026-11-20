@@ -6,7 +6,7 @@ from footsteps.record import new_record
 
 class PlacementAudit(unittest.TestCase):
     def setUp(self):
-        self.record = new_record({"roles": ["good"], "goal": [2, 0], "hands": [[]], "store": [0]})
+        self.record = new_record({"roles": ["blue"], "goal": [2, 0], "hands": [[]], "store": [0]})
         self.record.update(table_id="trial", placement_check="edge-and-marker")
         self.build = {"tile": 0, "rotation": 0, "at": [1, 0]}
         self.record["events"] = [

@@ -18,7 +18,7 @@ def detour_table(sx, sy):
     table = Table(
         {
             "goal": [2 * sx, 0],
-            "roles": ["good"],
+            "roles": ["blue"],
             "hands": [[trap, detour]],
             "store": [0] * 4 + [255] * 2,
         },

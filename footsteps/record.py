@@ -2,21 +2,53 @@
 
 import json
 from copy import deepcopy
+from functools import cache
 from pathlib import Path
 
 from .board import rotate
 from .game import Game, require
-from .team_names import COLORS
 
-FORMAT = 1  # Default format with START implicit at the origin.
-EXPLICIT_START_FORMAT = 2
+FORMAT = 3
 RULES = "base-1"
 FENCE = "\n```json footsteps-record\n"
 
 
 def new_record(setup):
-    version = EXPLICIT_START_FORMAT if "start" in setup else FORMAT
-    return {"format": version, "rules": RULES, "setup": deepcopy(setup), "events": []}
+    setup = deepcopy(setup)
+    setup.setdefault("start", [0, 0])
+    return {"format": FORMAT, "rules": RULES, "setup": setup, "events": []}
+
+
+def upgrade(record):
+    """Upgrade a historical wire record without rewriting speech, events, or the caller's object."""
+    if (
+        not isinstance(record, dict)
+        or type(record.get("format")) is not int
+        or record["format"] not in (1, 2)
+    ):
+        return record
+    version = record["format"]
+    setup = dict(record["setup"])
+    if version == 1:
+        setup["start"] = [0, 0]
+    require("start" in setup, "format 2 requires an explicit start")
+    roles = setup.get("roles")
+    vocabulary = legacy_roles()
+    require(
+        isinstance(roles, list) and all(isinstance(r, str) and r in vocabulary for r in roles),
+        "invalid historical roles",
+    )
+    setup["roles"] = [vocabulary[r] for r in roles]
+    return {
+        **{k: v for k, v in record.items() if k != "team_names"},
+        "format": FORMAT,
+        "setup": setup,
+    }
+
+
+@cache
+def legacy_roles():
+    return json.loads(Path(__file__).with_name("archive").joinpath("role-ids.json").read_text())
 
 
 def read(path):
@@ -26,7 +58,7 @@ def read(path):
         # the block syntax earlier, so split at the last fence label.
         body, end, tail = body.rsplit(FENCE, 1)[1].partition("\n```")
         require(end and not tail.strip(), "malformed full account")
-    return json.loads(body)
+    return upgrade(json.loads(body))
 
 
 def describe(game, event, seat=None):
@@ -68,18 +100,15 @@ def describe(game, event, seat=None):
 
 
 def starting_game(record):
+    record = upgrade(record)
     require(
         type(record.get("format")) is int
-        and record["format"] in (FORMAT, EXPLICIT_START_FORMAT)
+        and record["format"] == FORMAT
         and record.get("rules") == RULES,
         "unsupported record format or rules version",
     )
     setup = record["setup"]
-    if record["format"] == FORMAT:
-        # Format 1 always started at the origin, even with extra setup metadata.
-        setup = {k: v for k, v in setup.items() if k != "start"}
-    else:
-        require("start" in setup, "format 2 requires an explicit start")
+    require("start" in setup, "format 3 requires an explicit start")
     return Game(setup)
 
 
@@ -87,22 +116,21 @@ def replay(record, *, lines=None, seat=None):
     game = starting_game(record)
     require(isinstance(record["events"], list), "expected an event list")
     if lines is not None:
-        labels = COLORS if record.get("team_names") == "colors" else {"good": "good", "bad": "bad"}
         lines.extend(
             [
                 "# Footsteps game account",
                 "",
                 (
-                    f"Players: {len(game.alive)} ({game.roles.count('bad')} {labels['bad']}). "
+                    f"Players: {len(game.alive)} ({game.roles.count('red')} Red). "
                     f"Start {game.marker}, goal {game.goal}, {len(game.store)} tiles in store."
                 ),
             ]
         )
         if seat is not None:
             v = game.view(seat)
-            lines += ["", f"P{seat} is {labels[v['role']]} and holds {v['hand']}."]
-            if v["role"] == "bad":
-                lines.append(f"Fellow {labels['bad']} players: {v['teammates']}.")
+            lines += ["", f"P{seat} is {v['role'].capitalize()} and holds {v['hand']}."]
+            if v["role"] == "red":
+                lines.append(f"Fellow Red players: {v['teammates']}.")
     for index, event in enumerate(record["events"]):
         try:
             if lines is not None:
@@ -125,14 +153,14 @@ def replay(record, *, lines=None, seat=None):
     if lines is not None:
         lines += [
             "",
-            f"Winner: **{labels[game.winner]}**."
+            f"Winner: **{game.winner.capitalize()}**."
             if game.winner
             else f"Next decision: **{game.stage}**.",
         ]
         if game.winner:
             lines.append(
                 "Roles revealed: "
-                + ", ".join(f"P{i} {labels[r]}" for i, r in enumerate(game.roles))
+                + ", ".join(f"P{i} {r.capitalize()}" for i, r in enumerate(game.roles))
                 + "."
             )
     return game
@@ -145,5 +173,5 @@ def render(record, seat=None, full=False):
     prose = "\n".join(lines) + "\n"
     if full:
         prose += "\n## Full referee record (includes all secrets)\n"
-        prose += FENCE + json.dumps(record, indent=2) + "\n```\n"
+        prose += FENCE + json.dumps(upgrade(record), indent=2) + "\n```\n"
     return prose

@@ -32,7 +32,7 @@ class SeatTools(unittest.TestCase):
                 "pending": [1, 0],
                 "board": [[[0, 0], 255], [[1, 0], 40], [[2, 0], 255]],
                 "store_count": 1,
-                "role": "good",
+                "role": "blue",
                 "hand": [33],
             },
         }
@@ -192,7 +192,7 @@ class SeatTools(unittest.TestCase):
         page = export_html(self.record, "demo", omniscient=True, notes=notes)
         self.assertNotIn(self.note["reason"], page)
         self.assertIn("PRIVATE \\u003c/script>", page)
-        for bad in (
+        for red in (
             {"table_id": "another"},
             {"revision": 100},
             {"stage": "place"},
@@ -200,7 +200,7 @@ class SeatTools(unittest.TestCase):
             {"turn": 3},
         ):
             with self.assertRaises(ValueError):
-                transcript(self.record, omniscient=True, notes=[{**self.note, **bad}])
+                transcript(self.record, omniscient=True, notes=[{**self.note, **red}])
 
     def test_file_permissions_and_fresh_note_names(self):
         with tempfile.TemporaryDirectory() as folder:

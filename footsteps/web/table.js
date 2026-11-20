@@ -160,14 +160,14 @@ function render(d) {
   const current = [d.revision, d.phase, d.ready, d.ready_count, d.voted, d.can_speak].join("/");
   if (current === stamp) return;
   stamp = current;
-  const name = (role) => d.team_names === "colors" ? ({good: "Blue", bad: "Red"})[role] : role;
+  const name = (role) => role[0].toUpperCase() + role.slice(1);
   byId("seat").textContent = "P" + d.seat;
   byId("status").textContent = d.phase === "lobby" ? "Waiting for seats" :
-    s.winner ? (d.team_names === "colors" ? name(s.winner) : (s.winner === "good" ? "Good" : "Bad")) + " team wins" : "Turn " + s.turn + " · P" + s.actor + " builds";
+    s.winner ? name(s.winner) + " team wins" : "Turn " + s.turn + " · P" + s.actor + " builds";
   byId("facts").textContent = d.phase === "lobby" ? d.ready_count + " of " + s.player_count + " ready" :
     "Living seats: " + s.alive.map(i => "P" + i).join(", ") + " · Tiles in store: " + s.store_count;
   byId("positions").textContent = "Marker " + point(s.marker) + " · Exit " + point(s.goal);
-  byId("identity").textContent = "Team: " + name(s.role) + " · " + s.bad_count + " " + name("bad") + " at setup" +
+  byId("identity").textContent = "Team: " + name(s.role) + " · " + s.red_count + " " + name("red") + " at setup" +
     (s.teammates?.length ? " · Teammates: " + s.teammates.map(i => "P" + i).join(", ") : "") +
     (!s.alive.includes(d.seat) ? " · Eliminated" : "");
   byId("hand").replaceChildren(...s.hand.map(f => tile(f, String(f))));

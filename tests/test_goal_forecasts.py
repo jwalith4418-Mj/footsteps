@@ -41,7 +41,7 @@ class GoalForecasts(unittest.TestCase):
     def test_only_the_correct_midpoint_opens_the_two_turn_corridor(self):
         t = Table(
             with_exit_origin(
-                {"roles": ["good"], "hands": [[65]], "store": [65, 65], "goal": [0, 2]}
+                {"roles": ["blue"], "hands": [[65]], "store": [65, 65], "goal": [0, 2]}
             ),
             Random(0),
         )

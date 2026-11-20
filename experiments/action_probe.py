@@ -13,11 +13,10 @@ from footsteps.ollama import INDEX_INSTRUCTIONS, consultation, model_request, re
 from footsteps.record import read
 from footsteps.seat_tools import query
 from footsteps.table import Table
-from footsteps.team_names import color_brief
 
 ROOT = Path(__file__).parent
-GUEST = ROOT / "blind-guest/game/1244867160-bad1+2.json"
-SOCIAL = ROOT / "public-discussion/five-colors/8602-bad1+3.json"
+GUEST = ROOT / "blind-guest/game/1244867160-red1+2.json"
+SOCIAL = ROOT / "public-discussion/five-colors/8602-red1+3.json"
 
 
 def position(
@@ -44,7 +43,7 @@ def position(
     if later:
         for key in ("roles", "hands"):
             setup[key][2], setup[key][3] = setup[key][3], setup[key][2]
-    table = Table(setup, Random(0), color_teams=True, placement_check=placement_check)
+    table = Table(setup, Random(0), placement_check=placement_check)
     table.started = True
     for event in events:
         table.commit(event)
@@ -132,7 +131,6 @@ def run(path):
                 for reverse in (False, True):
                     body = model_request(snap, MODEL)
                     body["think"] = False
-                    color_brief(body)
                     system, user = body["messages"]
                     system["content"] = system["content"].replace(
                         INDEX_INSTRUCTIONS,
@@ -187,7 +185,6 @@ def run(path):
                             view, MODEL, named_ballots=True, explicit_actions=brief
                         )
                         body["think"] = False
-                        color_brief(body)
                         body["messages"][0]["content"] += (
                             " For this ballot interpretation test, follow this intention. "
                             + intentions[value]

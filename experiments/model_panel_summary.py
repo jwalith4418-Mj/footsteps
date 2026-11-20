@@ -8,6 +8,7 @@ from collections import Counter, defaultdict
 from math import ceil
 from pathlib import Path
 
+from experiments.archive_rows import csv_rows
 from footsteps.board import connects, distance, moves, neighbors, rotate
 from footsteps.game import Game
 from footsteps.record import read, replay
@@ -55,7 +56,7 @@ def summarize(folder):
     if not final.winner:
         raise ValueError(f"{folder}: unfinished game")
     with (folder / "calls.csv").open(newline="") as f:
-        rows = list(csv.DictReader(f))
+        rows = list(csv_rows(f))
     calls = {(int(row["event"]), int(row["seat"])): row for row in rows}
     if len(calls) != len(rows):
         raise ValueError(f"{folder}: repeated inference for the same decision")
@@ -96,13 +97,13 @@ def summarize(folder):
                 )
             counts["decisions"] += 1
 
-        good = game.roles[game.actor] == "good"
-        build = good and stage == "place" and forward_available(game)
+        blue = game.roles[game.actor] == "blue"
+        build = blue and stage == "place" and forward_available(game)
         if build:
             counts["build_options"] += 1
         old_distance = distance(game.marker, game.goal)
         if (
-            good
+            blue
             and stage == "propose"
             and any(distance(p, game.goal) < old_distance for p in moves(game.board, game.marker))
         ):
@@ -135,8 +136,8 @@ def summarize(folder):
         "build": f"{counts['built']}/{counts['build_options']}",
         "propose": f"{counts['proposed']}/{counts['move_options']}",
         "first_out": first_elim_turn or "-",
-        "good_out": counts["good_out"],
-        "bad_out": counts["bad_out"],
+        "blue_out": counts["blue_out"],
+        "red_out": counts["red_out"],
         "calls": len(times),
         "errors": counts["errors"],
         "timeouts": counts["missing"],

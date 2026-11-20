@@ -1,10 +1,10 @@
 # Can a builder distinguish placement from movement?
 
-In a five-seat game, a builder correctly said the new edge was blocked and incorrectly said the marker was on its origin. The two questions measure different things. A private correction fixed the marker answer. The model still built the same tile. [Turn-by-turn checks](checks.csv) · [Game record](table/8602-bad1+3.json) · [Design issue](https://github.com/othercriteria/footsteps/issues/80)
+In a five-seat game, a builder correctly said the new edge was blocked and incorrectly said the marker was on its origin. The two questions measure different things. A private correction fixed the marker answer. The model still built the same tile. [Turn-by-turn checks](checks.csv) · [Game record](table/8602-red1+3.json) · [Design issue](https://github.com/othercriteria/footsteps/issues/80)
 
 ## Frozen builds
 
-We restored Blue P4 immediately before event 42 of the EXIT-centered 8602 game, and Red P2 immediately before event 24 of the guest game. For Blue, success means building a tile that permits a first step with an optimistic route to EXIT in the remaining turns. For Red, success means closing every route out of the marker’s component. Both opportunities have independently verified examples. We presented each seat with the original legal menu and with its order reversed. Those four decisions per condition represent two distinct positions. [Blue continuation](../exit-origin/counterfactual-8602.json) · [Red guest game](../blind-guest/game/1244867160-bad1+2.json)
+We restored Blue P4 immediately before event 42 of the EXIT-centered 8602 game, and Red P2 immediately before event 24 of the guest game. For Blue, success means building a tile that permits a first step with an optimistic route to EXIT in the remaining turns. For Red, success means closing every route out of the marker’s component. Both opportunities have independently verified examples. We presented each seat with the original legal menu and with its order reversed. Those four decisions per condition represent two distinct positions. [Blue continuation](../exit-origin/counterfactual-8602.json) · [Red guest game](../blind-guest/game/1244867160-red1+2.json)
 
 The joint prompt requests all fields together, including indices for the tile, rotation and both squares. The staged prompt first selects an ordinary provisional build. A short second prompt lists adjacent origins by coordinate, their outgoing sides, the direction to the new tile, its rotated entrances and the actual marker square. Both versions allow one correction with referee feedback. The staged version fixes the provisional build for the duration of the check. An ordinary decision takes one model call, a staged decision takes two, and a correction adds one.
 
@@ -37,7 +37,7 @@ We repeated the EXIT-centered 8602 deal with each staged interface. Three Blue a
 | Edge | 4 | 2 | 2 | (−1, −1) | Red by depletion |
 | Edge and marker | 3 | 3 | 2 | (−1, −1) | Red by depletion |
 
-There was also a genuine social consequence on turn five. The assisted movement ballot split 3–2 along team lines for a step east. Blue P0 then publicly cited P1’s dissent. Four seats removed Red P1, including fellow Red P3. All five elimination votes came from the model. On the ordinary table all five seats survived. A single shared deal gives us an example to inspect, with little basis for estimating a change in win rate. [Ordinary record](../exit-origin/social/8602-bad1+3.json) · [Edge record](edge-table/8602-bad1+3.json) · [Edge and marker record](table/8602-bad1+3.json)
+There was also a genuine social consequence on turn five. The assisted movement ballot split 3–2 along team lines for a step east. Blue P0 then publicly cited P1’s dissent. Four seats removed Red P1, including fellow Red P3. All five elimination votes came from the model. On the ordinary table all five seats survived. A single shared deal gives us an example to inspect, with little basis for estimating a change in win rate. [Ordinary record](../exit-origin/social/8602-red1+3.json) · [Edge record](edge-table/8602-red1+3.json) · [Edge and marker record](table/8602-red1+3.json)
 
 Keep the second question available as a private diagnostic. The next tactical experiment should give the player one opportunity to revise the proposed tile, rotation or square after reading its local consequences. Compare against a player given the same number of calls, and score the committed build and fallbacks on held-out positions. [Guest tactic transfer](https://github.com/othercriteria/footsteps/issues/76)
 
@@ -58,18 +58,18 @@ work=$(mktemp -d)
 python -m experiments.placement_check "$work/staged.csv"
 python -m experiments.placement_check "$work/joint.csv" --joint
 for check in edge edge-and-marker; do
-  python -m experiments.social_evidence --roles GBGBG --paired-fifth-hand --color-teams \
+  python -m experiments.social_evidence --roles BRBRB --paired-fifth-hand \
     --arm receipt --debate --model-floor --outcome-policy --kit-counts 29 29 \
     --kit-seed 8700 --seeds 8602 --goal 2 2 --action-brief --exit-origin \
     --placement-check "$check" --out "$work/$check" --private-notes "$work/private-$check"
 done
 python -m experiments.social_summary "$work"
 python -m experiments.placement_audit \
-  --table "$work/edge/8602-bad1+3.json" "$work/private-edge/8602-bad1+3.checks.jsonl" \
-  --table "$work/edge-and-marker/8602-bad1+3.json" "$work/private-edge-and-marker/8602-bad1+3.checks.jsonl" \
+  --table "$work/edge/8602-red1+3.json" "$work/private-edge/8602-red1+3.checks.jsonl" \
+  --table "$work/edge-and-marker/8602-red1+3.json" "$work/private-edge-and-marker/8602-red1+3.checks.jsonl" \
   > "$work/checks.csv"
-python -m footsteps view "$work/edge-and-marker/8602-bad1+3.json" --omniscient \
-  --notes "$work/private-edge-and-marker/8602-bad1+3.jsonl" -o "$work/8602.html"
+python -m footsteps view "$work/edge-and-marker/8602-red1+3.json" --omniscient \
+  --notes "$work/private-edge-and-marker/8602-red1+3.jsonl" -o "$work/8602.html"
 ```
 
 The private `.checks.jsonl` file contains the attempts and referee feedback for each turn. The audit emits one row per build. Empty correctness cells denote an unasked or unscorable question. An empty retry cell means there was no second submitted answer. The per-turn rows include the true conditions, correctness, acting team, attempt count, any change of subject and the fallback indicator. New private attempt logs include a table ID and model tag. The model column is empty for the archived logs from this Qwen run. Older logs are cross-checked against turns, committed builds and fallback events. The ordinary game record and the checked game records replay without those files.

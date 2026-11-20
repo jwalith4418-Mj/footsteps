@@ -31,10 +31,9 @@ def run(output, model, verified=False):
         for heading, goal, away in (("north", [0, 2], [0, -3]), ("east", [2, 0], [-3, 0])):
             t = Table(
                 with_exit_origin(
-                    {"roles": ["good"], "goal": goal, "hands": [[65]], "store": [65, 65]}
+                    {"roles": ["blue"], "goal": goal, "hands": [[65]], "store": [65, 65]}
                 ),
                 Random(9501),
-                color_teams=True,
             )
             t.join(0, 0)
             snap = t.view(0, 0)

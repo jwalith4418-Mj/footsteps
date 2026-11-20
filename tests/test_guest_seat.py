@@ -46,7 +46,7 @@ class GuestSeat(unittest.TestCase):
             guest.finish = Mock()
             social_game(
                 1,
-                ["good", "bad", "good"],
+                ["blue", "red", "blue"],
                 "fixture",
                 root / "game.json",
                 root / "notes.jsonl",
@@ -63,7 +63,7 @@ class GuestSeat(unittest.TestCase):
 
     def test_guest_receives_only_private_seat_and_incremental_history_even_at_reveal(self):
         for seat in (0, 3):
-            table = Table(CROSSING["setup"], Random(0), color_teams=True)
+            table = Table(CROSSING["setup"], Random(0))
             with self.subTest(seat=seat), tempfile.TemporaryDirectory() as tmp:
                 exchange = Path(tmp)
                 guest = Guest(exchange, seat, exchange / "debrief.md")

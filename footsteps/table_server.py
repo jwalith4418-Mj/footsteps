@@ -165,7 +165,6 @@ def serve(args):
         rng,
         args.seconds,
         args.discussion,
-        color_teams=args.color_teams,
         placement_check=args.placement_check,
     )
     with ExitStack() as stack:

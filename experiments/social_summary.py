@@ -1,26 +1,26 @@
 """Replay the social panel and audit the committed social choices without opening private notes."""
 
 import argparse
-import csv
 from collections import Counter
 from pathlib import Path
 
+from experiments.archive_rows import csv_rows, current_id
 from footsteps.game import Game
 from footsteps.record import read, replay
 
 
 def game_totals(root):
     with (root / "choices.csv").open() as f:
-        decisions = list(csv.DictReader(f))
+        decisions = list(csv_rows(f))
     totals = Counter()
     for path in sorted(root.glob("*.json")):
-        seed, bad = path.stem.split("-bad")
+        seed, red = current_id(path.stem).split("-red")
         record = read(path)
         winner = replay(record).winner
-        assert winner in ("good", "bad")
+        assert winner in ("blue", "red")
         totals["games"] += 1
-        totals["wins"] += winner == "good"
-        rows = [r for r in decisions if (r["seed"], r["bad"]) == (seed, bad)]
+        totals["wins"] += winner == "blue"
+        rows = [r for r in decisions if (r["seed"], r["red"]) == (seed, red)]
         observed = {(int(r["event"]), int(r.get("seat", 0))): r for r in rows}
         assert len(observed) == len(rows)
         debate = "seat" in rows[0]
@@ -39,9 +39,9 @@ def game_totals(root):
                     if stage == "nominate":
                         target = action["target"]
                         assert row["choice"] == ("" if target is None else str(target))
-                        if game.roles[seat] == "bad":
-                            totals["bad nomination chances"] += 1
-                            totals["bad nominations"] += target is not None
+                        if game.roles[seat] == "red":
+                            totals["red nomination chances"] += 1
+                            totals["red nominations"] += target is not None
                     else:
                         vote = action["votes"][alive.index(seat)]
                         assert row["choice"] == str(vote) and int(row["pending"]) == game.pending
@@ -69,7 +69,7 @@ def main():
         print(panel.parent.name, dict(totals))
     for path in sorted((root / "probes").glob("*.csv")):
         with path.open() as f:
-            votes = [r for r in csv.DictReader(f) if r["target"]]
+            votes = [r for r in csv_rows(f) if r["target"]]
         totals = Counter()
         for row in votes:
             case = "voted no" if row["target"] == row["dissenter"] else "voted yes"

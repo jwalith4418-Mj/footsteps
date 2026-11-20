@@ -15,10 +15,9 @@ from .role_knowledge import role_information
 from .seat_tools import query, rotations_of, spec_for, tile
 from .social import SOCIAL_STAGES, shortlist, social_request
 from .solo import exits
-from .team_names import COLORS, color_brief
 
-RULES = """You play one seat at a Footsteps table. Good wants the shared marker to reach
-the exit. Bad wants time to run out or all good seats eliminated. The builder places a tile
+RULES = """You play one seat at a Footsteps table. Blue wants the shared marker to reach
+the exit. Red wants time to run out or all Blue seats eliminated. The builder places a tile
 then proposes staying or moving one step. To move, both the source exit and destination
 entrance must connect. North increases y. Rotation counts quarter-turns clockwise.
 Tiles are written as [face, entrances, exits]. Board tiles already include rotation.
@@ -97,11 +96,11 @@ def forward_examples(snapshot):
     return examples
 
 
-GUIDANCE = """Good: build an enterable step toward EXIT with an onward exit if possible.
+GUIDANCE = """Blue: build an enterable step toward EXIT with an onward exit if possible.
 For placement, forward_examples contains complete index objects for such closer steps when
 available. Copy one intact if it suits your team. When moving, propose and support EXIT or
-useful progress. Passing on nomination is sensible without evidence. Bad: look for delays,
-dead ends or opportunities to eliminate good seats. A good forward build may hurt your team."""
+useful progress. Passing on nomination is sensible without evidence. Red: look for delays,
+dead ends or opportunities to eliminate Blue seats. A productive forward build may hurt your team."""
 
 
 def model_request(
@@ -127,7 +126,7 @@ def model_request(
         "nominator",
         "alive",
         "player_count",
-        "bad_count",
+        "red_count",
         "role",
         "teammates",
         "store_count",
@@ -439,8 +438,6 @@ def infer(
             human=outcome_policy,
             explicit_actions=explicit_actions,
         )
-    if snapshot.get("team_names") == "colors":
-        color_brief(body)
     if no_think:
         body["think"] = False
     used = []
@@ -538,6 +535,6 @@ def play_seat(seat, model, budget, *, decide=infer, report=print, request_note_i
         time.sleep(0.15)
         snapshot = seat.call("/state")
     winner = snapshot["state"]["winner"]
-    label = COLORS[winner] if snapshot.get("team_names") == "colors" else winner.capitalize()
+    label = winner.capitalize()
     report(f"{label} team wins.")
     return winner

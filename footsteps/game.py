@@ -72,9 +72,9 @@ def checked_placement(board, goal, marker, hand, choice):
 def movement_winner(marker, goal, store_count):
     """The public result once the shared marker's landing is known."""
     if marker == goal:
-        return "good"
+        return "blue"
     if store_count == 0:
-        return "bad"
+        return "red"
     return None
 
 
@@ -92,8 +92,8 @@ class Game:
         self.store = setup["store"]
         require(
             isinstance(self.roles, list)
-            and "good" in self.roles
-            and all(r in ("good", "bad") for r in self.roles),
+            and "blue" in self.roles
+            and all(r in ("blue", "red") for r in self.roles),
             "invalid teams",
         )
         require(
@@ -194,8 +194,8 @@ class Game:
                 if margin > 0:
                     self.alive.remove(self.pending)
                 self.pending = None
-                if all(self.roles[i] == "bad" for i in self.alive):
-                    self.finish("bad")
+                if all(self.roles[i] == "red" for i in self.alive):
+                    self.finish("red")
                 else:
                     self.advance_nomination()
         elif kind == "nominate":
@@ -250,7 +250,7 @@ class Game:
             "winner": self.winner,
             "alive": self.alive.copy(),
             "player_count": len(self.roles),
-            "bad_count": self.roles.count("bad"),
+            "red_count": self.roles.count("red"),
             "store_count": len(self.store),
             "pending": self.pending,
             "nominator": self.queue[0] if self.stage == "nominate" else None,
@@ -264,8 +264,8 @@ class Game:
         if seat is not None:
             require(integer(seat) and 0 <= seat < len(self.roles), "invalid seat")
             v.update(hand=self.hands[seat].copy(), role=self.roles[seat])
-            if self.roles[seat] == "bad":
+            if self.roles[seat] == "red":
                 v["teammates"] = [
-                    i for i, role in enumerate(self.roles) if role == "bad" and i != seat
+                    i for i, role in enumerate(self.roles) if role == "red" and i != seat
                 ]
         return v

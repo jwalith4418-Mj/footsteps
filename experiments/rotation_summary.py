@@ -8,6 +8,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import median
 
+from experiments.archive_rows import csv_rows
 from experiments.rotation_probe import cases, success
 from footsteps.decision_notes import read_notes
 from footsteps.record import read
@@ -123,7 +124,7 @@ def social_receipts(record_path, note_path):
 
 def read_csv(path):
     with path.open() as f:
-        return list(csv.DictReader(f))
+        return list(csv_rows(f))
 
 
 if __name__ == "__main__":
@@ -136,6 +137,6 @@ if __name__ == "__main__":
     )
     args = cli.parse_args()
     if args.social_notes:
-        social_receipts(args.root / "social/8602-bad1+3.json", args.social_notes)
+        social_receipts(args.root / "social/8602-red1+3.json", args.social_notes)
     else:
         summary(args.root)

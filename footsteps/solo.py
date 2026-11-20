@@ -15,7 +15,7 @@ def setup(seed, goal, size, store, density):
     tiles = [
         sum(1 << bit for bit in range(8) if rng.random() < density) for _ in range(size + store)
     ]
-    return {"goal": list(goal), "hands": [tiles[:size]], "store": tiles[size:], "roles": ["good"]}
+    return {"goal": list(goal), "hands": [tiles[:size]], "store": tiles[size:], "roles": ["blue"]}
 
 
 def best(choices, score, rng):
@@ -188,7 +188,7 @@ def simulate(initial, seed, policy, capture=False):
     result = {
         "policy": policy,
         "seed": seed,
-        "win": int(game.winner == "good"),
+        "win": int(game.winner == "blue"),
         "turns": game.turn,
         "remaining": len(game.store),
         "sealed": int(sealed(game.board, game.marker, game.goal)),

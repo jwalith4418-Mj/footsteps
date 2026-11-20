@@ -1,6 +1,6 @@
 # Footsteps game account
 
-Players: 4 (1 bad). Start (0, 0), goal (2, 0), 2 tiles in store.
+Players: 4 (1 Red). Start (0, 0), goal (2, 0), 2 tiles in store.
 
 ## Turn 1
 
@@ -24,5 +24,5 @@ Players: 4 (1 bad). Start (0, 0), goal (2, 0), 2 tiles in store.
 - Movement ballots — P0 yes, P1 yes, P2 no.
 - The marker is at (2, 0).
 
-Winner: **good**.
-Roles revealed: P0 good, P1 good, P2 good, P3 bad.
+Winner: **Blue**.
+Roles revealed: P0 Blue, P1 Blue, P2 Blue, P3 Red.

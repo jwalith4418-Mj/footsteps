@@ -70,7 +70,7 @@ class LiveDecisions(unittest.TestCase):
 
     def test_three_seat_paper_deal_finishes_through_all_deadlines(self):
         setup = paper_setup(Random(13), 3)
-        self.assertEqual(sorted(setup["roles"]), ["bad", "good", "good"])
+        self.assertEqual(sorted(setup["roles"]), ["blue", "blue", "red"])
         self.assertEqual(list(map(len, setup["hands"])), [2, 2, 2])
         self.assertEqual(len(setup["store"]), 10)
         self.assertEqual(Counter(sum(setup["hands"], setup["store"])), Counter(PAPER_KIT))
@@ -80,7 +80,7 @@ class LiveDecisions(unittest.TestCase):
         for tick in range(1, 100):
             table.tick(tick)
         final = replay(table.record)
-        self.assertEqual((final.winner, final.turn), ("bad", 10))
+        self.assertEqual((final.winner, final.turn), ("red", 10))
 
     def test_all_timeouts_terminate_and_replay(self):
         table = Table(paper_setup(Random(4)), Random(5), seconds=1, discussion=0)
@@ -89,7 +89,7 @@ class LiveDecisions(unittest.TestCase):
         for tick in range(1, 100):
             table.tick(tick)
         game = replay(table.record)
-        self.assertEqual((game.winner, game.turn), ("bad", 8))
+        self.assertEqual((game.winner, game.turn), ("red", 8))
         self.assertTrue(any(e["kind"] == "place" and e["timeout"] for e in table.record["events"]))
         self.assertIn("random choice after timeout", str(table.view(1, 101)["history"]))
 
@@ -208,7 +208,7 @@ class LoopbackTable(unittest.TestCase):
                 self.assertIsNone(spectator["choices"])
                 self.assertNotIn("roles", self.api(1)["state"])
         self.assertEqual(read(self.path), CROSSING)
-        self.assertEqual(replay(read(self.path)).winner, "good")
+        self.assertEqual(replay(read(self.path)).winner, "blue")
         self.assertEqual(self.api(3)["state"]["roles"], CROSSING["setup"]["roles"])
         self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
 
