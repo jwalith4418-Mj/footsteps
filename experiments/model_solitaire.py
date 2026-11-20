@@ -169,7 +169,9 @@ def decide(
     return decoded
 
 
-def run_game(seed, model, out, aided=False, think=False, chart=False):
+def run_game(seed, model, out, aided=False, think=False, chart=False, *, decide_fn=None):
+    if decide_fn is None:
+        decide_fn = decide
     initial = setup(seed, (4, 2), 2, 10, 0.55)
     table = Table(initial, Random(f"draw/{seed}"), discussion=0)
     rng = Random(f"fallback/{seed}")
@@ -178,6 +180,9 @@ def run_game(seed, model, out, aided=False, think=False, chart=False):
     while not table.game.winner:
         state = table.game.view(0)
         stage = state["stage"]
+        if stage == "place":
+            # The draw count is public. Two drawn tiles entail one return before movement.
+            state["draw_count"] = len(table.record["events"][-1]["tiles"])
         if stage == "move_vote":
             table.commit({"kind": stage, "votes": [True]})
         else:
@@ -185,7 +190,7 @@ def run_game(seed, model, out, aided=False, think=False, chart=False):
             error = ""
             metrics = dict.fromkeys(("tokens", "thinking_returned", "stop_reason")) if think else {}
             try:
-                choice = decide(
+                choice = decide_fn(
                     state,
                     table.choices(0, 0),
                     model,

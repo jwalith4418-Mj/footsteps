@@ -1,0 +1,17 @@
+case,kind,model,policy,reverse,options,choice,qualifies
+game-4001-e42,recorded,qwen3.5:9b-q8_0,bound,False,"stay 0,2 1,1 0,0",stay,False
+game-4001-e42,recorded,qwen3.5:9b-q8_0,bound,True,"0,0 1,1 0,2 stay","1,1",True
+game-4002-e4,recorded,qwen3.5:9b-q8_0,bound,False,"stay 0,1","0,1",True
+game-4002-e4,recorded,qwen3.5:9b-q8_0,bound,True,"0,1 stay","0,1",True
+game-4003-e4,recorded,qwen3.5:9b-q8_0,bound,False,"stay 0,1","0,1",True
+game-4003-e4,recorded,qwen3.5:9b-q8_0,bound,True,"0,1 stay","0,1",True
+game-4004-e4,recorded,qwen3.5:9b-q8_0,bound,False,"stay 0,1","0,1",True
+game-4004-e4,recorded,qwen3.5:9b-q8_0,bound,True,"0,1 stay","0,1",True
+"-1,-1",tight,qwen3.5:9b-q8_0,bound,False,"stay -1,0 0,-1","0,-1",True
+"-1,-1",tight,qwen3.5:9b-q8_0,bound,True,"0,-1 -1,0 stay","0,-1",True
+"-1,1",tight,qwen3.5:9b-q8_0,bound,False,"stay -1,0 0,1","0,1",True
+"-1,1",tight,qwen3.5:9b-q8_0,bound,True,"0,1 -1,0 stay","0,1",True
+"1,-1",tight,qwen3.5:9b-q8_0,bound,False,"stay 1,0 0,-1","0,-1",True
+"1,-1",tight,qwen3.5:9b-q8_0,bound,True,"0,-1 1,0 stay","0,-1",True
+"1,1",tight,qwen3.5:9b-q8_0,bound,False,"stay 1,0 0,1","0,1",True
+"1,1",tight,qwen3.5:9b-q8_0,bound,True,"0,1 1,0 stay","0,1",True

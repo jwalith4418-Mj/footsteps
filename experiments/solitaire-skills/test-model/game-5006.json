@@ -1,0 +1,313 @@
+{
+  "format": 1,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      4,
+      2
+    ],
+    "hands": [
+      [
+        201,
+        125
+      ]
+    ],
+    "store": [
+      107,
+      47,
+      32,
+      62,
+      137,
+      54,
+      116,
+      114,
+      241,
+      224
+    ],
+    "roles": [
+      "good"
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        224,
+        107
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 107,
+      "at": [
+        0,
+        1
+      ],
+      "rotation": 3
+    },
+    {
+      "kind": "discard",
+      "tile": 224
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        1
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        241,
+        54
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 54,
+      "at": [
+        0,
+        2
+      ],
+      "rotation": 1
+    },
+    {
+      "kind": "discard",
+      "tile": 241
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        114,
+        62
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 62,
+      "at": [
+        1,
+        2
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 114
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        47,
+        224
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 47,
+      "at": [
+        2,
+        2
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 224
+    },
+    {
+      "kind": "propose",
+      "to": [
+        2,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        114,
+        116
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 114,
+      "at": [
+        3,
+        2
+      ],
+      "rotation": 2
+    },
+    {
+      "kind": "discard",
+      "tile": 116
+    },
+    {
+      "kind": "propose",
+      "to": [
+        3,
+        2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        32,
+        241
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 32,
+      "at": [
+        3,
+        3
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 241
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        116,
+        224
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 116,
+      "at": [
+        3,
+        1
+      ],
+      "rotation": 2
+    },
+    {
+      "kind": "discard",
+      "tile": 224
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        137,
+        241
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 125,
+      "at": [
+        3,
+        4
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 241
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        241,
+        224
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 241,
+      "at": [
+        3,
+        5
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 224
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        224
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 224,
+      "at": [
+        3,
+        6
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": null
+    }
+  ]
+}
