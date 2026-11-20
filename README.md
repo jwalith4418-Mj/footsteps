@@ -68,3 +68,5 @@ Use `./scripts/resume-codex.sh --last` to resume the latest project conversation
 The next questions concern rotating private hands, recoverable traps and when a human table first has grounds to nominate someone. Use Issues for work and discussion. Submit mechanical decisions, worked examples and experimental results in the same PR as their implementation. [Contribution workflow](CONTRIBUTING.md) · [Worker guide](AGENTS.md) · [Design decisions](docs/decisions.md) · [Playtesting](docs/playtesting.md) · [Open issues](https://github.com/othercriteria/footsteps/issues)
 
 Code and technical materials use MIT. The original rulebook, worked game prose and game art use CC BY 4.0. [License scope and texts](LICENSE)
+
+Model seats can consult board tools and attach optional private explanations to an omniscient replay. [Seat tool catalog and roadmap](docs/seat-tools.md) · [Recording and viewing decision notes](docs/table.md#join-with-ollama)

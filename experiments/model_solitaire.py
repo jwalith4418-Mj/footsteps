@@ -169,17 +169,24 @@ def decide(
     return decoded
 
 
-def run_game(seed, model, out, aided=False, think=False, chart=False, *, decide_fn=None):
+def run_game(
+    seed, model, out, aided=False, think=False, chart=False, *, decide_fn=None, table_id=None
+):
     if decide_fn is None:
         decide_fn = decide
     initial = setup(seed, (4, 2), 2, 10, 0.55)
     table = Table(initial, Random(f"draw/{seed}"), discussion=0)
     rng = Random(f"fallback/{seed}")
+    if table_id is not None:
+        table.record["table_id"] = table_id
     table.join(0, 0)
     calls = []
     while not table.game.winner:
         state = table.game.view(0)
         stage = state["stage"]
+        if table_id is not None:
+            state["table_id"] = table_id
+            state["revision"] = table.revision
         if stage == "place":
             # The draw count is public. Two drawn tiles entail one return before movement.
             state["draw_count"] = len(table.record["events"][-1]["tiles"])

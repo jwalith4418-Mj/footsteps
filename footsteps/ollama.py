@@ -8,6 +8,8 @@ from math import isfinite
 from urllib.parse import urlsplit
 
 from .board import connects, distance, neighbors, rotate
+from .decision_notes import REASON_PROMPT, request_reason, save_note
+from .seat_tools import query, spec_for
 from .solo import exits
 
 RULES = """You play one seat at a Footsteps table. Good wants the shared marker to reach
@@ -107,7 +109,9 @@ useful progress. Passing on nomination is sensible without evidence. Bad: look f
 dead ends or opportunities to eliminate good seats. A good forward build may hurt your team."""
 
 
-def model_request(snapshot, model, *, guided=False, named_moves=False, named_ballots=False):
+def model_request(
+    snapshot, model, *, guided=False, named_moves=False, named_ballots=False, explain=False
+):
     state = snapshot["state"]
     fields = (
         "turn",
@@ -156,6 +160,9 @@ def model_request(snapshot, model, *, guided=False, named_moves=False, named_bal
         context["options"] = {"vote": names}
         schema["properties"]["vote"] = {"type": "string", "enum": names}
         instructions = "Choose approve to carry out the proposal or reject to decline it. Return its name as the vote field."
+    if explain:
+        request_reason(schema)
+        instructions += REASON_PROMPT
     return {
         "model": model,
         "stream": False,
@@ -167,8 +174,52 @@ def model_request(snapshot, model, *, guided=False, named_moves=False, named_bal
             },
             {"role": "user", "content": json.dumps(context, separators=(",", ":"))},
         ],
-        "options": {"temperature": 0, "seed": 1, "num_ctx": 4096, "num_predict": 64},
+        "options": {
+            "temperature": 0,
+            "seed": 1,
+            "num_ctx": 4096,
+            "num_predict": 144 if explain else 64,
+        },
     }
+
+
+def consultation(snapshot, body, seconds):
+    spec = spec_for(snapshot["state"]["stage"])
+    if spec is None:
+        return [], []
+    probe = {k: v for k, v in body.items() if k != "format"}
+    probe["tools"] = [spec]
+    probe["think"] = False
+    probe["messages"] = [
+        {
+            "role": "system",
+            "content": "You can consult one listed Footsteps tool to inspect this decision before choosing. Use literal values from this seat's hand and floor. If you need no tool, return an empty object.",
+        },
+        body["messages"][1],
+    ]
+    probe["options"] = {**body["options"], "num_predict": 96}
+    try:
+        result = request(11434, "/api/chat", probe, seconds)
+    except (OSError, HTTPException):
+        return [], []
+    message = result.get("message") if isinstance(result, dict) else None
+    calls = message.get("tool_calls") if isinstance(message, dict) else None
+    if not isinstance(calls, list) or not calls:
+        return [], []
+    call = calls[0]
+    fn = call.get("function") if isinstance(call, dict) else None
+    if not isinstance(fn, dict) or fn.get("name") != spec["function"]["name"]:
+        return [], []
+    name, args = fn["name"], fn.get("arguments")
+    try:
+        output = query(snapshot, name, args)
+    except ValueError as exc:
+        output = {"error": str(exc)}
+    messages = [
+        {"role": "assistant", "content": "", "tool_calls": [call]},
+        {"role": "tool", "tool_name": name, "content": json.dumps(output, separators=(",", ":"))},
+    ]
+    return messages, [{"name": name, "ok": "error" not in output}]
 
 
 def infer(
@@ -180,14 +231,32 @@ def infer(
     named_moves=False,
     no_think=False,
     named_ballots=False,
+    use_tools=False,
+    note_file=None,
 ):
+    deadline = time.monotonic() + seconds
     body = model_request(
-        snapshot, model, guided=guided, named_moves=named_moves, named_ballots=named_ballots
+        snapshot,
+        model,
+        guided=guided,
+        named_moves=named_moves,
+        named_ballots=named_ballots,
+        explain=note_file is not None,
     )
     if no_think:
         body["think"] = False
+    used = []
+    if use_tools:
+        messages, used = consultation(snapshot, body, seconds / 2)
+        body["messages"].extend(messages)
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise TimeoutError("tool consultation reached the decision deadline")
     answer = request(11434, "/api/chat", body, seconds)
     reply = json.loads(answer["message"]["content"])
+    reason = (
+        reply.pop("reason", None) if note_file is not None and isinstance(reply, dict) else None
+    )
     options = snapshot["choices"]
     if not isinstance(reply, dict) or reply.keys() != options.keys():
         raise ValueError("model returned unexpected fields")
@@ -198,13 +267,15 @@ def infer(
         if type(i) is not int or not 0 <= i < len(values):
             raise ValueError("model returned an invalid option index")
         choice[key] = values[i]
+    if note_file is not None:
+        save_note(note_file, snapshot, model, choice, reason, used)
     return choice
 
 
-def play_seat(seat, model, budget, *, decide=infer, report=print):
+def play_seat(seat, model, budget, *, decide=infer, report=print, request_note_id=False):
     if not isfinite(budget) or budget <= 0:
         raise ValueError("model budget must be positive")
-    snapshot = seat.call("/ready", {})
+    snapshot = seat.call("/ready", {"request_note_id": True} if request_note_id else {})
     attempted = None
     while snapshot["phase"] != "over":
         revision = snapshot["revision"]

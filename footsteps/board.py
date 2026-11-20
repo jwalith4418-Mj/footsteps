@@ -1,5 +1,6 @@
 """A face has incoming bits NESW in its low nibble and outgoing bits above."""
 
+from collections import deque
 from functools import cache
 
 START = (0, 0)
@@ -38,3 +39,22 @@ def moves(board, marker):
 
 def distance(a, b):
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+def optimistic_length(board, start, goal, budget):
+    """Shortest route within the horizon if every unbuilt tile connects in all directions."""
+    queue = deque([(start, 0)])
+    seen = {start}
+    while queue:
+        pos, length = queue.popleft()
+        if pos == goal:
+            return length
+        if length + distance(pos, goal) > budget:
+            continue
+        for direction, dest in enumerate(neighbors(pos)):
+            if dest not in seen and connects(
+                board.get(pos, OPEN), board.get(dest, OPEN), direction
+            ):
+                seen.add(dest)
+                queue.append((dest, length + 1))
+    return None

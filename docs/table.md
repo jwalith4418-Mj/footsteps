@@ -36,3 +36,14 @@ For each decision the client sends the seat’s current board, own hand and team
 Add `--guided` for role guidance and worked forward-build options, `--named-moves` for compass-direction proposals, `--named-ballots` for literal approve/reject votes, and `--no-think` to ask Ollama for direct answers on a short clock. Each switch is independent. [Matched games and proposal probes](../experiments/model-panel/README.md)
 
 The inference budget defaults to 30 seconds and is capped by the host’s remaining time. Set it with `--budget 10`, for example. Each revision gets one attempt. A missing, invalid or late response leaves the decision open for the host’s usual timeout. A ballot remains visibly missing when the votes are revealed. The client can answer again on the next revision. The client terminal reports its own accepted choices, including private returns. [Two-turn model trial and replay](../experiments/ollama-crossing.md)
+
+Add `--tools` to let the seat query a placement or movement before deciding. Add `--private-notes FILE` to ask for one short explanation in the model's final reply and save it beside the game. Choose a fresh path for each seat. The model's legal action alone goes to the table. The local owner-readable JSONL file records the model, seat, revision, attempted choice, tool names and short stated reason. It excludes the seat link and the model's separate thinking field. [Tool catalog and experimental design](seat-tools.md)
+
+To view the notes at the matching decision, attach them explicitly to an omniscient HTML export. Repeat `--notes` for additional seat files. The first seat requesting notes receives a table ID for matching attachments, and the host adds it to the private record. Ordinary games keep their original record shape. Notes from a different live table are rejected. A note whose attempted choice differs from the committed event is labeled accordingly. Opening a private export shares its contents with the reader. Public and individual-seat exports exclude attached notes from their payloads. Existing records can still be viewed without attachments.
+
+```sh
+python -m footsteps ollama --model qwen3.5:9b-q8_0 --no-think --tools --private-notes /tmp/seat0.jsonl
+python -m footsteps view /tmp/game.json --omniscient --notes /tmp/seat0.jsonl -o /tmp/omniscient.html
+```
+
+For a solitaire plan-selector trial, pass `--private-notes-dir` to `python -m experiments.turn_plans` with `--policy model`. Each note attaches to the placement event when the model picked its plan. The later proposal executes the selected destination. Select the corresponding `seat-SEED.jsonl` when exporting `game-SEED.json`.

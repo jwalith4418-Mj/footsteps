@@ -3,12 +3,15 @@
 import argparse
 import csv
 import json
+import secrets
+from contextlib import nullcontext
 from pathlib import Path
 from random import Random
 
 from experiments.model_solitaire import label, local_edges, run_game
 from experiments.skill_probe import MODEL, optimistic_length
 from footsteps.board import distance, moves, neighbors, rotate
+from footsteps.decision_notes import REASON_PROMPT, open_private, request_reason, save_note
 from footsteps.ollama import request
 from footsteps.solo import sealed
 
@@ -56,7 +59,7 @@ def immediate_score(plan):
     return (plan["distance"] != 0, not onward, plan["distance"], min(onward, default=999))
 
 
-def select(menu, state, model, policy, rng, *, local=False):
+def select(menu, state, model, policy, rng, *, local=False, note_file=None):
     if policy == "uniform":
         return rng.choice(menu)
     if policy in ("shortest", "exits"):
@@ -121,11 +124,24 @@ def select(menu, state, model, policy, rng, *, local=False):
         ],
         "options": {"temperature": 0, "seed": 1, "num_ctx": 8192, "num_predict": 96},
     }
+    if note_file is not None:
+        request_reason(body["format"])
+        body["messages"][0]["content"] += REASON_PROMPT
+        body["options"]["num_predict"] = 144
     reply = json.loads(request(11434, "/api/chat", body, 30)["message"]["content"])
-    return choices[reply["plan"]]
+    chosen = choices[reply["plan"]]
+    if note_file is not None:
+        snapshot = {
+            "state": state,
+            "revision": state["revision"],
+            "seat": 0,
+            "table_id": state["table_id"],
+        }
+        save_note(note_file, snapshot, model, chosen["place"], reply.get("reason"), [])
+    return chosen
 
 
-def policy_for(model, policy, seed, log, *, local=False):
+def policy_for(model, policy, seed, log, *, local=False, note_file=None):
     order = Random(f"plan-order/{seed}")
     picks = Random(f"plan-pick/{seed}")
     chosen = None
@@ -143,7 +159,7 @@ def policy_for(model, policy, seed, log, *, local=False):
         chosen = None
         menu = plans(state, choices, local=local)
         order.shuffle(menu)
-        chosen = select(menu, state, model, policy, picks, local=local)
+        chosen = select(menu, state, model, policy, picks, local=local, note_file=note_file)
         log.write(
             json.dumps(
                 {"turn": state["turn"], "menu": menu, "pick": menu.index(chosen)},
@@ -165,10 +181,21 @@ if __name__ == "__main__":
     cli.add_argument(
         "--local", action="store_true", help="group and display plans using only one-step edges"
     )
+    cli.add_argument(
+        "--private-notes-dir",
+        type=Path,
+        help="create a separate private directory for model plan notes",
+    )
     args = cli.parse_args()
+    if args.private_notes_dir and args.policy != "model":
+        cli.error("private notes require a model selector")
     if (args.local and args.policy == "shortest") or (not args.local and args.policy == "exits"):
         cli.error("use exits for local plans or shortest for pathfinding plans")
+    if args.private_notes_dir and args.out.resolve() == args.private_notes_dir.resolve():
+        cli.error("use a separate directory for private notes")
     args.out.mkdir(parents=True, exist_ok=False)
+    if args.private_notes_dir:
+        args.private_notes_dir.mkdir(mode=0o700, parents=True, exist_ok=False)
     if args.policy == "model":
         request(
             11434,
@@ -180,9 +207,19 @@ if __name__ == "__main__":
         w = csv.writer(handle, lineterminator="\n")
         w.writerow(["seed", "player", "win", "turns", "end_distance", "sealed", "fallback"])
         for seed in args.seeds:
-            with (args.out / f"plans-{seed}.jsonl").open("w") as log:
-                choose = policy_for(args.model, args.policy, seed, log, local=args.local)
-                rows = run_game(seed, args.model, args.out, decide_fn=choose)
+            table_id = secrets.token_hex(16) if args.private_notes_dir else None
+            with (
+                (args.out / f"plans-{seed}.jsonl").open("w") as log,
+                (
+                    open_private(args.private_notes_dir / f"seat-{seed}.jsonl")
+                    if args.private_notes_dir
+                    else nullcontext()
+                ) as notes,
+            ):
+                choose = policy_for(
+                    args.model, args.policy, seed, log, local=args.local, note_file=notes
+                )
+                rows = run_game(seed, args.model, args.out, decide_fn=choose, table_id=table_id)
             rows[0][1] = f"{args.policy}-local-plans" if args.local else f"{args.policy}-plans"
             w.writerows(rows)
             handle.flush()

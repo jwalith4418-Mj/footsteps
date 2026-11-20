@@ -3,15 +3,19 @@
 import json
 from pathlib import Path
 
+from .decision_notes import applied_note, notes_for_record
 from .game import Game
 from .record import describe, replay
 
 WEB = Path(__file__).with_name("web")
 
 
-def transcript(record, seat=None, *, omniscient=False):
+def transcript(record, seat=None, *, omniscient=False, notes=()):
     if omniscient and seat is not None:
         raise ValueError("choose a seat or an omniscient view")
+    if notes and not omniscient:
+        raise ValueError("private decision notes require an omniscient export")
+    grouped = notes_for_record(record, notes)
     # Validate before interpreting events for display (including the reported event index).
     replay(record)
     game = Game(record["setup"])
@@ -34,7 +38,8 @@ def transcript(record, seat=None, *, omniscient=False):
         return frame
 
     capture("setup", 1, "The marker starts at (0, 0). The floor is ready for the first draw.")
-    for event in record["events"]:
+    for revision, event in enumerate(record["events"]):
+        attached = [applied_note(game, event, row) for row in grouped.get(revision, [])]
         kind, turn = event["kind"], game.turn
         message = describe(game, event, game.actor if omniscient else seat)
         ballots = list(zip(game.alive, event.get("votes", [])))
@@ -50,6 +55,8 @@ def transcript(record, seat=None, *, omniscient=False):
         if kind == "place":
             p = tuple(event["at"])
             frame["placed"] = [tuple(map(str, p)), game.board[p], event["tile"], event["rotation"]]
+        if attached:
+            frame["decision_notes"] = attached
         if ballots:
             frame["ballots"] = ballots
 
@@ -63,8 +70,8 @@ def transcript(record, seat=None, *, omniscient=False):
     }
 
 
-def export_html(record, title, seat=None, *, omniscient=False):
-    data = transcript(record, seat, omniscient=omniscient)
+def export_html(record, title, seat=None, *, omniscient=False, notes=()):
+    data = transcript(record, seat, omniscient=omniscient, notes=notes)
     data["title"] = title
     payload = json.dumps(data, separators=(",", ":")).replace("<", "\\u003c")
     return (

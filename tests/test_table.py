@@ -112,6 +112,15 @@ class LoopbackTable(unittest.TestCase):
         with urlopen(req, timeout=3) as response:
             return json.load(response)
 
+    def test_note_identity_persisted_only_when_requested(self):
+        self.assertNotIn("table_id", read(self.path))
+        first = self.api(0, "/ready", request_note_id=True)
+        self.assertEqual(first["table_id"], read(self.path)["table_id"])
+        self.assertNotIn("table_id", self.api(1, "/ready"))
+        self.assertEqual(self.api(2, "/ready", request_note_id=True)["table_id"], first["table_id"])
+        self.assertEqual(self.api(0, "/state")["table_id"], first["table_id"])
+        self.assertNotIn("table_id", self.api(1, "/state"))
+
     def test_crossing_through_four_private_clients(self):
         for seat in range(4):
             v = self.api(seat, "/ready")

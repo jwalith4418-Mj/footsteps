@@ -39,6 +39,7 @@ def checkpoint(path, record, *, create=False):
 class TableServer(ThreadingHTTPServer):
     def __init__(self, table, output, port=0, clock=time.monotonic):
         self.table = table
+        self.note_seats = set()
         self.output = output
         self.clock = clock
         self.lock = threading.Lock()
@@ -49,10 +50,14 @@ class TableServer(ThreadingHTTPServer):
         except BaseException:
             self.server_close()
             raise
-        self.saved = (0, 0)
+        self.saved = (0, 0, table.record.get("table_id"))
 
     def save(self):
-        stamp = self.table.revision, len(self.table.record.get("remarks", ()))
+        stamp = (
+            self.table.revision,
+            len(self.table.record.get("remarks", ())),
+            self.table.record.get("table_id"),
+        )
         if stamp != self.saved:
             checkpoint(self.output, self.table.record)
             self.saved = stamp
@@ -117,12 +122,18 @@ class Handler(BaseHTTPRequestHandler):
                 now = server.clock()
                 table = server.table
                 if self.path == "/ready":
+                    if data.get("request_note_id") is True:
+                        if "table_id" not in table.record:
+                            table.record["table_id"] = secrets.token_hex(16)
+                        server.note_seats.add(seat)
                     table.join(seat, now)
                 elif self.path == "/choice":
                     table.submit(seat, data["revision"], data["choice"], now)
                 elif self.path == "/say":
                     table.say(seat, data["revision"], data["text"], now)
                 state = table.view(seat, now)
+                if seat in server.note_seats:
+                    state["table_id"] = table.record["table_id"]
                 server.save()
         except DecisionConflict as e:
             self.error(409, str(e))

@@ -1,9 +1,11 @@
 import argparse
 import json
+from contextlib import nullcontext
 from functools import partial
 from getpass import getpass
 from pathlib import Path
 
+from .decision_notes import open_private, read_notes, save_private_export
 from .ollama import Seat, infer, play_seat
 from .record import read, render
 from .solo import POLICIES, setup, simulate
@@ -33,6 +35,13 @@ def main():
     perspective = viewer.add_mutually_exclusive_group()
     perspective.add_argument("--omniscient", action="store_true", help="show every hand and role")
     perspective.add_argument("--seat", type=int, help="include this seat's private information")
+    viewer.add_argument(
+        "--notes",
+        type=Path,
+        action="append",
+        default=[],
+        help="attach a private JSONL file to an omniscient export (repeat per seat)",
+    )
     viewer.add_argument("-o", "--output", type=Path, required=True, help="destination HTML file")
     table = sub.add_parser("table", help="host a paper-kit table on localhost")
     table.add_argument("--save", required=True, type=Path, help="new private referee JSON path")
@@ -62,21 +71,34 @@ def main():
         "--no-think", action="store_true", help="disable Ollama thinking for this seat"
     )
     model.add_argument("--named-ballots", action="store_true", help="vote using approve and reject")
+    model.add_argument(
+        "--tools", action="store_true", help="let the model consult one stage-specific board tool"
+    )
+    model.add_argument(
+        "--private-notes",
+        type=Path,
+        help="save short model explanations to a new private JSONL file",
+    )
     args = parser.parse_args()
     try:
         if args.command == "ollama":
-            winner = play_seat(
-                Seat(getpass("Private seat link: ").strip()),
-                args.model,
-                args.budget,
-                decide=partial(
-                    infer,
-                    guided=args.guided,
-                    named_moves=args.named_moves,
-                    no_think=args.no_think,
-                    named_ballots=args.named_ballots,
-                ),
-            )
+            seat = Seat(getpass("Private seat link: ").strip())
+            with open_private(args.private_notes) if args.private_notes else nullcontext() as notes:
+                winner = play_seat(
+                    seat,
+                    args.model,
+                    args.budget,
+                    request_note_id=notes is not None,
+                    decide=partial(
+                        infer,
+                        guided=args.guided,
+                        named_moves=args.named_moves,
+                        no_think=args.no_think,
+                        named_ballots=args.named_ballots,
+                        use_tools=args.tools,
+                        note_file=notes,
+                    ),
+                )
             print(f"{winner.capitalize()} team wins.")
         elif args.command == "table":
             if not 0 <= args.port <= 65535:
@@ -100,10 +122,25 @@ def main():
                 args.output.exists() and args.output.samefile(args.path)
             ):
                 parser.error("choose an HTML output file separate from the input record")
+            if args.notes and not args.omniscient:
+                parser.error("--notes requires --omniscient")
+            if any(
+                args.output.resolve() == p.resolve()
+                or (args.output.exists() and args.output.samefile(p))
+                for p in args.notes
+            ):
+                parser.error("choose an output separate from all private notes")
             document = export_html(
-                read(args.path), args.path.stem, args.seat, omniscient=args.omniscient
+                read(args.path),
+                args.path.stem,
+                args.seat,
+                omniscient=args.omniscient,
+                notes=read_notes(args.notes),
             )
-            args.output.write_text(document, encoding="utf-8")
+            if args.notes:
+                save_private_export(args.output, document)
+            else:
+                args.output.write_text(document, encoding="utf-8")
             print(args.output.resolve())
         else:
             print(render(read(args.path), seat=args.seat, full=args.full), end="")
