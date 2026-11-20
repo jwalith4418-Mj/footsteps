@@ -621,3 +621,7 @@ h2 {
   }
 
 }
+
+.decision-notes { margin-top: .65rem; }
+.decision-notes summary { cursor: pointer; font-weight: 600; }
+.decision-notes p { overflow-wrap: anywhere; }

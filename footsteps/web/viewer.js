@@ -193,6 +193,21 @@ function entry(i, current) {
   } else {
     text.append(make("p", "", f.message));
   }
+  if (f.decision_notes) {
+    const details = make("details", "decision-notes");
+    details.open = current;
+    details.append(make("summary", "", "Private model notes (" + f.decision_notes.length + ")"));
+    for (const note of f.decision_notes) {
+      const line = make("p");
+      line.append(make("strong", "", "P" + note.seat + " · " + note.model + " "));
+      line.append(document.createTextNode(note.reason || "No explanation supplied."));
+      details.append(line);
+      if (!note.matches) {
+        details.append(make("p", "", "Attempt differed from the recorded event: " + JSON.stringify(note.choice)));
+      }
+    }
+    text.append(details);
+  }
   item.append(make("span", "number", i === 0 ? "Setup" : "T" + f.event_turn + " / " + i), text);
   return item;
 }

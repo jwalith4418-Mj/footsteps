@@ -4,12 +4,11 @@ import argparse
 import csv
 import json
 import sys
-from collections import deque
 from pathlib import Path
 from random import Random
 
 from experiments.model_solitaire import decide, detour_table, geometry, label
-from footsteps.board import OPEN, connects, distance, neighbors
+from footsteps.board import distance, neighbors, optimistic_length
 from footsteps.ollama import request
 from footsteps.record import read
 from footsteps.solo import sealed
@@ -21,25 +20,6 @@ SYSTEM = """You are the only player. Move the shared marker toward EXIT before t
 This turn's build is over. Pick a movement action. EVERY choice, including wait, spends the current opportunity.
 Entering EXIT wins now. Entering a closed region makes EXIT permanently unreachable. Use a detour when
 the nearer landing is a trap. A future build can extend an open edge. Select the action by name."""
-
-
-def optimistic_length(board, start, goal, budget):
-    """Shortest route within the horizon if every unbuilt tile connects in all directions."""
-    queue = deque([(start, 0)])
-    seen = {start}
-    while queue:
-        pos, length = queue.popleft()
-        if pos == goal:
-            return length
-        if length + distance(pos, goal) > budget:
-            continue
-        for direction, dest in enumerate(neighbors(pos)):
-            if dest not in seen and connects(
-                board.get(pos, OPEN), board.get(dest, OPEN), direction
-            ):
-                seen.add(dest)
-                queue.append((dest, length + 1))
-    return None
 
 
 def card_choice(state, choices, model, bound=False):
