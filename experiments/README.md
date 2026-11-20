@@ -66,3 +66,5 @@ The [EXIT-origin comparison](exit-origin/README.md) tests distance reading, dire
 The [placement check](placement-check/README.md) asks builders to classify a directed edge and, optionally, locate the marker before committing. Frozen positions and matched five-seat tables measure what players can read and what they then build.
 
 The [rotation comparison](rotation/README.md) pairs printed-only and freely rotated games, then compares automatic orientation tables with observed private tool calls on matched model decisions.
+
+The [native action comparison](native-actions/README.md) follows each private rotation and preview through to the committed placement. It pairs literal native calls, a rotatable hand and indexed menus on the same tactical floors and complete social deals.

@@ -1,0 +1,12 @@
+{"case":"Red-guest","arm":"original","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":320,"content_chars":854,"thinking_chars":0,"seconds":7.731}
+{"case":"Red-guest","arm":"cue","model":"qwen3.5:9b-q8_0","done":"stop","names":["place_tile"],"output_tokens":51,"content_chars":0,"thinking_chars":0,"seconds":4.236}
+{"case":"Red-guest","arm":"longer","model":"qwen3.5:9b-q8_0","done":"stop","names":["preview_placement"],"output_tokens":533,"content_chars":1569,"thinking_chars":0,"seconds":15.148}
+{"case":"Blue-82-escape","arm":"cue","model":"qwen3.5:9b-q8_0","done":"stop","names":["preview_placement"],"output_tokens":51,"content_chars":0,"thinking_chars":0,"seconds":4.693}
+{"case":"Blue-82-escape","arm":"longer","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":768,"content_chars":2342,"thinking_chars":0,"seconds":14.221}
+{"case":"Blue-82-escape","arm":"original","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":320,"content_chars":859,"thinking_chars":0,"seconds":12.511}
+{"case":"held-9600-E10-good","arm":"longer","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":768,"content_chars":2344,"thinking_chars":0,"seconds":14.718}
+{"case":"held-9600-E10-good","arm":"original","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":320,"content_chars":1036,"thinking_chars":0,"seconds":15.91}
+{"case":"held-9600-E10-good","arm":"cue","model":"qwen3.5:9b-q8_0","done":"stop","names":["preview_placement"],"output_tokens":52,"content_chars":0,"thinking_chars":0,"seconds":5.086}
+{"case":"held-9600-E10-bad","arm":"original","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":320,"content_chars":989,"thinking_chars":0,"seconds":10.798}
+{"case":"held-9600-E10-bad","arm":"cue","model":"qwen3.5:9b-q8_0","done":"stop","names":["place_tile"],"output_tokens":52,"content_chars":0,"thinking_chars":0,"seconds":8.216}
+{"case":"held-9600-E10-bad","arm":"longer","model":"qwen3.5:9b-q8_0","done":"length","names":[],"output_tokens":768,"content_chars":2510,"thinking_chars":0,"seconds":17.896}

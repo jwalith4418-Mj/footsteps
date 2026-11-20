@@ -4,12 +4,15 @@ import json
 import time
 from http.client import HTTPException
 
-from .board import moves, rotate
+from .board import moves, optimistic_length, rotate
 from .decision_notes import save_note
 from .game import checked_placement, require
-from .ollama import INDEX_INSTRUCTIONS, forward_examples, model_request, request
+from .ollama import RULES, forward_examples, model_request, request
 from .seat_tools import tile
+from .solo import sealed
 from .team_names import color_brief
+
+PREPARATIONS = {"orient_tile", "preview_placement", "inspect_rotations_at"}
 
 
 def function(name, description, fields):
@@ -53,7 +56,21 @@ def build_tools(snapshot, mode):
                 args,
             ),
         ]
-        if mode == "hand":
+        if mode == "draft":
+            tools[0] = function(
+                "commit_preview",
+                "Commit exactly the last previewed piece, square and orientation. Preview again after changing that piece.",
+                check,
+            )
+        if mode == "fit":
+            tools.append(
+                function(
+                    "inspect_rotations_at",
+                    "For this one held piece and empty square, compare the four clockwise orientations and whether the marker could step onto it. Leaves the piece in hand as it was.",
+                    piece | square,
+                )
+            )
+        if mode in ("hand", "draft", "fit"):
             tools.append(
                 function(
                     "orient_tile",
@@ -101,6 +118,25 @@ def receipt(handle, face, rotation):
     }
 
 
+def route_prospects(state, preview):
+    """Optimistic reachability after this build and the still-pending proposal."""
+    board = {tuple(p): face for p, face in state["board"]}
+    board[tuple(preview["at"])] = rotate(preview["face"], preview["rotation"])
+    marker, goal = tuple(state["marker"]), tuple(state["goal"])
+    remaining = state["store_count"] + int(state["draw_count"] == 2)
+    limit = min(16, remaining)
+    label = (
+        "possible_route_in_time" if remaining <= 16 else "possible_route_within_16_further_steps"
+    )
+    return {
+        "permanent_trap": sealed(board, marker, goal),
+        label: any(
+            optimistic_length(board, p, goal, limit) is not None
+            for p in (marker, *moves(board, marker))
+        ),
+    }
+
+
 def apply_call(name, args, state, choices, pieces, mode, orient):
     """Apply private preparations and translate a commit into the referee's vocabulary."""
     result = canonical = None
@@ -127,7 +163,23 @@ def apply_call(name, args, state, choices, pieces, mode, orient):
             )
             board = {tuple(p): f for p, f in state["board"]}
             marker = tuple(state["marker"])
-            if name == "preview_placement":
+            if name == "inspect_rotations_at":
+                rows = []
+                for turns in range(4):
+                    board[at] = rotate(face, turns)
+                    rows.append(
+                        {
+                            **receipt(handle, face, turns),
+                            "can_step_here": at in moves(board, marker),
+                        }
+                    )
+                result = {
+                    "at": at,
+                    "marker_stays": marker,
+                    "orientations": rows,
+                    "held_rotation": current,
+                }
+            elif name == "preview_placement":
                 board[at] = rotate(face, rotation)
                 steps = moves(board, marker)
                 result = {
@@ -142,7 +194,7 @@ def apply_call(name, args, state, choices, pieces, mode, orient):
                 choice = {
                     "piece": handle,
                     "at": list(at),
-                    ("expected_orientation" if mode == "hand" else "rotation"): rotation,
+                    ("rotation" if mode == "direct" else "expected_orientation"): rotation,
                 }
                 if "can_step" in choices:
                     claims = {
@@ -177,9 +229,10 @@ def apply_call(name, args, state, choices, pieces, mode, orient):
     return result, choice, canonical
 
 
-def action_request(snapshot, model, tools, *, guided=False, task=None):
+def action_request(snapshot, model, tools, *, guided=False, task=None, cue=False):
     state, choices, pieces = snapshot["state"], snapshot["choices"], snapshot["pieces"]
     body = model_request(snapshot, model)
+    body["messages"][0]["content"] = RULES
     if snapshot.get("team_names") == "colors":
         color_brief(body)
     context = json.loads(body["messages"][1]["content"])
@@ -199,9 +252,15 @@ def action_request(snapshot, model, tools, *, guided=False, task=None):
                 for e in forward_examples(snapshot)
             ]
         if "can_step" in choices:
+            context.pop("origin_indices_by_at_index", None)
+            context["origins"] = choices["origin"]
             context["required_check"] = (
                 "Name an adjacent non-EXIT origin and say whether its outgoing edge and the rotated entrance permit a step from it to the new tile."
             )
+            if "marker_on_origin" in choices:
+                context["required_check"] += (
+                    " Also say whether the actual marker currently occupies that origin."
+                )
     else:
         context["legal_values"] = choices
     if task:
@@ -210,14 +269,16 @@ def action_request(snapshot, model, tools, *, guided=False, task=None):
     body["tools"] = tools
     body["think"] = False
     body["options"]["num_predict"] = 320
-    body["messages"][0]["content"] = body["messages"][0]["content"].removesuffix(
-        " " + INDEX_INSTRUCTIONS
-    ) + (
+    body["messages"][0]["content"] += (
         " Act by calling one of the supplied functions. Give literal coordinates, piece handles and values. "
         "A committing call is your decision. Preparations are optional and private. "
         "A blocked or remote build is legal. Use one call at a time."
     )
     body["messages"][1]["content"] = json.dumps(context, separators=(",", ":"))
+    if cue:
+        body["messages"].append(
+            {"role": "user", "content": "Send exactly one native function call now."}
+        )
     return body
 
 
@@ -234,21 +295,29 @@ def native_decision(
     task=None,
     max_calls=6,
     request_fn=request,
+    prospects=False,
+    cue=False,
 ):
     """Return a transport choice on the first valid action. The host commits it once."""
     deadline = time.monotonic() + seconds
-    require(mode in ("direct", "hand"), "unknown native action interface")
+    require(mode in ("direct", "hand", "draft", "fit"), "unknown native action interface")
     tools = build_tools(snapshot, mode)
     specs = {t["function"]["name"]: t["function"]["parameters"]["properties"].copy() for t in tools}
     if note_file is not None:
         for t in tools:
             fn = t["function"]
-            if fn["name"] not in ("orient_tile", "preview_placement"):
+            if fn["name"] not in PREPARATIONS:
                 fn["parameters"]["properties"]["reason"] = {
                     "type": "string",
                     "description": "Optional short private reason for this choice.",
                 }
-    body = action_request(snapshot, model, tools, guided=guided, task=task)
+    body = action_request(snapshot, model, tools, guided=guided, task=task, cue=cue)
+    if mode == "draft" and snapshot["state"]["stage"] == "place":
+        body["messages"][0]["content"] += (
+            " Before committing, preview a candidate, then read its effect. You may change the "
+            "piece orientation or try another square. commit_preview places exactly the last preview. "
+            "Emit the native call directly. Keep time for the commit."
+        )
     log = [] if trace is None else trace
     try:
         choice, canonical, reason = run_calls(
@@ -263,6 +332,7 @@ def native_decision(
             orient,
             log,
             note_file is not None,
+            prospects,
         )
     except (ValueError, OSError, HTTPException) as exc:
         if note_file is not None:
@@ -274,20 +344,28 @@ def native_decision(
 
 
 def run_calls(
-    snapshot, mode, tools, specs, body, deadline, max_calls, request_fn, orient, log, explain
+    snapshot,
+    mode,
+    tools,
+    specs,
+    body,
+    deadline,
+    max_calls,
+    request_fn,
+    orient,
+    log,
+    explain,
+    prospects,
 ):
     state, choices = snapshot["state"], snapshot["choices"]
     pieces = snapshot["pieces"].copy()
+    draft = None
     for i in range(max_calls):
         left = deadline - time.monotonic()
         if left <= 0:
             raise TimeoutError("native action deadline")
         if i == max_calls - 1:
-            body["tools"] = [
-                t
-                for t in tools
-                if t["function"]["name"] not in ("preview_placement", "orient_tile")
-            ]
+            body["tools"] = [t for t in tools if t["function"]["name"] not in PREPARATIONS]
             body["messages"].append(
                 {"role": "user", "content": "Last opportunity. Commit your decision now."}
             )
@@ -320,6 +398,8 @@ def run_calls(
         args = fn.get("arguments") if isinstance(fn, dict) else None
         event = {"name": name if isinstance(name, str) and name in specs else "unknown"}
         log.append(event)
+        if mode == "draft" and name == "preview_placement":
+            draft = None
         try:
             require(
                 event["name"] != "unknown" and isinstance(args, dict),
@@ -332,7 +412,7 @@ def run_calls(
             fields = specs[name]
             args = args.copy()
             reason = None
-            if explain and name not in ("orient_tile", "preview_placement"):
+            if explain and name not in PREPARATIONS:
                 reason = args.pop("reason", None)
                 require(reason is None or isinstance(reason, str), "reason must be text")
             require(
@@ -344,7 +424,22 @@ def run_calls(
                 "use exactly the listed argument names and literal types",
             )
             event["arguments"] = args.copy()
-            result, choice, canonical = apply_call(name, args, state, choices, pieces, mode, orient)
+            execute = name
+            if name == "commit_preview":
+                require(draft is not None, "preview a piece on a square first")
+                handle, rotation, x, y = draft
+                require(pieces[handle][1] == rotation, "orientation changed; preview again")
+                execute = "place_tile"
+                args = {**args, "piece": handle, "x": x, "y": y}
+            result, choice, canonical = apply_call(
+                execute, args, state, choices, pieces, mode, orient
+            )
+            if name == "preview_placement" and mode == "draft":
+                draft = (args["piece"], result["rotation"], args["x"], args["y"])
+                if prospects:
+                    result.update(route_prospects(state, result))
+            if name == "commit_preview":
+                event["confirmed"] = {"piece": handle, "rotation": rotation, "x": x, "y": y}
             if choice is not None:
                 event["status"] = "commit"
                 return choice, canonical, reason

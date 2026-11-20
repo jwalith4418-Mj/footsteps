@@ -19,3 +19,5 @@ New games anchor coordinates at EXIT by default. The [matched origin trial](../e
 An optional live-table placement check asks the builder to read a specific edge. A second question asks whether the marker is on the chosen origin. Keep both available for model trials. Track first answers, corrections and random fallbacks separately from whether the move helped the team. [Placement trials](../experiments/placement-check/README.md)
 
 Keep quarter turns in base-1. Requiring printed orientation reduced cooperative wins on matched paper-kit deals. Hand rotation tables and private lookup are optional seat interfaces. [Matched games and model choices](../experiments/rotation/README.md)
+
+Offer native placement and reversible per-copy orientation as opt-in seat interfaces. Keep indexed play available as a control. The first model used its hand to solve explicit port puzzles, and rarely turned pieces during tactical play. Distinguish finding a useful square from reading the tile that fits it when evaluating future aids. [Native action trials](../experiments/native-actions/README.md)
