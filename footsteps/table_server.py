@@ -97,7 +97,7 @@ class Handler(BaseHTTPRequestHandler):
             self.error(404, "Unknown route")
 
     def do_POST(self):
-        if self.path in ("/ready", "/choice", "/say"):
+        if self.path in ("/ready", "/choice", "/say", "/orient"):
             self.api()
         else:
             self.error(404, "Unknown route")
@@ -128,6 +128,8 @@ class Handler(BaseHTTPRequestHandler):
                             table.record["table_id"] = secrets.token_hex(16)
                         server.note_seats.add(seat)
                     table.join(seat, now)
+                elif self.path == "/orient":
+                    table.orient(seat, data["revision"], data["piece"], data["rotation"], now)
                 elif self.path == "/choice":
                     table.submit(seat, data["revision"], data["choice"], now)
                 elif self.path == "/say":

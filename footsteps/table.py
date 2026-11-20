@@ -55,6 +55,10 @@ class Table:
         require(placement_check in (None, "edge", "edge-and-marker"), "unknown placement check")
         self.placement_check = placement_check
         self.game = Game(setup)
+        self.pieces = [{} for _ in self.game.hands]
+        self.next_handle = [1 for _ in self.game.hands]
+        for seat, hand in enumerate(self.game.hands):
+            self.add_pieces(seat, hand)
         self.rng = rng
         self.seconds = seconds
         self.discussion = discussion
@@ -82,7 +86,28 @@ class Table:
             self.started = True
             self.open_decision(now)
 
-    def commit(self, event):
+    def add_pieces(self, seat, faces):
+        for face in faces:
+            handle = f"H{self.next_handle[seat]}"
+            self.next_handle[seat] += 1
+            self.pieces[seat][handle] = (face, 0)
+
+    def orient(self, seat, revision, handle, rotation, now):
+        self.tick(now)
+        if (
+            type(revision) is not int
+            or revision != self.revision
+            or self.game.winner
+            or seat not in self.game.alive
+            or seat not in self.ready
+        ):
+            raise DecisionConflict("Hand is closed at this revision")
+        require(isinstance(handle, str) and handle in self.pieces[seat], "unknown held piece")
+        require(type(rotation) is int and 0 <= rotation < 4, "choose 0–3 clockwise quarter turns")
+        face, _ = self.pieces[seat][handle]
+        self.pieces[seat][handle] = (face, rotation)
+
+    def commit(self, event, *, handle=None):
         game = self.game
         before = copy(game)
         before.alive = game.alive.copy()
@@ -90,6 +115,13 @@ class Table:
         game.apply(event)
         self.record["events"].append(event)
         kind = event["kind"]
+        if kind == "draw":
+            self.add_pieces(before.actor, event["tiles"])
+        elif kind in ("place", "discard"):
+            pieces = self.pieces[before.actor]
+            if handle is None:
+                handle = next(h for h, (face, _) in pieces.items() if face == event["tile"])
+            del pieces[handle]
         if kind == "place":
             self.placed_at = tuple(event["at"])
         if kind == "move_vote" or (kind == "propose" and event["to"] is None):
@@ -203,6 +235,7 @@ class Table:
             "voted": seat in self.votes,
             "can_speak": self.speaking(seat, now),
             "state": game.view(seat),
+            "pieces": self.pieces[seat].copy(),
             "choices": self.choices(seat, now),
             "history": list(self.history[seat]),
             "floor_turns": [row.copy() for row in self.floor_turns],
@@ -213,6 +246,28 @@ class Table:
         fields = self.choices(seat, now)
         if type(revision) is not int or revision != self.revision or fields is None:
             raise DecisionConflict("Decision is closed for this seat")
+        handle = None
+        if (
+            isinstance(choice, dict)
+            and "piece" in choice
+            and self.game.stage in ("place", "discard")
+        ):
+            choice = choice.copy()
+            handle = choice.pop("piece")
+            require(isinstance(handle, str) and handle in self.pieces[seat], "unknown held piece")
+            require("tile" not in choice, "choose one held piece")
+            face, orientation = self.pieces[seat][handle]
+            choice["tile"] = face
+            if self.game.stage == "place":
+                if "expected_orientation" in choice:
+                    expected = choice.pop("expected_orientation")
+                    require(
+                        type(expected) is int
+                        and expected == orientation
+                        and "rotation" not in choice,
+                        "held orientation changed; refresh the hand",
+                    )
+                choice.setdefault("rotation", orientation)
         require(
             isinstance(choice, dict) and choice.keys() == fields.keys(), "invalid choice fields"
         )
@@ -226,7 +281,7 @@ class Table:
             if self.game.stage == "place" and self.placement_check:
                 g = self.game
                 placement = checked_placement(g.board, g.goal, g.marker, g.hands[seat], choice)
-                self.commit({"kind": "place", **placement})
+                self.commit({"kind": "place", **placement}, handle=handle)
                 dest = tuple(placement["at"])
                 step = "open" if choice["can_step"] else "blocked"
                 possible = "legal" if dest in moves(g.board, g.marker) else "unavailable"
@@ -235,7 +290,7 @@ class Table:
                     f"Marker still at {g.marker}. A direct step from there to {dest} is {possible}."
                 )
             else:
-                self.commit({"kind": self.game.stage, **choice})
+                self.commit({"kind": self.game.stage, **choice}, handle=handle)
         self.open_decision(now)
 
     def say(self, seat, revision, message, now):
