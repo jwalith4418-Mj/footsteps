@@ -11,7 +11,7 @@ from random import Random, SystemRandom
 from tempfile import NamedTemporaryFile
 
 from .record import read
-from .table import DecisionConflict, Table, paper_setup
+from .table import DecisionConflict, Table, fixed_kit, paper_setup
 
 WEB = Path(__file__).with_name("web")
 ASSETS = {
@@ -148,6 +148,9 @@ def serve(args):
     rng = Random(1) if args.crossing else SystemRandom()
     if args.crossing:
         setup = read(WEB.parents[1] / "examples" / "crossing.json")["setup"]
+    elif args.kit_counts is not None:
+        kit = fixed_kit(Random(args.kit_seed), 16, *args.kit_counts)
+        setup = paper_setup(rng, args.seats, kit=kit)
     else:
         setup = paper_setup(rng, args.seats)
     table = Table(setup, rng, args.seconds, args.discussion)

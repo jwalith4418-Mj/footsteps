@@ -13,9 +13,24 @@ PAPER_KIT = (188, 153, 16, 71, 45, 91, 121, 41, 234, 12, 44, 16, 74, 107, 41, 18
 BALLOTS = {"move_vote", "eliminate_vote"}
 
 
-def paper_setup(rng, seats=4):
+def fixed_kit(rng, size, entrances, exits):
+    """Choose uniform subsets of labelled tile sides, independently for each direction of travel."""
+    require(type(size) is int and size >= 1, "kit size must be positive")
+    slots = 4 * size
+    faces = [0] * size
+    for count, shift in ((entrances, 0), (exits, 4)):
+        require(type(count) is int and 0 <= count <= slots, f"kit counts must be in 0..{slots}")
+        order = list(range(slots))
+        rng.shuffle(order)
+        for slot in order[:count]:
+            faces[slot // 4] |= 1 << (shift + slot % 4)
+    return tuple(faces)
+
+
+def paper_setup(rng, seats=4, *, kit=PAPER_KIT):
     require(seats in (3, 4), "use three or four paper-kit seats")
-    tiles = list(PAPER_KIT)
+    require(len(kit) == len(PAPER_KIT), "use a sixteen-tile kit")
+    tiles = list(kit)
     rng.shuffle(tiles)
     roles = ["good"] * (seats - 1) + ["bad"]
     rng.shuffle(roles)

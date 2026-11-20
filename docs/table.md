@@ -2,6 +2,8 @@
 
 Start a host with `python -m footsteps table --save /tmp/game.json`. The default game shuffles the sixteen printed tiles and three good roles plus one bad role. Use `--seats 3` to deal two tiles to each of two good players and one bad player, leaving ten in the bag. For a rules walkthrough, `--crossing` uses the known seating, deal and first draw from the worked example. Players make all subsequent choices.
 
+To try a different sixteen-tile supply, add `--kit-counts 29 29 --kit-seed 8700`. The first number sets the total entrances and the second sets total exits, each from 0 to 64. Each set is drawn uniformly over the 64 tile sides. A side can have both permissions or neither. The seed reproduces faces across tables. Each host independently shuffles the deal and roles, and the saved record contains the actual setup.
+
 The server binds to 127.0.0.1 and prints a separate browser link for each seat. Give each participant only their own link. A local group can use separate browser tabs or profiles, arranged so players can read their own screen privately. Remote devices would need an independently configured loopback tunnel. The host terminal and the on-disk record contain referee secrets. Reopening a link reconnects to the same seat while that host process is running.
 
 ## Decisions

@@ -168,6 +168,8 @@ class Commands(unittest.TestCase):
     def test_invalid_invocations_do_not_create_output(self):
         path = self.tmp / "save"
         cases = [
+            (("table", "--kit-counts", "65", "0", "--save", path), "0..64"),
+            (("table", "--kit-seed", "1", "--save", path), "--kit-counts"),
             (("table", "--port", "65536", "--save", path), "port"),
             (("table", "--crossing", "--seats", "3", "--save", path), "four seats"),
             (("solo", "--store", "0", "--save", path), "store >= 1"),
@@ -186,8 +188,12 @@ class Commands(unittest.TestCase):
         self.assertFalse(path.exists())
 
     def test_host_checkpoints_both_deals_at_launch_and_shutdown(self):
-        for flags, seats in [(("--crossing",), 4), (("--seats", "3"), 3)]:
-            path = self.tmp / f"host-{seats}.json"
+        for flags, seats in [
+            (("--crossing",), 4),
+            (("--seats", "3"), 3),
+            (("--kit-counts", "29", "29", "--kit-seed", "8700"), 4),
+        ]:
+            path = self.tmp / f"host-{flags[0]}.json"
             with (
                 self.subTest(flags=flags),
                 patch(
@@ -200,5 +206,9 @@ class Commands(unittest.TestCase):
                 record = read(path)
                 self.assertEqual(len(record["setup"]["roles"]), seats)
                 self.assertEqual(replay(record).stage, "draw")
-                if seats == 4:
+                if "--kit-counts" in flags:
+                    tiles = sum(record["setup"]["hands"], record["setup"]["store"].copy())
+                    self.assertEqual(sum((t & 15).bit_count() for t in tiles), 29)
+                    self.assertEqual(sum((t >> 4).bit_count() for t in tiles), 29)
+                if "--crossing" in flags:
                     self.assertEqual(record["setup"], read(EXAMPLE)["setup"])

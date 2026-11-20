@@ -55,7 +55,18 @@ def main():
     table.add_argument(
         "--discussion", default=15, type=float, help="discussion seconds before each ballot"
     )
-    table.add_argument("--crossing", action="store_true", help="use the public two-turn demo setup")
+    supply = table.add_mutually_exclusive_group()
+    supply.add_argument(
+        "--kit-counts",
+        nargs=2,
+        type=int,
+        metavar=("IN", "OUT"),
+        help="uniformly allocate each count among 64 sides of sixteen tiles",
+    )
+    table.add_argument("--kit-seed", type=int, help="reproduce the tile mix for --kit-counts")
+    supply.add_argument(
+        "--crossing", action="store_true", help="use the public two-turn demo setup"
+    )
     model = sub.add_parser("ollama", help="join a private seat with a local Ollama model")
     model.add_argument("--model", required=True, help="installed Ollama model name")
     model.add_argument("--budget", type=float, default=30, help="maximum seconds per inference")
@@ -105,6 +116,8 @@ def main():
                 parser.error("--port must be between 0 and 65535")
             if args.crossing and args.seats != 4:
                 parser.error("the crossing example requires four seats")
+            if args.kit_seed is not None and args.kit_counts is None:
+                parser.error("--kit-seed requires --kit-counts")
             serve(args)
         elif args.command == "solo":
             if args.hand < 0 or args.store < 1 or not 0 <= args.density <= 1:
