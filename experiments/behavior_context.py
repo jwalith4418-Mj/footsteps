@@ -92,6 +92,7 @@ def perspective(body, snap, trust):
         "my_seat": f"P{seat}",
         "my_team": role,
         "initial_bad_count": state["bad_count"],
+        "initial_player_count": state["player_count"],
         "living": [f"P{s}" for s in state["alive"]],
         "marker": state["marker"],
         "EXIT": state["goal"],

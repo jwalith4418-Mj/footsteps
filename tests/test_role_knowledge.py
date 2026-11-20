@@ -1,9 +1,12 @@
 import json
 import unittest
 from copy import deepcopy
+from pathlib import Path
 from random import Random
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from experiments.social_evidence import social_game
 from experiments.social_prompt import advocate
 from footsteps.ollama import model_request
 from footsteps.role_knowledge import COMMON_KNOWLEDGE, role_information
@@ -73,6 +76,35 @@ class RoleKnowledge(unittest.TestCase):
             return standard, guided, speech
 
         self.assertEqual(requests(roles), requests(swapped))
+
+    def test_four_seat_table_gives_allies_their_private_map(self):
+        maps = {}
+
+        def decide(snap, *args, **kwargs):
+            maps[snap["seat"]] = role_information(snap)["your_private_role_information"]
+            return {k: v[0] for k, v in snap["choices"].items()}
+
+        with (
+            TemporaryDirectory() as tmp,
+            patch("experiments.social_evidence.infer", side_effect=decide),
+        ):
+            root = Path(tmp)
+            rows = social_game(
+                8601,
+                ["good", "bad", "good", "bad"],
+                "mock",
+                root / "game.json",
+                root / "notes.jsonl",
+                "receipt",
+                debate=True,
+                model_floor=True,
+                outcome_policy=True,
+            )
+            self.assertTrue(rows)
+            self.assertTrue(all(r["bad"] == "1+3" for r in rows))
+            self.assertEqual(maps[1]["all_bad_seats"], [1, 3])
+            self.assertEqual(maps[3]["all_good_seats"], [0, 2])
+            self.assertNotIn("all_bad_seats", maps[0])
 
     def test_speaker_receives_valid_bad_map_without_publishing_it(self):
         snap = seat_view(["bad", "good", "good", "bad"], 0)

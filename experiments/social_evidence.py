@@ -25,7 +25,7 @@ def approach(state):
 
 def social_game(
     seed,
-    bad,
+    roles,
     model,
     output,
     notes,
@@ -48,11 +48,13 @@ def social_game(
             strategy="payoff-trust" if social_guidance else "baseline",
         )
 
-    setup = paper_setup(Random(seed), 3)
-    setup["roles"] = ["bad" if s == bad else "good" for s in range(3)]
+    seats = range(len(roles))
+    bad = "+".join(str(s) for s in seats if roles[s] == "bad")
+    setup = paper_setup(Random(seed), len(roles))
+    setup["roles"] = roles
     table = Table(setup, Random(f"draw/{seed}"), discussion=1)
     table.record["table_id"] = secrets.token_hex(16)
-    for s in range(3):
+    for s in seats:
         table.join(s, 0)
     pick = Random(f"build/{seed}")
     destination = None
@@ -77,7 +79,7 @@ def social_game(
                         if s != nominator
                     }
                     table.say(nominator, table.revision, statement, now - table.discussion)
-            snapshots = [table.view(s, now) for s in range(3)]
+            snapshots = [table.view(s, now) for s in seats]
             for snap in snapshots:
                 if not (choices := snap["choices"]):
                     continue
@@ -188,6 +190,7 @@ def main():
         action="store_true",
         help="use the hybrid seat policy for social decisions",
     )
+    parser.add_argument("--roles", help="one explicit role layout for full model play, e.g. GBGB")
     parser.add_argument("--seeds", type=int, nargs="+", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--private-notes", type=Path, required=True)
@@ -198,6 +201,16 @@ def main():
         parser.error(
             "--model-floor, --bad-brief, --social-guidance and --outcome-policy require --debate"
         )
+    layouts = (["good", "bad", "good"], ["good", "good", "bad"])
+    if args.roles is not None:
+        if not (
+            args.model_floor
+            and args.debate
+            and len(args.roles) in (3, 4)
+            and set(args.roles) == {"G", "B"}
+        ):
+            parser.error("--roles requires full model play and 3 or 4 seats with both G and B")
+        layouts = (["good" if c == "G" else "bad" for c in args.roles],)
     args.out.mkdir(parents=True, exist_ok=False)
     args.private_notes.mkdir(mode=0o700, parents=True, exist_ok=False)
     request(
@@ -208,12 +221,13 @@ def main():
     )
     rows = []
     for seed in args.seeds:
-        for bad in (1, 2):
+        for roles in layouts:
+            bad = "+".join(str(s) for s, role in enumerate(roles) if role == "bad")
             name = f"{seed}-bad{bad}"
             rows.extend(
                 social_game(
                     seed,
-                    bad,
+                    roles,
                     args.model,
                     args.out / f"{name}.json",
                     args.private_notes / f"{name}.jsonl",

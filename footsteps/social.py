@@ -139,6 +139,7 @@ def social_request(body, snap, *, explain, trust=True, human=False):
         "turn": state["turn"],
         "alive": state["alive"],
         "initial_bad_count": state["bad_count"],
+        "initial_player_count": state["player_count"],
         "builder": state["actor"],
         "marker": marker,
         "EXIT": goal,
