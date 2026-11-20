@@ -1,5 +1,7 @@
 # Decisions behind the first rules
 
+The [design review after the social trials](design-review.md) ranks the open questions and specifies an opening-protection comparison for human play.
+
 | Decision | Design reason | Evidence to revisit |
 |---|---|---|
 | The exit is a special open tile and cannot seed construction. | A single unenterable tile on the exit would be permanent sabotage. Growing only from the start keeps the expedition on one connected floor. Traps on the approach remain possible. | Whether a bad team can create a consequential obstacle in a forgiving setup. |
