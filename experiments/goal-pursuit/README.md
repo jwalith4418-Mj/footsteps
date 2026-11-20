@@ -35,8 +35,42 @@ python -m experiments.goal_probes detours "$out/detours-brief.jsonl" --arm brief
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases east north west south --arms brief forecast ledger
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases solo --arms brief uniform baseline --seeds 9811 9812 9813 9814 9815 9816
 python -m experiments.goal_probes social "$out/social.jsonl" --arm brief
+python -m experiments.goal_probes social "$out/social-room.jsonl" --arm brief --max-reply 320
+python -m experiments.goal_probes social "$out/social-card.jsonl" --arm personal
+python -m experiments.goal_probes social "$out/social-last.jsonl" --arm last --max-reply 320
 python -m experiments.goal_probes ballots "$out/ballots.jsonl" --arm brief
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases four --arms brief --seeds 9501
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases five --arms brief baseline --seeds 9901
+python -m experiments.goal_pursuit "$out/games" "$out/private" --cases five --arms last --max-reply 320 --seeds 9901
 python -m experiments.goal_audit "$out"
 ```
+
+## What survived the solitaire checks
+
+The clock and rotation worksheet alone won **1/4** corridor games. Its only win was south, where the printed straight already points toward EXIT. Forecast and brief each won **4/4**, including the two held-out headings. One mandatory build in the east forecast game fell back after the reply limit, so its table win includes a random placement. The brief arm needed no fallback on the headings. On the four detour reflections in both orders, the brief arm produced **8/8** time-viable build and proposal pairs, including the step that initially increases Manhattan distance.
+
+The self-authored probe named the correct remaining clock in all eight first answers, but none of the eight original build/landing combinations could finish in time. After one private check, six placements were legal and two plans were viable. One was the printed southbound corridor. This distinguishes reading the arithmetic, picking a location and preserving a directed route. The system that passed the gate enumerates outcomes and gives a time bound to the model. Its wins cannot be attributed to unaided planning.
+
+## What the 12-entry history can omit
+
+The client supplies its own message list to Ollama at every decision. The floor, current marker, EXIT and private role are reconstructed from the seat view. Individual history entries and statements older than the last twelve can drop out. Model notes from previous decisions are not included. A cached prompt prefix helps evaluate requests that share text. It cannot supply an old observation that the client left out of the new request.
+
+In one measured interval of the 4k run, all 121 completed runner requests reported zero input truncation and the largest sequence was 1,675 tokens. One sampled structured forecast hit its separate 140-token reply cap. On the archived 9501 all-native social table, 23/28 nomination decisions omitted at least one earlier public remark. The first lost remark was P1’s opening case for removing P0. The experiments preserve the existing history projection. [Matched 4k/8k and history follow-up](https://github.com/othercriteria/footsteps/issues/91) · [Ollama chat request and response fields](https://docs.ollama.com/api/chat)
+
+
+## Social transfer
+
+The frozen brief scored on **8/8 Blue** placements across four earlier role-swap floors and four new ones. **Red scored 0/8**, even though every affected hand contained a permanent seal. Four Red replies missed the separate output allowance. We compared three follow-ups on the same paired floors. The model always received its assigned role. The personal condition repeats that role and its objective at the very start of the system message. The final condition changes only the order of the two generated JSON fields relative to the longer-reply control.
+
+| Presentation | Reply cap | Blue witnesses | Red seals | Timely Red commitments | Floors correct for both roles |
+|---|---:|---:|---:|---:|---:|
+| Frozen brief, choice then reason | 140 | 8/8 | 0/8 | 4/8 | 0/8 |
+| Same brief with more reply room | 320 | 8/8 | 0/8 | 7/8 | 0/8 |
+| Personal role at head of brief | 140 | 8/8 | 2/8 | 5/8 | 2/8 |
+| Same 320-token brief, reason then choice | 320 | 8/8 | 4/8 | 7/8 | 4/8 |
+
+The last condition recovered two Red seals on each four-floor panel. In the longer choice-first control on 9600, Red submitted the same productive build as Blue, then its private note identified the candidates that sealed EXIT. Changing field order let it choose one of those seals. These are small paired interventions on a single model. Seat-private notes are accounts of a choice and can be wrong. The group labels P1, P2 and so on also overlap with player names in public history. Some notes speak about candidates as if they were proposers, a reason to try distinct action labels in later trials. [Role-swapped decisions](social.jsonl) · [Longer reply](social-room.jsonl) · [Personal role](social-card.jsonl) · [Reason first](social-last.jsonl)
+
+### A backward step with a defensible Yes vote
+
+We replayed three real ballot positions from the all-native 9501 game to the same four seats. At event 5, a step east reduces Manhattan distance but leaves an optimistic route of five further steps, versus four after staying. All three Blue seats approved again. Red missed the reply cap. At event 16, going back to START leaves a six-step optimistic route and staying leaves no route in time. The historical Blue Yes and Red No each served their respective teams on that floor, despite the private claim that START was closer to EXIT. With the brief, **all four** approved the return, including Red. By event 26 both outcomes are out of time and all four seats approved. A substantive spatial error in a note and a strategically defensible ballot can coexist. [Ballot receipts](ballots.jsonl) · [Original issue and correction](https://github.com/othercriteria/footsteps/issues/55#issuecomment-7051619999)

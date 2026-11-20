@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from io import StringIO
 from itertools import product
 from pathlib import Path
 from random import Random
@@ -46,13 +47,23 @@ def detours(model, arm):
         yield row
 
 
-def social(model, arm):
+def social(model, arm, max_reply=140):
     for start_seed in (9600, 9700):
         for idx, (name, snap, _, _) in enumerate(transfer_panel(start_seed=start_seed)):
             log = []
             row = {"case": name, "calls": log, "success": False}
             try:
-                a = decide(snap, model, None, log, arm=arm, order=Random(f"paired/{idx // 2}"))
+                note = StringIO()
+                a = decide(
+                    snap,
+                    model,
+                    note,
+                    log,
+                    arm=arm,
+                    order=Random(f"paired/{idx // 2}"),
+                    max_reply=max_reply,
+                )
+                row["private_reason"] = json.loads(note.getvalue())["reason"]
                 row.update(
                     choice=a,
                     success=success(snap["state"], a["tile"], a["rotation"], tuple(a["at"]), None),
@@ -93,11 +104,15 @@ if __name__ == "__main__":
     p.add_argument("panel", choices=("detours", "social", "ballots"))
     p.add_argument("output", type=Path)
     p.add_argument("--model", default=MODEL)
-    p.add_argument("--arm", choices=("forecast", "brief"), default="forecast")
+    p.add_argument("--arm", choices=("forecast", "brief", "personal", "last"), default="forecast")
+    p.add_argument("--max-reply", type=int, choices=(140, 320), default=140)
     args = p.parse_args()
     with args.output.open("x") as out:
-        for row in {"detours": detours, "social": social, "ballots": ballots}[args.panel](
-            args.model, args.arm
-        ):
+        trials = (
+            social(args.model, args.arm, args.max_reply)
+            if args.panel == "social"
+            else {"detours": detours, "ballots": ballots}[args.panel](args.model, args.arm)
+        )
+        for row in trials:
             out.write(json.dumps(row, separators=(",", ":")) + "\n")
             out.flush()

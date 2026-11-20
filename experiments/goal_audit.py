@@ -5,8 +5,10 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from experiments.goal_pursuit import budget, choices_for, floor_report
 from experiments.native_summary import game_results, rows
-from footsteps.record import replay
+from footsteps.board import frontier, rotate
+from footsteps.record import replay, starting_game
 
 
 def history_window(record, decisions):
@@ -40,6 +42,54 @@ def history_window(record, decisions):
     return dict(stats), examples
 
 
+def social_floor(record):
+    """Use the builder's actual hand to distinguish actionable opportunities from a lost floor."""
+    game = starting_game(record)
+    result = {"good": Counter(), "bad": Counter()}
+    ballots = []
+    builds = []
+    for index, e in enumerate(record["events"], 1):
+        s = game.view(game.actor)
+        board = dict(s["board"])
+        marker, goal = game.marker, game.goal
+        if e["kind"] == "place":
+            options = {
+                "tile": sorted(set(s["hand"])),
+                "rotation": range(4),
+                "at": frontier(board, goal),
+            }
+            all_builds = choices_for({"state": s, "choices": options})
+            after = budget(s)
+            board[tuple(e["at"])] = rotate(e["tile"], e["rotation"])
+            chosen = floor_report(board, marker, goal, after)
+            open_chosen = any(n is not None for _, n, _ in chosen)
+            can_keep = any(any(n is not None for _, n, _ in report) for _, report in all_builds)
+            can_cut = any(all(n is None for _, n, _ in report) for _, report in all_builds)
+            team = s["role"]
+            if can_keep and can_cut:
+                result[team]["decisive_builds"] += 1
+                result[team]["role_aligned_builds"] += (team == "good") == open_chosen
+                builds.append([index, game.turn, game.actor, "preserved" if open_chosen else "cut"])
+        elif e["kind"] == "move_vote":
+            rows = choices_for({"state": s, "choices": {"vote": [True, False]}})
+
+            def outcome(pair):
+                n = pair[1][0][1]
+                return 2 if n == 0 else int(n is not None)
+
+            yes, no = map(outcome, rows)
+            if yes != no:
+                for seat, v in zip(game.alive, e["votes"], strict=True):
+                    team = game.roles[seat]
+                    result[team]["decisive_ballots"] += 1
+                    result[team]["role_aligned_ballots"] += v is not None and v == (
+                        (team == "good") == (yes > no)
+                    )
+                ballots.append([index, game.turn, yes, no, e["votes"]])
+        game.apply(e)
+    return {"teams": result, "builds": builds, "ballots": ballots}
+
+
 def report(root):
     games = root / "games"
     totals = defaultdict(Counter)
@@ -52,6 +102,7 @@ def report(root):
             totals[group]["wins"] += game.winner == "good"
         game_results(p)
         if len(game.roles) > 1:
+            print("social floor", json.dumps(social_floor(record)))
             stats, examples = history_window(record, rows(p.with_suffix(".calls.jsonl")))
             print("history window", json.dumps(stats, sort_keys=True))
             if "nominate" in examples:

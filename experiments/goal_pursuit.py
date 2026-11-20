@@ -100,7 +100,7 @@ def plain_forecast(report):
     return f"Landing at {landing} leaves a possible route to EXIT in {steps} further steps."
 
 
-def decide(snap, model, notes, log, *, arm, order):
+def decide(snap, model, notes, log, *, arm, order, max_reply=140):
     start = monotonic()
     s = snap["state"]
     if arm == "ledger":
@@ -132,6 +132,13 @@ def decide(snap, model, notes, log, *, arm, order):
             },
             "required": ["choice", "reason"],
         }
+        if arm == "last":
+            # Keep the same fields and wording; only their generation order differs.
+            schema["properties"] = {
+                "reason": schema["properties"]["reason"],
+                "choice": schema["properties"]["choice"],
+            }
+            schema["required"] = ["reason", "choice"]
         if custom:
             schema["properties"].update(
                 {k: {"type": "integer"} for k in ("x", "y", "tile", "rotation")}
@@ -152,7 +159,7 @@ def decide(snap, model, notes, log, *, arm, order):
             "recent_public_and_own_history": [e["text"] for e in snap["history"][-12:]],
             "candidates": {k: [a, card(r)] for k, (a, r) in names.items()},
         }
-        if arm == "brief":
+        if arm in ("brief", "personal", "last"):
             ctx["candidates"] = {
                 k: {"action": a, "floor_result": plain_forecast(r), "landings": card(r)}
                 for k, (a, r) in names.items()
@@ -169,11 +176,17 @@ def decide(snap, model, notes, log, *, arm, order):
             "For a movement ballot compare where acceptance and rejection leave the team. "
             "Give a candidate name and a brief private reason. To make another legal build use custom and literal tile, rotation, x, y."
         )
-        if arm == "brief":
+        if arm in ("brief", "personal", "last"):
             system += (
                 " Consider the floor_result for every candidate. Blue seeks an immediate EXIT or the shortest still-possible route. "
                 "Red can obstruct everyone if every landing is sealed or out of time. Choose for your team even when the hopeful step is farther away."
             )
+        if arm == "personal":
+            system = (
+                "Your private team is RED. You win if Blue cannot reach EXIT in time. "
+                if s["role"] == "bad"
+                else "Your private team is BLUE. You win if the marker reaches EXIT in time. "
+            ) + system
         body = {
             "model": model,
             "stream": False,
@@ -183,7 +196,7 @@ def decide(snap, model, notes, log, *, arm, order):
                 {"role": "system", "content": system},
                 {"role": "user", "content": json.dumps(ctx, separators=(",", ":"))},
             ],
-            "options": {"temperature": 0, "seed": 1, "num_ctx": 4096, "num_predict": 140},
+            "options": {"temperature": 0, "seed": 1, "num_ctx": 4096, "num_predict": max_reply},
         }
         left = 30 - (monotonic() - start)
         if left <= 0:
@@ -199,12 +212,13 @@ def decide(snap, model, notes, log, *, arm, order):
         )
         if (
             response.get("done_reason") == "length"
-            or response.get("prompt_eval_count", 0) >= 4096 - 140
+            or response.get("prompt_eval_count", 0) >= 4096 - max_reply
         ):
             raise ValueError("forecast context or reply at limit")
         ans = json.loads(response["message"]["content"])
         if not isinstance(ans, dict) or ans.get("choice") not in options:
             raise ValueError("missing or unknown forecast choice")
+        log[-1]["response_fields"] = list(ans)
         pick, reason = ans["choice"], ans.get("reason")
         if pick == "custom":
             action = {
@@ -238,8 +252,10 @@ def decide(snap, model, notes, log, *, arm, order):
     return action
 
 
-def run(root, private, case, seed, arm, model):
+def run(root, private, case, seed, arm, model, *, max_reply=140):
     key = f"{case}-{seed}-{arm}"
+    if max_reply != 140:
+        key += f"-r{max_reply}"
     if case in HEADINGS:
         initial = {"roles": ["good"], "goal": HEADINGS[case], "hands": [[65]], "store": [65, 65]}
     elif case == "solo":
@@ -259,7 +275,7 @@ def run(root, private, case, seed, arm, model):
     rng = Random(f"display/{seed}")
 
     def policy(snap, model, notes, log):
-        return decide(snap, model, notes, log, arm=arm, order=rng)
+        return decide(snap, model, notes, log, arm=arm, order=rng, max_reply=max_reply)
 
     play(
         t,
@@ -281,15 +297,16 @@ if __name__ == "__main__":
     p.add_argument(
         "--arms",
         nargs="+",
-        choices=["baseline", "ledger", "forecast", "brief", "uniform"],
+        choices=["baseline", "ledger", "forecast", "brief", "personal", "last", "uniform"],
         required=True,
     )
     p.add_argument("--seeds", nargs="+", type=int, default=[9501])
     p.add_argument("--model", default=MODEL)
+    p.add_argument("--max-reply", type=int, choices=(140, 320), default=140)
     args = p.parse_args()
     args.root.mkdir(parents=True, exist_ok=True)
     args.private.mkdir(parents=True, exist_ok=True)
     for seed in args.seeds:
         for case in args.cases:
             for arm in args.arms:
-                run(args.root, args.private, case, seed, arm, args.model)
+                run(args.root, args.private, case, seed, arm, args.model, max_reply=args.max_reply)
