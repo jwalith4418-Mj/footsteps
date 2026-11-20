@@ -10,10 +10,11 @@ from time import monotonic
 from experiments.native_games import play
 from experiments.skill_probe import MODEL
 from experiments.social_evidence import social_deal
+from footsteps.action_language import ballot_names
 from footsteps.action_tools import native_decision
 from footsteps.board import distance, moves, neighbors, optimistic_length, rotate
 from footsteps.decision_notes import save_note
-from footsteps.game import with_exit_origin
+from footsteps.game import movement_winner, with_exit_origin
 from footsteps.ollama import request
 from footsteps.seat_tools import rotations_of
 from footsteps.solo import sealed, setup
@@ -100,7 +101,52 @@ def plain_forecast(report):
     return f"Landing at {landing} leaves a possible route to EXIT in {steps} further steps."
 
 
-def decide(snap, model, notes, log, *, arm, order, max_reply=140):
+def public_ballot(state, ctx, names, arm, schema):
+    """Describe both collective outcomes from public facts and specify the individual response."""
+    system = (
+        "This is a public movement ballot on one shared marker. Each living player votes on the same "
+        "proposed step. A tie follows the proposer's vote. You may vote either way. If the marker "
+        "reaches EXIT, Blue wins. Red wins if every Blue player is removed or the marker misses "
+        "EXIT on the final turn. Public statements can be false. "
+    )
+    ctx["voter"] = f"P{ctx.pop('seat')}"
+    ctx["step_proposed_by"] = f"P{ctx.pop('proposer')}"
+    ctx["movement_opportunities_after_this_ballot"] = ctx.pop("further_steps")
+    for label, (_, report) in names.items():
+        [(landing, optimistic, _)] = report
+        winner = movement_winner(landing, tuple(state["goal"]), state["store_count"])
+        ctx["candidates"][label] = {
+            "shared_marker_if_this_outcome_wins_the_ballot": landing,
+            "game_result": {"good": "Blue wins", "bad": "Red wins", None: "play continues"}[winner],
+            "fewest_additional_steps_with_perfect_future_tiles": optimistic,
+        }
+    if arm != "public-result":
+        ctx["outcomes_of_the_group_ballot"] = {
+            ("if_approved" if names[label][0]["vote"] else "if_rejected"): outcome
+            for label, outcome in ctx.pop("candidates").items()
+        }
+        system += (
+            "Cast your own vote. approve_proposed_step is true for Yes and false for No. "
+            "Give a short private reason."
+        )
+        fields = {
+            "approve_proposed_step": {"type": "boolean"},
+            "reason": {"type": "string"},
+        }
+        if arm == "binary-reason-first":
+            fields = dict(reversed(fields.items()))
+        schema = {"type": "object", "properties": fields, "required": list(fields)}
+        if arm == "voter":
+            identity = {"seat": ctx.pop("voter"), "private_team": ctx.pop("team")}
+            ctx["living"] = [f"P{seat}" for seat in ctx["living"]]
+            ctx["known_allies"] = [f"P{seat}" for seat in ctx["known_allies"]]
+            ctx = {"you_are_casting_this_ballot_as": identity, **ctx}
+    else:
+        system += "Choose one listed ballot action and give a short private reason."
+    return system, ctx, schema
+
+
+def decide(snap, model, notes, log, *, arm, order, max_reply=140, action_prefix="P"):
     start = monotonic()
     s = snap["state"]
     if arm == "ledger":
@@ -116,7 +162,27 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140):
         )
     choices = choices_for(snap)
     order.shuffle(choices)
-    names = {f"P{i + 1}": pair for i, pair in enumerate(choices)}
+    names = {f"{action_prefix}{i + 1}": pair for i, pair in enumerate(choices)}
+    if arm == "clear" and s["stage"] == "move_vote":
+        arm = "public-result"
+    binary_ballot = arm in ("binary", "binary-reason-first", "voter")
+    literal_ballot = arm in ("named-ballot", "public-result") or binary_ballot
+    if literal_ballot:
+        if s["stage"] != "move_vote":
+            raise ValueError("literal ballots require a pending step")
+        labels = ballot_names(s, [a["vote"] for a, _ in choices])
+        names = dict(zip(labels, choices, strict=True))
+    elif arm == "clear":
+        if s["stage"] == "place":
+            names = {f"build_{i}": pair for i, pair in enumerate(choices, 1)}
+        else:
+            names = {
+                "stay" if a["to"] is None else "propose_step_to_" + "_".join(map(str, a["to"])): (
+                    a,
+                    report,
+                )
+                for a, report in choices
+            }
     if arm == "uniform":
         pick = order.choice(list(names))
         reason = "Uniform among displayed outcomes."
@@ -159,7 +225,7 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140):
             "recent_public_and_own_history": [e["text"] for e in snap["history"][-12:]],
             "candidates": {k: [a, card(r)] for k, (a, r) in names.items()},
         }
-        if arm in ("brief", "personal", "last"):
+        if arm in ("brief", "personal", "last", "clear") or literal_ballot:
             ctx["candidates"] = {
                 k: {"action": a, "floor_result": plain_forecast(r), "landings": card(r)}
                 for k, (a, r) in names.items()
@@ -176,7 +242,7 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140):
             "For a movement ballot compare where acceptance and rejection leave the team. "
             "Give a candidate name and a brief private reason. To make another legal build use custom and literal tile, rotation, x, y."
         )
-        if arm in ("brief", "personal", "last"):
+        if arm in ("brief", "personal", "last", "clear") or literal_ballot:
             system += (
                 " Consider the floor_result for every candidate. Blue seeks an immediate EXIT or the shortest still-possible route. "
                 "Red can obstruct everyone if every landing is sealed or out of time. Choose for your team even when the hopeful step is farther away."
@@ -187,6 +253,8 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140):
                 if s["role"] == "bad"
                 else "Your private team is BLUE. You win if the marker reaches EXIT in time. "
             ) + system
+        if arm == "public-result" or binary_ballot:
+            system, ctx, schema = public_ballot(s, ctx, names, arm, schema)
         body = {
             "model": model,
             "stream": False,
@@ -216,10 +284,19 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140):
         ):
             raise ValueError("forecast context or reply at limit")
         ans = json.loads(response["message"]["content"])
-        if not isinstance(ans, dict) or ans.get("choice") not in options:
+        if not isinstance(ans, dict):
             raise ValueError("missing or unknown forecast choice")
         log[-1]["response_fields"] = list(ans)
-        pick, reason = ans["choice"], ans.get("reason")
+        if binary_ballot:
+            vote = ans.get("approve_proposed_step")
+            if type(vote) is not bool:
+                raise ValueError("expected a boolean movement ballot")
+            pick = ballot_names(s, [vote])[0]
+        elif ans.get("choice") in options:
+            pick = ans["choice"]
+        else:
+            raise ValueError("missing or unknown forecast choice")
+        reason = ans.get("reason")
         if pick == "custom":
             action = {
                 "tile": ans.get("tile"),
@@ -297,7 +374,7 @@ if __name__ == "__main__":
     p.add_argument(
         "--arms",
         nargs="+",
-        choices=["baseline", "ledger", "forecast", "brief", "personal", "last", "uniform"],
+        choices=["baseline", "ledger", "forecast", "brief", "personal", "last", "uniform", "clear"],
         required=True,
     )
     p.add_argument("--seeds", nargs="+", type=int, default=[9501])

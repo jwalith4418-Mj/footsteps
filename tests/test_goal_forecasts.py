@@ -1,14 +1,43 @@
+import json
 import unittest
 from pathlib import Path
 from random import Random
+from unittest.mock import patch
 
 from experiments.action_probe import position
-from experiments.goal_pursuit import budget, choices_for, plain_forecast
+from experiments.goal_pursuit import budget, choices_for, decide, plain_forecast
 from footsteps.game import with_exit_origin
 from footsteps.table import Table
 
 
 class GoalForecasts(unittest.TestCase):
+    def test_public_exit_ballot_outcomes_are_the_same_for_both_teams(self):
+        p = (
+            Path(__file__).resolve().parents[1]
+            / "experiments/goal-pursuit/games/four-9501-brief.json"
+        )
+        for seat, team in [(1, "Red"), (2, "Blue")]:
+            for remaining, stay_result in [(1, "play continues"), (0, "Red wins")]:
+                with self.subTest(seat=seat, remaining=remaining):
+                    snap = position(p, 71, seat)
+                    snap["state"]["store_count"] = remaining
+                    with patch("experiments.goal_pursuit.request") as request:
+                        request.return_value = {
+                            "message": {"content": '{"choice":"remain_at_1_0","reason":"Stay."}'}
+                        }
+                        choice = decide(snap, "fixture", None, [], arm="clear", order=Random(1))
+                    self.assertEqual(choice, {"vote": False})
+                    messages = request.call_args.args[2]["messages"]
+                    ctx = json.loads(messages[1]["content"])
+                    self.assertEqual(
+                        (ctx["voter"], ctx["team"], ctx["step_proposed_by"]),
+                        (f"P{seat}", team, "P2"),
+                    )
+                    self.assertEqual(
+                        {k: v["game_result"] for k, v in ctx["candidates"].items()},
+                        {"step_to_0_0": "Blue wins", "remain_at_1_0": stay_result},
+                    )
+
     def test_only_the_correct_midpoint_opens_the_two_turn_corridor(self):
         t = Table(
             with_exit_origin(

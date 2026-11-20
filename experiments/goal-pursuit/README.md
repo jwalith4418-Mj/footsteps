@@ -51,7 +51,7 @@ The clock and rotation worksheet alone won **1/4** corridor games. Its only win 
 
 The self-authored probe named the correct remaining clock in all eight first answers, but none of the eight original build/landing combinations could finish in time. After one private check, six placements were legal and two plans were viable. One was the printed southbound corridor. This distinguishes reading the arithmetic, picking a location and preserving a directed route. The system that passed the gate enumerates outcomes and gives a time bound to the model. Its wins cannot be attributed to unaided planning.
 
-The frozen brief reached EXIT on **6/6 ordinary deals**, taking 5, 5, 6, 5, 5 and 5 turns on seeds 9811–9816 respectively. All 123 decisions arrived in time. A uniform draw from the same displayed outcomes won **0/6**. The initial displacement needs at least five steps, and these deals allow seven. Results therefore say relatively little about longer games or sustained route planning through a dense board.
+The frozen brief reached EXIT on **6/6 ordinary deals**, taking 5, 5, 6, 5, 5 and 5 turns on seeds 9811–9816 respectively. All 123 decisions arrived in time. The ordinary private-hand builder won **0/6**, as did a uniform draw from the displayed outcomes. The initial displacement needs at least five steps, and these deals allow seven. Results therefore say relatively little about longer games or sustained route planning through a dense board.
 
 ## What the 12-entry history can omit
 
@@ -79,3 +79,30 @@ We replayed three real ballot positions from the all-native 9501 game to the sam
 ### Following the choices through a whole game
 
 The two four-seat 9501 games have identical initial hands, bag, roles and EXIT. On the earlier native-hand table Blue cut the last timely route on turn 3. The assisted Blue builders preserved a route on all three turns where their hands could instead cut it. The marker traveled east past EXIT's column, turned north, and entered EXIT from the east. Red P1 had the same ability to cut every timely route on turn 2 and kept one open. On the last ballot all four seats voted Yes. Red's private explanation described reaching EXIT as its team's primary objective. That final vote is a particularly clear case of a team-objective error. Passing the solitaire gate made the social error easier to identify. [Original record](../native-actions/games/9501-hand-build.json) · [Assisted record](games/four-9501-brief.json)
+
+| Deal and interface | Winner | Turns | Marker steps | Closest to EXIT | Missing seat decisions |
+|---|---|---:|---:|---:|---:|
+| 9501 four seats, native hand | Red | 8 | 8 | 3 | 0/167 |
+| 9501 four seats, brief | Blue | 7 | 6 | 0 | 3/125 |
+| 9901 five seats, native hand | Red | 6 | 3 | 2 | 0/157 |
+| 9901 five seats, brief | Blue | 4 | 4 | 0 | 1/122 |
+| 9901 five seats, reason first, 320 tokens | Blue | 5 | 4 | 0 | 1/145 |
+
+All five games ended with the original seats alive. On 9901, the baseline Blue builder cut the last timely route on turn 3. Both assisted tables instead reached EXIT, and on turn 2 both Red P1s had chosen a build opening a two-step approach despite having two permanent seals to choose from. In the brief game P1 even nominated its known Red partner and argued in public for keeping that partner. The stronger result for reason-first on isolated builds did not secure the win in this game. With one ordinary five-seat deal these outcomes illustrate a mechanism rather than a team win rate.
+
+### Does the final voter know who it is?
+
+The four-seat Red P1 received its correct role and P2 as proposer. Its timely Yes chose an option also named P1. We repeated the final ballot from that game (P1 Red, P2 Blue) and from the five-seat brief (both Reds). The floor, public speech, private knowledge, proposal and option order for each voter were reconstructed from the records. All comparisons use the same 140-token reply allowance. None of the three Reds explicitly rejected EXIT with the original labels, the A1/A2 labels, or the earlier personalized reminder. Several numbered-option replies hit the output cap.
+
+Using descriptive step/remain actions and explicitly naming the public winner still yielded three Red approvals. Both five-seat Reds wrote that they should vote against the step while actually selecting it. A direct boolean ballot yielded one Red rejection, with a reason about an imagined trap. Generating the reason first yielded none. Finally, we put the voter seat and its private team together in one object at the front of the same boolean request, and used consistent P-prefixed names for living seats and known allies. The private team was stated once. **All three Reds rejected EXIT and the Blue control approved**, each with the correct team consequence. Five-seat P3 nevertheless spoke of the proposer P3 in the third person. This is a small, selected set of terminal ballots. Binding identity, ordering the fields and consistent seat names changed together. The result supports testing that presentation on fresh positions, including ballots where Red should approve.
+
+For whole-game experiments, the `clear` presentation uses build and step names distinct from seats, and public ballot outcomes. It won both checked corridors and the ordinary 9813 deal. The identity-bound boolean ballot is a separate diagnostic. The default seat remains available. [Role and label comparisons](terminal-ballots.jsonl) · [Literal outcomes](terminal-ballots-literal.jsonl) · [Boolean ballots](terminal-ballots-binary.jsonl) · [Voter-bound ballots](terminal-ballots-voter.jsonl) · [Graduating from strategic assistance](https://github.com/othercriteria/footsteps/issues/93)
+
+```sh
+python -m experiments.terminal_ballots "$out/terminal-ballots.jsonl"
+python -m experiments.terminal_ballots "$out/terminal-ballots-literal.jsonl" --literal
+python -m experiments.terminal_ballots "$out/terminal-ballots-binary.jsonl" --binary
+python -m experiments.terminal_ballots "$out/terminal-ballots-voter.jsonl" --voter
+python -m experiments.goal_pursuit "$out/clear-checks" "$out/private" --cases east north --arms clear
+python -m experiments.goal_pursuit "$out/clear-checks" "$out/private" --cases solo --arms clear --seeds 9813
+```

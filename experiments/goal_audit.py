@@ -114,11 +114,11 @@ def check_private(record, decisions, path):
 def report(root, private=None):
     games = root / "games"
     totals = defaultdict(Counter)
-    for p in sorted(games.glob("*.json")):
+    for p in sorted([*games.glob("*.json"), *(root / "clear-checks").glob("*.json")]):
         record = json.loads(p.read_text())
         game = replay(record)
         group = p.stem.split("-")[-1]
-        if p.stem.startswith("solo-"):
+        if p.parent == games and p.stem.startswith("solo-"):
             totals[group]["games"] += 1
             totals[group]["wins"] += game.winner == "good"
         game_results(p)
@@ -156,6 +156,17 @@ def report(root, private=None):
                 "of",
                 len(runs),
             )
+        elif p.stem.startswith("terminal-ballots"):
+            for trial in runs:
+                print(
+                    trial["case"],
+                    trial["seat"],
+                    trial["role"],
+                    trial["action_prefix"],
+                    trial["arm"],
+                    "EXIT vote",
+                    trial["vote"],
+                )
         elif p.stem.startswith("ballots"):
             print(p.stem, [(r["case"], r.get("vote")) for r in runs])
         elif p.stem.startswith("social"):
