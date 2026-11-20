@@ -11,3 +11,5 @@ The [design review after the social trials](design-review.md) ranks the open que
 | Store realized randomness and versions. | An old example should survive a changed generator and be usable from the perspective of a specific seat. | New tile effects, hidden information, or replay migrations. |
 
 Footsteps is the provisional title. The floor and exit suggest an indoor setting. Blue and Red are alternate names for the same teams. The [minority-team trials](../experiments/minority/README.md) compare them with Good and Bad.
+
+The [seat rating design](ratings.md) specifies matched substitutions on both teams and the evidence needed before publishing skill estimates.
