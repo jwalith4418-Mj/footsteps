@@ -118,6 +118,25 @@ def receipt(handle, face, rotation):
     }
 
 
+def route_prospects(state, preview):
+    """Optimistic reachability after this build and the still-pending proposal."""
+    board = {tuple(p): face for p, face in state["board"]}
+    board[tuple(preview["at"])] = rotate(preview["face"], preview["rotation"])
+    marker, goal = tuple(state["marker"]), tuple(state["goal"])
+    remaining = state["store_count"] + int(state["draw_count"] == 2)
+    limit = min(16, remaining)
+    label = (
+        "possible_route_in_time" if remaining <= 16 else "possible_route_within_16_further_steps"
+    )
+    return {
+        "permanent_trap": sealed(board, marker, goal),
+        label: any(
+            optimistic_length(board, p, goal, limit) is not None
+            for p in (marker, *moves(board, marker))
+        ),
+    }
+
+
 def apply_call(name, args, state, choices, pieces, mode, orient):
     """Apply private preparations and translate a commit into the referee's vocabulary."""
     result = canonical = None
@@ -409,21 +428,7 @@ def run_calls(
             if name == "preview_placement" and mode == "draft":
                 draft = (args["piece"], result["rotation"], args["x"], args["y"])
                 if prospects:
-                    after = {tuple(p): face for p, face in state["board"]}
-                    after[tuple(result["at"])] = rotate(result["face"], result["rotation"])
-                    marker, goal = tuple(state["marker"]), tuple(state["goal"])
-                    remaining = state["store_count"] + int(state["draw_count"] == 2)
-                    result["permanent_trap"] = sealed(after, marker, goal)
-                    limit = min(16, remaining)
-                    label = (
-                        "possible_route_in_time"
-                        if remaining <= limit
-                        else "possible_route_within_16_further_steps"
-                    )
-                    result[label] = any(
-                        optimistic_length(after, p, goal, limit) is not None
-                        for p in (marker, *moves(after, marker))
-                    )
+                    result.update(route_prospects(state, result))
             if name == "commit_preview":
                 event["confirmed"] = {"piece": handle, "rotation": rotation, "x": x, "y": y}
             if choice is not None:

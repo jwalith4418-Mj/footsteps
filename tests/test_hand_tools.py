@@ -225,3 +225,34 @@ class PrivateHand(unittest.TestCase):
         self.assertEqual(t.game.marker, (0, -1))
         self.assertEqual(t.game.alive, [0, 1])
         self.assertEqual(t.game.turn, 2)
+
+    def test_preview_counts_return_on_last_two_draw_but_not_last_one_draw(self):
+        for count in (1, 2):
+            with self.subTest(count=count):
+                t = Table(
+                    {"roles": ["good"], "hands": [[40]], "store": [40] * count, "goal": [2, 0]},
+                    Random(1),
+                )
+                t.join(0, 0)
+                snap = t.view(0, 0)
+                self.assertEqual(snap["state"]["draw_count"], count)
+                self.assertEqual(snap["state"]["store_count"], 0)
+                calls = iter(
+                    [
+                        ("preview_placement", {"piece": "H1", "x": 1, "y": 0}),
+                        ("commit_preview", {}),
+                    ]
+                )
+
+                def ask(port, path, body, left, calls=calls):
+                    name, args = next(calls)
+                    return {
+                        "message": {"tool_calls": [{"function": {"name": name, "arguments": args}}]}
+                    }
+
+                log = []
+                native_decision(
+                    snap, "stub", 3, mode="draft", prospects=True, trace=log, request_fn=ask
+                )
+                self.assertTrue(log[0]["result"]["can_step_here"])
+                self.assertEqual(log[0]["result"]["possible_route_in_time"], count == 2)

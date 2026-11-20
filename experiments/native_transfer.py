@@ -14,7 +14,7 @@ from footsteps.game import Game, with_exit_origin
 from footsteps.table import Table, fixed_kit
 
 
-def transfer_panel():
+def transfer_panel(*, isolate_square=False):
     kit = fixed_kit(Random(8700), 16, 29, 29)
     count = 0
     for seed in range(9600, 9700):
@@ -46,7 +46,23 @@ def transfer_panel():
                                     e[key] = [x - ox, y - oy]
                             t.commit(e)
                         t.deadline = 60
-                        yield f"held-{seed}-E{rev}-{team}", t.view(game.actor, 0), "", None
+                        snap = t.view(game.actor, 0)
+                        if isolate_square:
+                            # Diagnostic intervention. Only admit floors where both teams'
+                            # successful actions all use this same square.
+                            squares = {
+                                at
+                                for face, rot, at in actions
+                                if any(
+                                    success({**view, "role": role}, face, rot, at, None)
+                                    for role in goals
+                                )
+                            }
+                            if len(squares) != 1:
+                                raise ValueError("no unique shared tactical square")
+                            x, y = next(iter(squares))
+                            snap["choices"]["at"] = [(x - ox, y - oy)]
+                        yield f"held-{seed}-E{rev}-{team}", snap, "", None
                     count += 1
                     break
             game.apply(event)
@@ -60,5 +76,17 @@ if __name__ == "__main__":
     p.add_argument("output", type=Path)
     p.add_argument("--model", default=MODEL)
     p.add_argument("--arms", nargs="+", default=["menu", "direct", "hand"])
+    p.add_argument(
+        "--isolate-square",
+        action="store_true",
+        help="offer only the shared tactical square to both teams",
+    )
     args = p.parse_args()
-    run(args.output, args.model, args.arms, False, panels=transfer_panel(), paired_order=True)
+    run(
+        args.output,
+        args.model,
+        args.arms,
+        False,
+        panels=transfer_panel(isolate_square=args.isolate_square),
+        paired_order=True,
+    )
