@@ -3,6 +3,7 @@
 import json
 
 from footsteps.board import distance
+from footsteps.role_knowledge import role_information
 from footsteps.social import TRUST, social_request, stated_votes
 from footsteps.solo import sealed
 
@@ -87,9 +88,11 @@ def perspective(body, snap, trust):
     choices = json.loads(body["messages"][1]["content"])["options"]
     context = {
         "turn": state["turn"],
+        **role_information(snap),
         "my_seat": f"P{seat}",
         "my_team": role,
         "initial_bad_count": state["bad_count"],
+        "initial_player_count": state["player_count"],
         "living": [f"P{s}" for s in state["alive"]],
         "marker": state["marker"],
         "EXIT": state["goal"],

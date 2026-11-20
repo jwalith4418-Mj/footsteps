@@ -1,10 +1,18 @@
 # Footsteps · base rules 1
 
-A group explores a tiled floor. The good team wants the marker to reach the exit. The bad team wants to exhaust the tile store first. Players know the initial team sizes. Each player sees their own team and hand. Bad players also know the identities of their teammates.
+A group explores a tiled floor. The good team wants the marker to reach the exit. The bad team wants to exhaust the tile store first.
 
 ## Setup
 
 Pick an exit square, a tile mix, total supply N, private hand size M, and team sizes G and B. Seat G + B players in a circle with at least one good player. Assign the chosen roles at random, deal M floor tiles to each player and put the remaining tiles in a bag. At least one tile must remain after the deal. Choose a first player before revealing roles. For a reproducible setup, record the realized seating, deal and bag. The bag has no draw order.
+
+**Who knows the roles?** The starting team sizes and this information rule are common knowledge. Everyone knows the rule and knows that everyone else knows it.
+
+- A good player is told their own alignment. They may work out other roles from the public counts or from play.
+- Every bad player knows the identities of **all** bad players from setup and therefore knows the alignment of every seat. A bad player with no bad teammates knows everyone else is good.
+- Everyone sees which seat is eliminated. Its role stays hidden from the public until game end. Bad players retain their original knowledge of both teams.
+
+Hands are private to their owners.
 
 The floor is a square grid with no boundary. Put the start tile at (0, 0), the exit tile at the chosen distinct square, and the marker at the start. Both special tiles permit entry and exit on all four sides and are outside the supply N. North increases y and east increases x.
 

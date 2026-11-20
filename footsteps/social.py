@@ -5,10 +5,11 @@ import re
 
 from .board import distance
 from .decision_notes import REASON_PROMPT, request_reason
+from .role_knowledge import role_information
 from .solo import sealed
 
 TRUST = (
-    "Good players can infer hidden loyalties only from behavior. A bad player who acts "
+    "Good players use behavior to infer loyalties the rules leave uncertain. A bad player who acts "
     "like a good player can earn trust and keep the freedom to act later. One helpful "
     "move or suspicious vote is evidence, and can have more than one explanation."
 )
@@ -131,12 +132,14 @@ def social_request(body, snap, *, explain, trust=True, human=False):
     key = next(iter(snap["choices"]))
     names = []
     context = {
+        **role_information(snap),
         "you": f"P{me}",
         "your_team": role,
         "stage": stage,
         "turn": state["turn"],
         "alive": state["alive"],
         "initial_bad_count": state["bad_count"],
+        "initial_player_count": state["player_count"],
         "builder": state["actor"],
         "marker": marker,
         "EXIT": goal,

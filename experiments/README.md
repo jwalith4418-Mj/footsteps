@@ -48,3 +48,5 @@ The [turn-plan comparison](solitaire-skills/README.md) traces a movement failure
 The [three-seat social experiment](social/README.md) pairs the same elimination ballot with silence, a truthful accusation, or a false one, then compares scripted and model-controlled floors.
 
 The [social behavior trials](social-behavior/README.md) test whether a seat can earn trust on an inconsequential vote, use the opportunity to act, and recognize when its team can win after its own removal.
+
+The [common-knowledge check](known-roles/README.md) tests what good and bad players can infer about another seat and whether the distinction survives an elimination.

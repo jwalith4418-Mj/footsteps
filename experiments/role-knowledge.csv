@@ -1,0 +1,37 @@
+brief,roles,seat,question,expected,answer
+original,bad good bad good,0,What alignment can you establish for P2 at setup?,bad,bad
+original,bad good bad good,0,What alignment can you establish for P3 at setup?,good,unknown
+original,bad good bad good,0,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+explicit,bad good bad good,0,What alignment can you establish for P2 at setup?,bad,bad
+explicit,bad good bad good,0,What alignment can you establish for P3 at setup?,good,good
+explicit,bad good bad good,0,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+original,bad good bad good,1,What alignment can you establish for P2 at setup?,unknown,good
+original,bad good bad good,1,What alignment can you establish for P3 at setup?,unknown,unknown
+original,bad good bad good,1,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+explicit,bad good bad good,1,What alignment can you establish for P2 at setup?,unknown,unknown
+explicit,bad good bad good,1,What alignment can you establish for P3 at setup?,unknown,unknown
+explicit,bad good bad good,1,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+original,good bad good bad,0,What alignment can you establish for P2 at setup?,unknown,good
+original,good bad good bad,0,What alignment can you establish for P3 at setup?,unknown,unknown
+original,good bad good bad,0,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+explicit,good bad good bad,0,What alignment can you establish for P2 at setup?,unknown,unknown
+explicit,good bad good bad,0,What alignment can you establish for P3 at setup?,unknown,unknown
+explicit,good bad good bad,0,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+original,good bad good bad,1,What alignment can you establish for P2 at setup?,good,bad
+original,good bad good bad,1,What alignment can you establish for P3 at setup?,bad,bad
+original,good bad good bad,1,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+explicit,good bad good bad,1,What alignment can you establish for P2 at setup?,good,good
+explicit,good bad good bad,1,What alignment can you establish for P3 at setup?,bad,bad
+explicit,good bad good bad,1,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+original,bad good good good,0,What alignment can you establish for P2 at setup?,good,bad
+original,bad good good good,0,What alignment can you establish for P3 at setup?,good,bad
+original,bad good good good,0,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+explicit,bad good good good,0,What alignment can you establish for P2 at setup?,good,good
+explicit,bad good good good,0,What alignment can you establish for P3 at setup?,good,good
+explicit,bad good good good,0,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+original,bad good good good,1,What alignment can you establish for P2 at setup?,unknown,good
+original,bad good good good,1,What alignment can you establish for P3 at setup?,unknown,unknown
+original,bad good good good,1,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes
+explicit,bad good good good,1,What alignment can you establish for P2 at setup?,unknown,good
+explicit,bad good good good,1,What alignment can you establish for P3 at setup?,unknown,unknown
+explicit,bad good good good,1,Is it common knowledge that each Bad player knows every player's alignment?,yes,yes

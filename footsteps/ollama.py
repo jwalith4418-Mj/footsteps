@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 
 from .board import connects, distance, neighbors, rotate
 from .decision_notes import REASON_PROMPT, request_reason, save_note
+from .role_knowledge import role_information
 from .seat_tools import query, spec_for
 from .social import SOCIAL_STAGES, shortlist, social_request
 from .solo import exits
@@ -132,6 +133,7 @@ def model_request(
     context = {k: state[k] for k in fields if k in state}
     choices = snapshot["choices"]
     context.update(
+        **role_information(snapshot),
         seat=snapshot["seat"],
         hand=[tile(face) for face in state["hand"]],
         board=[[pos, tile(face)] for pos, face in state["board"]],
