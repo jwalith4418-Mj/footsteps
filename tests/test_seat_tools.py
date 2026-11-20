@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from footsteps.decision_notes import open_private, read_notes, save_private_export
-from footsteps.ollama import infer
+from footsteps.ollama import infer, model_request
 from footsteps.record import read
 from footsteps.seat_tools import query
 from footsteps.viewer import export_html, transcript
@@ -48,6 +48,69 @@ class SeatTools(unittest.TestCase):
             "reason": "PRIVATE </script> note",
         }
         self.note_json = io.StringIO()
+
+    def test_rotation_answers_use_the_private_hand_and_clockwise_convention(self):
+        snap = {
+            **self.snap,
+            "state": {**self.snap["state"], "stage": "place", "hand": [33, 33]},
+            "choices": {"tile": [33], "at": [[0, 1]], "rotation": [3, 2, 1, 0]},
+        }
+        table = query(snap, "inspect_rotations", {"tile": 33})
+        self.assertEqual(
+            table["rows_quarter_turns_entrances_exits"],
+            [[0, "N", "E"], [1, "E", "S"], [2, "S", "W"], [3, "W", "N"]],
+        )
+        body = model_request(snap, "demo", show_rotations=True, named_rotations=True)
+        context = json.loads(body["messages"][1]["content"])
+        self.assertEqual(context["hand_rotations"], [table])
+        self.assertEqual(context["options"]["rotation"], ["turn_3", "turn_2", "turn_1", "turn_0"])
+        self.assertEqual(snap["choices"]["rotation"], [3, 2, 1, 0])
+        with self.assertRaises(ValueError):
+            query(snap, "inspect_rotations", {"tile": 8})
+        with self.assertRaises(ValueError):
+            query(self.snap, "inspect_rotations", {"tile": 33})
+
+    @patch("footsteps.ollama.request")
+    def test_rotation_offer_distinguishes_skip_from_cutoff_and_applies_named_turn(self, call):
+        snap = {
+            **self.snap,
+            "state": {**self.snap["state"], "stage": "place"},
+            "choices": {"tile": [33], "at": [[0, 1]], "rotation": [3, 2, 1, 0]},
+        }
+        for reply, status in [
+            ({"message": {"content": "{}"}, "done_reason": "stop"}, "skipped"),
+            ({"message": {"content": "unfinished"}, "done_reason": "length"}, "truncated"),
+            (
+                {
+                    "message": {
+                        "tool_calls": [
+                            {"function": {"name": "inspect_rotations", "arguments": {"tile": 33}}}
+                        ]
+                    }
+                },
+                "answered",
+            ),
+        ]:
+            notes = io.StringIO()
+            call.side_effect = [
+                reply,
+                {
+                    "message": {
+                        "content": '{"at":0,"tile":0,"rotation":"turn_1","reason":"turn clockwise"}'
+                    }
+                },
+            ]
+            choice = infer(
+                snap, "demo", 10, rotation_aid="tool", named_rotations=True, note_file=notes
+            )
+            self.assertEqual(choice, {"tile": 33, "rotation": 1, "at": [0, 1]})
+            (receipt,) = json.loads(notes.getvalue())["tools"]
+            self.assertEqual(receipt["status"], status)
+            if status == "answered":
+                self.assertEqual(receipt["tile"], 33)
+                self.assertEqual(
+                    call.call_args.args[2]["messages"][-1]["tool_name"], "inspect_rotations"
+                )
 
     def test_checked_geometry_and_illegal_tool_input(self):
         report = query(self.snap, "compare_landings", {})
@@ -114,9 +177,13 @@ class SeatTools(unittest.TestCase):
         self.assertNotIn("reason", call.call_args.args[2]["format"]["properties"])
 
     def test_omniscient_attachment_matched_vote_and_timeout(self):
+        self.note["tools"] = [{"name": "compare_landings", "ok": True, "internal": "private debug"}]
         notes = [self.note, {**self.note, "seat": 0}]
         fs = transcript(self.record, omniscient=True, notes=notes)["frames"]
         self.assertEqual([n["matches"] for n in fs[5]["decision_notes"]], [False, True])
+        self.assertEqual(
+            fs[5]["decision_notes"][0]["tools"], [{"name": "compare_landings", "ok": True}]
+        )
         self.assertTrue(all("decision_notes" not in f for i, f in enumerate(fs) if i != 5))
         for seat in (None, 0):
             with self.assertRaisesRegex(ValueError, "omniscient"):

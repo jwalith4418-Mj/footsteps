@@ -4,8 +4,31 @@ from .board import distance, frontier, moves, neighbors, optimistic_length, rota
 from .solo import sealed
 
 
-def spec_for(stage):
-    if stage == "place":
+def tile(face):
+    return [
+        face,
+        *(
+            "".join(d for bit, d in enumerate("NESW") if mask & (1 << bit)) or "-"
+            for mask in (face & 15, face >> 4)
+        ),
+    ]
+
+
+def rotations_of(face):
+    return {
+        "tile": face,
+        "rows_quarter_turns_entrances_exits": [
+            [turns, *tile(rotate(face, turns))[1:]] for turns in range(4)
+        ],
+    }
+
+
+def spec_for(stage, *, rotation_lookup=False):
+    if rotation_lookup and stage == "place":
+        name = "inspect_rotations"
+        desc = "Read all four clockwise orientations of one tile in your own hand. Use its literal face number. Each row gives quarter turns, entrance sides and exit sides."
+        fields = {"tile": {"type": "integer"}}
+    elif stage == "place":
         name = "preview_placement"
         desc = "Check a literal legal hand face, clockwise rotation and square. Returns possible marker steps after this placement, whether it seals the marker, and any held placement that blocks its last open side."
         fields = {k: {"type": "integer"} for k in ("tile", "rotation", "x", "y")}
@@ -36,12 +59,17 @@ def spec_for(stage):
 
 def query(snapshot, name, arguments):
     state = snapshot["state"]
-    spec = spec_for(state["stage"])
+    spec = spec_for(state["stage"], rotation_lookup=name == "inspect_rotations")
     if spec is None or name != spec["function"]["name"] or not isinstance(arguments, dict):
         raise ValueError("unknown tool at this stage")
     expected = spec["function"]["parameters"]["properties"]
     if arguments.keys() != expected.keys() or any(type(v) is not int for v in arguments.values()):
         raise ValueError("invalid tool arguments")
+    if name == "inspect_rotations":
+        face = arguments["tile"]
+        if face not in state["hand"]:
+            raise ValueError("choose a face in your own hand")
+        return rotations_of(face)
     if name == "check_builder_turns":
         builder = arguments["builder"]
         if not 0 <= builder < state["player_count"]:

@@ -21,7 +21,7 @@ def kit(seed, p):
     return initial["hands"][0] + initial["store"]
 
 
-def build_options(state):
+def build_options(state, rotations=range(4)):
     board = dict(state["board"])
     marker, goal = state["marker"], state["goal"]
     results = set()
@@ -29,7 +29,7 @@ def build_options(state):
         if q in board or distance(q, goal) >= distance(marker, goal):
             continue
         for tile in state["hand"]:
-            for rotation in range(4):
+            for rotation in rotations:
                 face = rotate(tile, rotation)
                 if connects(board[marker], face, d) and exits(board, q, face, goal) == 2:
                     results.add((q, face))

@@ -55,7 +55,7 @@ def reachable(board, marker):
                 queue.append((q, steps + 1, q if steps == 0 else first))
 
 
-def route_placements(board, marker, goal, faces):
+def route_placements(board, marker, goal, faces, rotations=range(4)):
     for origin, steps, _ in reachable(board, marker):
         if origin == goal:
             continue
@@ -63,7 +63,7 @@ def route_placements(board, marker, goal, faces):
             if p in board or not board[origin] & (16 << d):
                 continue
             for face in faces:
-                for r in range(4):
+                for r in rotations:
                     tile = rotate(face, r)
                     if connects(board[origin], tile, d):
                         onward = exits(board, p, tile, goal)
@@ -84,11 +84,11 @@ def route_move(board, marker, goal, rng):
     return best(paths, lambda path: -path[0], rng)[1]
 
 
-def placement(board, marker, goal, hand, policy, rng):
+def placement(board, marker, goal, hand, policy, rng, *, rotations=range(4)):
     squares = frontier(board, goal)
     faces = sorted(set(hand))
     if policy == "route":
-        options = list(route_placements(board, marker, goal, faces))
+        options = list(route_placements(board, marker, goal, faces, rotations))
         if options:
             return best(options, lambda option: option[0], rng)[1]
     elif policy != "random":
@@ -97,7 +97,7 @@ def placement(board, marker, goal, hand, policy, rng):
             for d, p in enumerate(neighbors(marker))
             if p in squares
             for t in faces
-            for r in range(4)
+            for r in rotations
             if connects(board[marker], rotate(t, r), d)
         ]
         if candidates:
@@ -110,7 +110,7 @@ def placement(board, marker, goal, hand, policy, rng):
                 return (onward > 0, -distance(p, goal), onward)
 
             return best(candidates, score, rng)
-    return rng.choice(squares), rng.choice(faces), rng.randrange(4)
+    return rng.choice(squares), rng.choice(faces), rng.choice(rotations)
 
 
 def movement(board, marker, goal, policy, rng):

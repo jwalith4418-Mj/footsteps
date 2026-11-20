@@ -45,14 +45,14 @@ def deal(seed, goal, kit=KIT):
     }
 
 
-def trial(goal, seed, policy, *, kit=KIT):
+def trial(goal, seed, policy, *, kit=KIT, rotations=range(4)):
     initial = deal(seed, goal, kit)
     game = Game(initial)
     record = new_record(initial)
     draw_rng = Random(f"draw/{seed}")
     choice_rng = Random(f"choices/{seed}")
 
-    play_out(game, record, policy, draw_rng, choice_rng)
+    play_out(game, record, policy, draw_rng, choice_rng, rotations=rotations)
     return {
         "x": goal[0],
         "y": goal[1],
@@ -63,7 +63,7 @@ def trial(goal, seed, policy, *, kit=KIT):
     }, record
 
 
-def play_out(game, record, policy, draw_rng, choice_rng):
+def play_out(game, record, policy, draw_rng, choice_rng, *, rotations=range(4)):
     """Complete a cooperative trajectory starting at a draw, using each builder’s private view."""
 
     def act(kind, **kwargs):
@@ -76,7 +76,13 @@ def play_out(game, record, policy, draw_rng, choice_rng):
         view = game.view(game.actor)
         board = dict(view["board"])
         p, face, rotation = placement(
-            board, view["marker"], view["goal"], view["hand"], policy, choice_rng
+            board,
+            view["marker"],
+            view["goal"],
+            view["hand"],
+            policy,
+            choice_rng,
+            rotations=rotations,
         )
         act("place", at=list(p), tile=face, rotation=rotation)
         if game.stage == "discard":

@@ -12,7 +12,7 @@ from .board import connects, distance, neighbors, rotate
 from .decision_notes import REASON_PROMPT, request_reason, save_note
 from .game import checked_placement
 from .role_knowledge import role_information
-from .seat_tools import query, spec_for
+from .seat_tools import query, rotations_of, spec_for, tile
 from .social import SOCIAL_STAGES, shortlist, social_request
 from .solo import exits
 from .team_names import COLORS, color_brief
@@ -72,16 +72,6 @@ class Seat:
         return request(self.port, path, body, 3, self.token)
 
 
-def tile(face):
-    return [
-        face,
-        *(
-            "".join(d for bit, d in enumerate("NESW") if mask & (1 << bit)) or "-"
-            for mask in (face & 15, face >> 4)
-        ),
-    ]
-
-
 def forward_examples(snapshot):
     """One legal index triple per immediately enterable new square closer to EXIT."""
     state, options = snapshot["state"], snapshot["choices"]
@@ -123,6 +113,8 @@ def model_request(
     named_ballots=False,
     explain=False,
     explicit_actions=False,
+    show_rotations=False,
+    named_rotations=False,
 ):
     state = snapshot["state"]
     fields = (
@@ -150,6 +142,8 @@ def model_request(
         recent=[entry["text"] for entry in snapshot["history"][-12:]],
         options=choices,
     )
+    if show_rotations and state["stage"] == "place":
+        context["hand_rotations"] = [rotations_of(f) for f in dict.fromkeys(state["hand"])]
     if guided and state["stage"] == "place":
         context["forward_examples"] = forward_examples(snapshot)
     schema = {
@@ -179,6 +173,17 @@ def model_request(
                 " For marker_on_origin, answer whether the actual marker is on origin now."
             )
             schema["properties"]["marker_on_origin"] = {"type": "boolean"}
+    if named_rotations and state["stage"] == "place":
+        # Keep the adapter's numeric menu intact for decoding and validation.
+        names = [f"turn_{r}" for r in choices["rotation"]]
+        context["options"] = {**context["options"], "rotation": names}
+        for example in context.get("forward_examples", []):
+            example["rotation"] = names[example["rotation"]]
+        schema["properties"]["rotation"] = {"type": "string", "enum": names}
+        instructions += (
+            " For rotation return the literal turn name. turn_0 is printed orientation, "
+            "turn_1 is one clockwise quarter-turn, turn_2 is two, and turn_3 is three."
+        )
     if named_moves and state["stage"] == "propose":
         directions = dict(zip(neighbors(state["marker"]), ("north", "east", "south", "west")))
         names = ["stay" if p is None else directions[tuple(p)] for p in choices["to"]]
@@ -223,12 +228,17 @@ def model_request(
     }
 
 
-def consultation(snapshot, body, seconds):
-    spec = spec_for(snapshot["state"]["stage"])
-    if spec is None:
+def consultation(snapshot, body, seconds, *, board_tools=True, rotation_lookup=False, metrics=None):
+    stage = snapshot["state"]["stage"]
+    board_spec = spec_for(stage) if board_tools else None
+    specs = [board_spec] if board_spec else []
+    inspect = rotation_lookup and stage == "place"
+    if inspect:
+        specs.append(spec_for(stage, rotation_lookup=True))
+    if not specs:
         return [], []
     probe = {k: v for k, v in body.items() if k != "format"}
-    probe["tools"] = [spec]
+    probe["tools"] = specs
     probe["think"] = False
     probe["messages"] = [
         {
@@ -237,19 +247,43 @@ def consultation(snapshot, body, seconds):
         },
         body["messages"][1],
     ]
-    probe["options"] = {**body["options"], "num_predict": 96}
+    if inspect:
+        probe["messages"][0]["content"] = (
+            "This is a private tool selection. If an offered tool would help you choose, "
+            "emit one native tool call using a literal face or board value. "
+            "Otherwise reply with exactly {}. Give only the call or {}."
+        )
+    probe["options"] = {**body["options"], "num_predict": 384 if inspect else 96}
+
+    def unused(status):
+        return [], [{"name": "inspect_rotations", "status": status}] if inspect else []
+
     try:
         result = request(11434, "/api/chat", probe, seconds)
     except (OSError, HTTPException):
-        return [], []
-    message = result.get("message") if isinstance(result, dict) else None
-    calls = message.get("tool_calls") if isinstance(message, dict) else None
-    if not isinstance(calls, list) or not calls:
-        return [], []
+        return unused("unavailable")
+    if not isinstance(result, dict):
+        return unused("invalid-response")
+    if metrics is not None:
+        metrics["prompt_tokens"] = result.get("prompt_eval_count", 0)
+        metrics["output_tokens"] = result.get("eval_count", 0)
+    message = result.get("message")
+    if not isinstance(message, dict):
+        return unused("invalid-response")
+    calls = message.get("tool_calls")
+    if not calls:
+        if result.get("done_reason") == "length":
+            return unused("truncated")
+        content = message.get("content")
+        return unused(
+            "skipped" if isinstance(content, str) and content.strip() == "{}" else "no-call"
+        )
+    if not isinstance(calls, list):
+        return unused("invalid-call")
     call = calls[0]
     fn = call.get("function") if isinstance(call, dict) else None
-    if not isinstance(fn, dict) or fn.get("name") != spec["function"]["name"]:
-        return [], []
+    if not isinstance(fn, dict) or fn.get("name") not in [s["function"]["name"] for s in specs]:
+        return unused("invalid-call")
     name, args = fn["name"], fn.get("arguments")
     try:
         output = query(snapshot, name, args)
@@ -259,11 +293,20 @@ def consultation(snapshot, body, seconds):
         {"role": "assistant", "content": "", "tool_calls": [call]},
         {"role": "tool", "tool_name": name, "content": json.dumps(output, separators=(",", ":"))},
     ]
-    return messages, [{"name": name, "ok": "error" not in output}]
+    used = {"name": name, "ok": "error" not in output}
+    if name == "inspect_rotations":
+        used["status"] = "answered" if used["ok"] else "invalid-arguments"
+        if isinstance(args, dict) and type(args.get("tile")) is int:
+            used["tile"] = args["tile"]
+    return messages, [used]
 
 
 def model_choice(body, choices, seconds, explain):
     answer = request(11434, "/api/chat", body, seconds)
+    return decode_choice(answer, body, choices, explain)
+
+
+def decode_choice(answer, body, choices, explain):
     reply = json.loads(answer["message"]["content"])
     reason = reply.pop("reason", None) if explain and isinstance(reply, dict) else None
     if not isinstance(reply, dict) or reply.keys() != choices.keys():
@@ -350,6 +393,8 @@ def infer(
     note_file=None,
     placement_attempts=None,
     joint_placement=False,
+    rotation_aid=None,
+    named_rotations=False,
 ):
     deadline = time.monotonic() + seconds
     social = (social_guidance or outcome_policy) and snapshot["state"]["stage"] in SOCIAL_STAGES
@@ -383,6 +428,8 @@ def infer(
         named_ballots=named_ballots,
         explain=note_file is not None,
         explicit_actions=explicit_actions,
+        show_rotations=rotation_aid == "table",
+        named_rotations=named_rotations,
     )
     if social:
         social_request(
@@ -397,8 +444,11 @@ def infer(
     if no_think:
         body["think"] = False
     used = []
-    if use_tools:
-        messages, used = consultation(snapshot, body, seconds / 2)
+    lookup = rotation_aid == "tool" and snapshot["state"]["stage"] == "place"
+    if use_tools or lookup:
+        messages, used = consultation(
+            snapshot, body, seconds / 2, board_tools=use_tools, rotation_lookup=lookup
+        )
         body["messages"].extend(messages)
         seconds = deadline - time.monotonic()
         if seconds <= 0:
