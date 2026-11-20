@@ -10,6 +10,7 @@ from urllib.parse import urlsplit
 from .action_language import action_brief, ballot_names
 from .board import connects, distance, neighbors, rotate
 from .decision_notes import REASON_PROMPT, request_reason, save_note
+from .game import checked_placement
 from .role_knowledge import role_information
 from .seat_tools import query, spec_for
 from .social import SOCIAL_STAGES, shortlist, social_request
@@ -161,6 +162,23 @@ def model_request(
         },
     }
     instructions = INDEX_INSTRUCTIONS
+    if "can_step" in choices:
+        instructions = (
+            "Choose the zero-based tile, rotation, at and origin indices. Origin is an existing "
+            "construction neighbor of at. For can_step, answer true or false: after rotation, "
+            "can a marker hypothetically on origin step directly onto at? A blocked edge is legal "
+            "to build. Placing leaves the actual marker on its current square."
+        )
+        context["origin_indices_by_at_index"] = [
+            [i for i, p in enumerate(choices["origin"]) if tuple(p) in neighbors(at)]
+            for at in choices["at"]
+        ]
+        schema["properties"]["can_step"] = {"type": "boolean"}
+        if "marker_on_origin" in choices:
+            instructions += (
+                " For marker_on_origin, answer whether the actual marker is on origin now."
+            )
+            schema["properties"]["marker_on_origin"] = {"type": "boolean"}
     if named_moves and state["stage"] == "propose":
         directions = dict(zip(neighbors(state["marker"]), ("north", "east", "south", "west")))
         names = ["stay" if p is None else directions[tuple(p)] for p in choices["to"]]
@@ -244,6 +262,78 @@ def consultation(snapshot, body, seconds):
     return messages, [{"name": name, "ok": "error" not in output}]
 
 
+def model_choice(body, choices, seconds, explain):
+    answer = request(11434, "/api/chat", body, seconds)
+    reply = json.loads(answer["message"]["content"])
+    reason = reply.pop("reason", None) if explain and isinstance(reply, dict) else None
+    if not isinstance(reply, dict) or reply.keys() != choices.keys():
+        raise ValueError("model returned unexpected fields")
+    choice = {}
+    for key, values in choices.items():
+        field = body["format"]["properties"][key]
+        if field["type"] == "boolean":
+            if type(reply[key]) is not bool:
+                raise ValueError(f"{key} requires true or false")
+            choice[key] = reply[key]
+            continue
+        i = field["enum"].index(reply[key]) if field["type"] == "string" else reply[key]
+        if type(i) is not int or not 0 <= i < len(values):
+            raise ValueError(f"model returned an invalid option index for {key}")
+        choice[key] = values[i]
+    return choice, reason
+
+
+def edge_question(model, state, options, build, no_think):
+    """Ask about an already selected, uncommitted build in literal floor coordinates."""
+    dest = tuple(build["at"])
+    board = {tuple(p): face for p, face in state["board"]}
+    origins = [p for p in options["origin"] if tuple(p) in neighbors(dest)]
+    names = [f"({p[0]},{p[1]})" for p in origins]
+    fields = {"origin": {"type": "string", "enum": names}, "can_step": {"type": "boolean"}}
+    inputs = {"origin": origins, "can_step": [True, False]}
+    instructions = (
+        "Check a proposed floor placement before it commits. Pick one listed origin by name. "
+        "Read its outgoing side toward the new tile, then the rotated tile's entrance facing back. "
+        "Set can_step true only if both sides allow that step. False is a valid build. "
+        "Placement leaves the marker where it is."
+    )
+    if "marker_on_origin" in options:
+        instructions += " Set marker_on_origin true only if your chosen origin equals the marker."
+        fields["marker_on_origin"] = {"type": "boolean"}
+        inputs["marker_on_origin"] = [True, False]
+    context = {
+        "marker": state["marker"],
+        "new_square": dest,
+        "rotated_tile_entrances": tile(rotate(build["tile"], build["rotation"]))[1],
+        "origins": [
+            {
+                "name": name,
+                "outgoing": tile(board[tuple(p)])[2],
+                "direction_to_new_square": "NESW"[neighbors(p).index(dest)],
+            }
+            for p, name in zip(origins, names, strict=True)
+        ],
+    }
+    body = {
+        "model": model,
+        "stream": False,
+        "format": {
+            "type": "object",
+            "required": list(fields),
+            "properties": fields,
+            "additionalProperties": False,
+        },
+        "messages": [
+            {"role": "system", "content": instructions},
+            {"role": "user", "content": json.dumps(context, separators=(",", ":"))},
+        ],
+        "options": {"temperature": 0, "seed": 1, "num_ctx": 4096, "num_predict": 64},
+    }
+    if no_think:
+        body["think"] = False
+    return body, inputs
+
+
 def infer(
     snapshot,
     model,
@@ -258,6 +348,8 @@ def infer(
     social_guidance=False,
     outcome_policy=False,
     note_file=None,
+    placement_attempts=None,
+    joint_placement=False,
 ):
     deadline = time.monotonic() + seconds
     social = (social_guidance or outcome_policy) and snapshot["state"]["stage"] in SOCIAL_STAGES
@@ -278,6 +370,11 @@ def infer(
                     )
                 return choice
             snapshot = {**snapshot, "choices": {key: eligible}}
+    full_menu = snapshot["choices"]
+    checked = "can_step" in full_menu
+    separate = checked and not joint_placement
+    if separate:
+        snapshot = {**snapshot, "choices": {k: full_menu[k] for k in ("tile", "at", "rotation")}}
     body = model_request(
         snapshot,
         model,
@@ -306,24 +403,58 @@ def infer(
         seconds = deadline - time.monotonic()
         if seconds <= 0:
             raise TimeoutError("tool consultation reached the decision deadline")
-    answer = request(11434, "/api/chat", body, seconds)
-    reply = json.loads(answer["message"]["content"])
-    reason = (
-        reply.pop("reason", None) if note_file is not None and isinstance(reply, dict) else None
-    )
     options = snapshot["choices"]
-    if not isinstance(reply, dict) or reply.keys() != options.keys():
-        raise ValueError("model returned unexpected fields")
-    choice = {}
-    for key, values in options.items():
-        field = body["format"]["properties"][key]
-        i = field["enum"].index(reply[key]) if field["type"] == "string" else reply[key]
-        if type(i) is not int or not 0 <= i < len(values):
-            raise ValueError("model returned an invalid option index")
-        choice[key] = values[i]
-    if note_file is not None:
-        save_note(note_file, snapshot, model, choice, reason, used)
-    return choice
+    if not checked:
+        choice, reason = model_choice(body, options, seconds, note_file is not None)
+        if note_file is not None:
+            save_note(note_file, snapshot, model, choice, reason, used)
+        return choice
+
+    state = snapshot["state"]
+    board = {tuple(p): f for p, f in state["board"]}
+    build = {}
+    build_reason = None
+    if separate:
+        build, build_reason = model_choice(body, options, seconds, note_file is not None)
+        body, options = edge_question(model, snapshot["state"], full_menu, build, no_think)
+        seconds = deadline - time.monotonic()
+        if seconds <= 0:
+            raise TimeoutError("no time left to check the proposed placement")
+    for attempt in range(2):
+        choice = None
+        try:
+            choice, reason = model_choice(
+                body, options, seconds, note_file is not None and not separate
+            )
+            choice = {**build, **choice}
+            committed = checked_placement(
+                board, tuple(state["goal"]), tuple(state["marker"]), state["hand"], choice
+            )
+        except ValueError as exc:
+            if placement_attempts is not None:
+                placement_attempts.append((choice, str(exc)))
+            if attempt:
+                raise
+            body["messages"].append(
+                {
+                    "role": "user",
+                    "content": (
+                        f"Your placement {choice} was rejected: {exc} Submit a complete corrected choice "
+                        "using the offered fields and literal booleans."
+                    ),
+                }
+            )
+            seconds = deadline - time.monotonic()
+            if seconds <= 0:
+                raise TimeoutError("placement correction reached the decision deadline") from exc
+            continue
+        if placement_attempts is not None:
+            placement_attempts.append((choice, None))
+        if note_file is not None:
+            save_note(
+                note_file, snapshot, model, committed, build_reason if separate else reason, used
+            )
+        return choice
 
 
 def play_seat(seat, model, budget, *, decide=infer, report=print, request_note_id=False):

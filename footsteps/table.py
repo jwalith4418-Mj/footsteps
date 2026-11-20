@@ -5,7 +5,7 @@ from math import isfinite
 
 from .board import frontier, moves
 from .fallback import timeout
-from .game import Game, require
+from .game import Game, checked_placement, require
 from .record import describe, new_record
 
 # Print order in playtest/kit.typ. Equal faces are separate physical pieces.
@@ -47,14 +47,20 @@ class DecisionConflict(ValueError):
 
 
 class Table:
-    def __init__(self, setup, rng, seconds=60, discussion=15, *, color_teams=False):
+    def __init__(
+        self, setup, rng, seconds=60, discussion=15, *, color_teams=False, placement_check=None
+    ):
         require(isfinite(seconds) and seconds > 0, "decision time must be positive")
         require(isfinite(discussion) and discussion >= 0, "discussion time must be nonnegative")
+        require(placement_check in (None, "edge", "edge-and-marker"), "unknown placement check")
+        self.placement_check = placement_check
         self.game = Game(setup)
         self.rng = rng
         self.seconds = seconds
         self.discussion = discussion
         self.record = new_record(setup)
+        if placement_check:
+            self.record["placement_check"] = placement_check
         if color_teams:
             self.record["team_names"] = "colors"
         self.history = [[] for _ in self.game.roles]
@@ -157,6 +163,12 @@ class Table:
         fields = {"tile": sorted(set(game.hands[seat]))}
         if game.stage == "place":
             fields.update(at=frontier(game.board, game.goal), rotation=list(range(4)))
+            if self.placement_check:
+                fields.update(
+                    origin=sorted(game.board.keys() - {game.goal}), can_step=[True, False]
+                )
+                if self.placement_check == "edge-and-marker":
+                    fields["marker_on_origin"] = [True, False]
         return fields
 
     def speaking(self, seat, now):
@@ -211,7 +223,19 @@ class Table:
                 return
             self.reveal()
         else:
-            self.commit({"kind": self.game.stage, **choice})
+            if self.game.stage == "place" and self.placement_check:
+                g = self.game
+                placement = checked_placement(g.board, g.goal, g.marker, g.hands[seat], choice)
+                self.commit({"kind": "place", **placement})
+                dest = tuple(placement["at"])
+                step = "open" if choice["can_step"] else "blocked"
+                possible = "legal" if dest in moves(g.board, g.marker) else "unavailable"
+                self.history[seat][-1]["text"] += (
+                    f" You checked {tuple(choice['origin'])} to {dest}: {step}. "
+                    f"Marker still at {g.marker}. A direct step from there to {dest} is {possible}."
+                )
+            else:
+                self.commit({"kind": self.game.stage, **choice})
         self.open_decision(now)
 
     def say(self, seat, revision, message, now):

@@ -1,0 +1,17 @@
+mode,turn,first_edge_correct,first_marker_correct,attempts,fallback
+edge,1,False,,2,False
+edge,2,True,,1,False
+edge,3,False,,2,True
+edge,4,True,,1,False
+edge,5,True,,1,False
+edge,6,False,,2,False
+edge,7,True,,1,False
+edge,8,False,,2,True
+edge-and-marker,1,False,True,2,False
+edge-and-marker,2,True,True,1,False
+edge-and-marker,3,False,True,2,True
+edge-and-marker,4,True,True,1,False
+edge-and-marker,5,True,True,1,False
+edge-and-marker,6,False,True,2,False
+edge-and-marker,7,True,False,2,False
+edge-and-marker,8,False,True,2,True

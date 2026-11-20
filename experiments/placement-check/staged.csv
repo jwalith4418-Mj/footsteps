@@ -1,0 +1,29 @@
+case,mode,reverse,attempt,choice,rejection,tactical_success
+blue-route,ordinary,False,1,"{""tile"": 100, ""at"": [-1, -1], ""rotation"": 0}",,False
+blue-route,ordinary,True,1,"{""tile"": 140, ""at"": [-1, -2], ""rotation"": 2}",,False
+blue-route,edge,False,1,"{""tile"": 100, ""at"": [-1, -1], ""rotation"": 0, ""origin"": [-2, -1], ""can_step"": true}","From (-2, -1) the E outgoing side is open. At (-1, -1) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+blue-route,edge,False,2,"{""tile"": 100, ""at"": [-1, -1], ""rotation"": 0, ""origin"": [-2, -1], ""can_step"": false}",,False
+blue-route,edge,True,1,"{""tile"": 140, ""at"": [-1, -2], ""rotation"": 2, ""origin"": [-2, -2], ""can_step"": true}","From (-2, -2) the E outgoing side is open. At (-1, -2) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+blue-route,edge,True,2,"{""tile"": 140, ""at"": [-1, -2], ""rotation"": 2, ""origin"": [-2, -2], ""can_step"": false}",,False
+blue-route,edge-and-marker,False,1,"{""tile"": 100, ""at"": [-1, -1], ""rotation"": 0, ""origin"": [-2, -1], ""can_step"": true, ""marker_on_origin"": false}","From (-2, -1) the E outgoing side is open. At (-1, -1) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+blue-route,edge-and-marker,False,2,"{""tile"": 100, ""at"": [-1, -1], ""rotation"": 0, ""origin"": [-2, -1], ""can_step"": false, ""marker_on_origin"": false}",,False
+blue-route,edge-and-marker,True,1,"{""tile"": 140, ""at"": [-1, -2], ""rotation"": 2, ""origin"": [-2, -2], ""can_step"": true, ""marker_on_origin"": true}","From (-2, -2) the E outgoing side is open. At (-1, -2) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+blue-route,edge-and-marker,True,2,"{""tile"": 140, ""at"": [-1, -2], ""rotation"": 2, ""origin"": [-2, -2], ""can_step"": false, ""marker_on_origin"": true}",,False
+red-trap,ordinary,False,1,"{""tile"": 58, ""at"": [1, 0], ""rotation"": 0}",,False
+red-trap,ordinary,True,1,"{""tile"": 41, ""at"": [1, 0], ""rotation"": 3}",,False
+red-trap,edge,False,1,"{""tile"": 58, ""at"": [1, 0], ""rotation"": 0, ""origin"": [0, 0], ""can_step"": true}",,False
+red-trap,edge,True,1,"{""tile"": 41, ""at"": [1, 0], ""rotation"": 3, ""origin"": [0, 0], ""can_step"": true}",,False
+red-trap,edge-and-marker,False,1,"{""tile"": 58, ""at"": [1, 0], ""rotation"": 0, ""origin"": [0, 0], ""can_step"": true, ""marker_on_origin"": false}",,False
+red-trap,edge-and-marker,True,1,"{""tile"": 41, ""at"": [1, 0], ""rotation"": 3, ""origin"": [0, 0], ""can_step"": true, ""marker_on_origin"": false}",,False
+marker-open,edge,False,1,"{""tile"": 58, ""at"": [-1, -2], ""rotation"": 0, ""origin"": [-2, -2], ""can_step"": true}",,
+marker-open,edge-and-marker,False,1,"{""tile"": 58, ""at"": [-1, -2], ""rotation"": 0, ""origin"": [-2, -2], ""can_step"": true, ""marker_on_origin"": true}",,
+marker-closed,edge,False,1,"{""tile"": 58, ""at"": [-1, -2], ""rotation"": 1, ""origin"": [-2, -2], ""can_step"": true}","From (-2, -2) the E outgoing side is open. At (-1, -2) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+marker-closed,edge,False,2,"{""tile"": 58, ""at"": [-1, -2], ""rotation"": 1, ""origin"": [-2, -2], ""can_step"": false}",,
+marker-closed,edge-and-marker,False,1,"{""tile"": 58, ""at"": [-1, -2], ""rotation"": 1, ""origin"": [-2, -2], ""can_step"": true, ""marker_on_origin"": true}","From (-2, -2) the E outgoing side is open. At (-1, -2) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+marker-closed,edge-and-marker,False,2,"{""tile"": 58, ""at"": [-1, -2], ""rotation"": 1, ""origin"": [-2, -2], ""can_step"": false, ""marker_on_origin"": true}",,
+remote-open,edge,False,1,"{""tile"": 58, ""at"": [-1, -1], ""rotation"": 0, ""origin"": [-2, -1], ""can_step"": true}",,
+remote-open,edge-and-marker,False,1,"{""tile"": 58, ""at"": [-1, -1], ""rotation"": 0, ""origin"": [-2, -1], ""can_step"": true, ""marker_on_origin"": false}",,
+remote-closed,edge,False,1,"{""tile"": 58, ""at"": [-1, -1], ""rotation"": 1, ""origin"": [-2, -1], ""can_step"": true}","From (-2, -1) the E outgoing side is open. At (-1, -1) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+remote-closed,edge,False,2,"{""tile"": 58, ""at"": [-1, -1], ""rotation"": 1, ""origin"": [-2, -1], ""can_step"": false}",,
+remote-closed,edge-and-marker,False,1,"{""tile"": 58, ""at"": [-1, -1], ""rotation"": 1, ""origin"": [-2, -1], ""can_step"": true, ""marker_on_origin"": false}","From (-2, -1) the E outgoing side is open. At (-1, -1) the rotated tile's W entrance is closed. The step is blocked. The marker remains at (-2, -2).",
+remote-closed,edge-and-marker,False,2,"{""tile"": 58, ""at"": [-1, -1], ""rotation"": 1, ""origin"": [-2, -1], ""can_step"": false, ""marker_on_origin"": false}",,

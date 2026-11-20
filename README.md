@@ -28,7 +28,9 @@ Read the two-turn example to see a tied vote, an elimination and a win on the fi
 python -m footsteps table --save /tmp/footsteps-game.json
 ```
 
-Add `--exit-origin` to `table` or `solo` to put EXIT at (0, 0) for the whole game and its replay. The usual setup then starts at (−4, −2). For solitaire, `--goal 4 2` specifies four squares east and two north from START in either convention.
+New tables and solitaire games put EXIT at (0, 0). The usual layout starts at (−4, −2). Use `--start-origin` for historical coordinates. For solitaire, `--goal 4 2` specifies four squares east and two north from START in either convention.
+
+For the experimental placement interface, add `--placement-check edge-and-marker` to the table command. Builders identify a neighboring tile, read the directed edge into the new tile and say whether the marker occupies the chosen origin. `--placement-check edge` asks only about the edge. [Worked positions and results](experiments/placement-check/README.md)
 
 For three players, add `--seats 3` to deal two good roles and one bad. Open the private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
 

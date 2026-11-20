@@ -62,3 +62,5 @@ In the [blinded guest-seat trial](blind-guest/README.md), an independent agent c
 The [guest tactic and ballot comparison](action-language/README.md) tests whether local model seats can see a permanent block coming, execute it, and check an accusation against the public floor history.
 
 The [EXIT-origin comparison](exit-origin/README.md) tests distance reading, directed detours, matched solitaire deals and a five-seat table in two coordinate systems.
+
+The [placement check](placement-check/README.md) asks builders to classify a directed edge and, optionally, locate the marker before committing. Frozen positions and matched five-seat tables measure what players can read and what they then build.

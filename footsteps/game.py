@@ -3,7 +3,7 @@
 from collections import Counter
 from copy import deepcopy
 
-from .board import OPEN, START, frontier, moves, rotate
+from .board import OPEN, START, connects, frontier, moves, neighbors, rotate
 
 
 def require(condition, message):
@@ -35,6 +35,38 @@ def with_exit_origin(setup):
     gx, gy = point(setup["goal"])
     sx, sy = point(setup.get("start", START))
     return {**setup, "start": [sx - gx, sy - gy], "goal": [0, 0]}
+
+
+def checked_placement(board, goal, marker, hand, choice):
+    """Verify a builder's private edge claim, returning only the public placement."""
+    origin, dest = point(choice["origin"]), point(choice["at"])
+    tile, rotation = choice["tile"], choice["rotation"]
+    require(origin in board, f"Origin {origin} has no floor tile.")
+    require(origin != goal, "Choose START or an ordinary tile as the construction neighbor.")
+    require(dest not in board, f"Placement square {dest} is occupied.")
+    adjacent = neighbors(origin)
+    require(dest in adjacent, f"Choose an origin sharing an edge with {dest}.")
+    require(integer(tile) and tile in hand, "Choose a face in your hand.")
+    require(integer(rotation) and 0 <= rotation < 4, "Choose a rotation from 0 to 3.")
+    direction = adjacent.index(dest)
+    target = rotate(tile, rotation)
+    open_edge = connects(board[origin], target, direction)
+    if type(choice["can_step"]) is not bool or choice["can_step"] != open_edge:
+        outward = "open" if board[origin] & (16 << direction) else "closed"
+        opposite = (direction + 2) % 4
+        inward = "open" if target & (1 << opposite) else "closed"
+        raise ValueError(
+            f"From {origin} the {'NESW'[direction]} outgoing side is {outward}. "
+            f"At {dest} the rotated tile's {'NESW'[opposite]} entrance is {inward}. "
+            f"The step is {'legal' if open_edge else 'blocked'}. The marker remains at {marker}."
+        )
+    if "marker_on_origin" in choice:
+        require(
+            type(choice["marker_on_origin"]) is bool
+            and choice["marker_on_origin"] == (origin == marker),
+            f"The marker is at {marker}. Compare that square with your origin {origin}.",
+        )
+    return {"tile": tile, "rotation": rotation, "at": list(dest)}
 
 
 class Game:

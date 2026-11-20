@@ -6,6 +6,8 @@ Format 1 fixes START at (0, 0). Format 2 requires both `setup.start` and `setup.
 
 An optional top-level `"team_names": "colors"` displays the `good` team as Blue and the `bad` team as Red. Both names describe the same base-1 objectives. Stored role IDs and legal actions are identical. Replays show player remarks and private notes verbatim.
 
+An optional top-level `placement_check` records the builder interface used at a live table (`edge` or `edge-and-marker`). The replay uses the committed tile, square, and rotation. Builder answers and rejected attempts stay private.
+
 | Phase / kind | Required fields | Interpretation |
 |---|---|---|
 | draw | tiles | Realized faces in draw order, with multiplicity |

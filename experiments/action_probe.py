@@ -20,7 +20,17 @@ GUEST = ROOT / "blind-guest/game/1244867160-bad1+2.json"
 SOCIAL = ROOT / "public-discussion/five-colors/8602-bad1+3.json"
 
 
-def position(source, count, seat, *, two_exits=False, later=False, rotated_hand=False, blue=False):
+def position(
+    source,
+    count,
+    seat,
+    *,
+    two_exits=False,
+    later=False,
+    rotated_hand=False,
+    blue=False,
+    placement_check=None,
+):
     record = read(source)
     setup = record["setup"]
     events = record["events"][:count]
@@ -34,7 +44,7 @@ def position(source, count, seat, *, two_exits=False, later=False, rotated_hand=
     if later:
         for key in ("roles", "hands"):
             setup[key][2], setup[key][3] = setup[key][3], setup[key][2]
-    table = Table(setup, Random(0), color_teams=True)
+    table = Table(setup, Random(0), color_teams=True, placement_check=placement_check)
     table.started = True
     for event in events:
         table.commit(event)

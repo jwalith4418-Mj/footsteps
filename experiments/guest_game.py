@@ -93,6 +93,7 @@ def main():
     cli.add_argument("--out", type=Path, required=True)
     cli.add_argument("--private", type=Path, required=True)
     cli.add_argument("--seed", type=int, help="fresh random seed when omitted")
+    cli.add_argument("--start-origin", action="store_true", help="use historical guest coordinates")
     args = cli.parse_args()
     args.exchange.mkdir(parents=True, exist_ok=True, mode=0o700)
     if any(args.exchange.iterdir()):
@@ -123,6 +124,7 @@ def main():
         paired_fifth_hand=True,
         kit=fixed_kit(Random(8700), 16, 29, 29),
         guest=guest,
+        exit_origin=not args.start_origin,
     )
     write_rows(args.out / "choices.csv", rows)
 

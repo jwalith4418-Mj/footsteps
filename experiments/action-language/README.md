@@ -86,7 +86,7 @@ play() {
   arm=$1
   x=$2
   shift 2
-  python -m experiments.social_evidence --roles GBGBG --paired-fifth-hand --color-teams \
+  python -m experiments.social_evidence --start-origin --roles GBGBG --paired-fifth-hand --color-teams \
     --arm receipt --debate --model-floor --outcome-policy --kit-counts 29 29 \
     --kit-seed 8700 --seeds 8602 --goal "$x" 2 --out "$work/$arm" \
     --private-notes "$work/notes/$arm" "$@"

@@ -14,7 +14,7 @@ Pick an exit square, a tile mix, total supply N, private hand size M, and team s
 
 Hands are private to their owners.
 
-The floor is a square grid with no boundary. Place START and EXIT at the chosen displacement and put the marker on START. Agree on one coordinate system for the whole table. For an exit four squares east and two north, you can call START (0, 0) and EXIT (4, 2), or call EXIT (0, 0) and START (−4, −2). In the latter convention a marker at (x, y) needs at least |x| + |y| steps to reach EXIT. Arrows and missing tiles can force a longer route or close it entirely. Both special tiles permit entry and exit on all four sides and are outside the supply N. North increases y and east increases x.
+The floor is a square grid with no boundary. Place START and EXIT at the chosen displacement and put the marker on START. By default EXIT is (0, 0). For an exit four squares east and two north, START is (−4, −2). A marker at (x, y) needs at least |x| + |y| steps to reach EXIT in this frame. Some historical tables instead put START at (0, 0). Everyone uses the same coordinates throughout a game. Arrows and missing tiles can force a longer route or close it entirely. Both special tiles permit entry and exit on all four sides and are outside the supply N. North increases y and east increases x.
 
 ## Build
 
@@ -23,6 +23,12 @@ The floor is a square grid with no boundary. Place START and EXIT at the chosen 
 3. If you drew two, privately choose one remaining tile from your hand and return it to the bag. Returning it makes it eligible on the very next draw. If you drew one, skip this step.
 
 A placement changes the floor. The marker remains on its current square throughout the build. Tile arrows restrict the marker's later step. They impose no matching requirement on placement.
+
+### Optional placement check
+
+The builder privately names an existing START or ordinary tile O sharing an edge with the new square N. With the chosen tile rotated as submitted, answer “could a marker on O step directly onto N?” Check the outgoing side at O and the facing entrance at N. Some tables also ask “is the actual marker on O now?” Both a blocked edge and a remote origin can be correct answers. If a check fails, the builder gets a private explanation and can retry within the original decision window. An accepted build places only the tile. Movement still requires its later proposal and ballot.
+
+For example, suppose the marker is at (−2, −2) and O is the tile just north, at (−2, −1), with its east side open outward. Place face 58 in printed orientation at (−1, −1). Its west entrance is open, so the edge answer is yes and the marker answer is no. Rotate face 58 clockwise once and the west entrance closes. The same placement square is legal with the edge answer no. No step happens in either case.
 
 ## Move
 

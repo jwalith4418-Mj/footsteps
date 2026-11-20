@@ -72,11 +72,25 @@ def main():
         "--crossing", action="store_true", help="use the public two-turn demo setup"
     )
     for command in (solo, table):
-        command.add_argument(
+        origins = command.add_mutually_exclusive_group()
+        origins.add_argument(
             "--exit-origin",
+            dest="exit_origin",
             action="store_true",
-            help="set EXIT to (0,0) for this game and its replay",
+            default=True,
+            help="use the default EXIT-centered coordinates",
         )
+        origins.add_argument(
+            "--start-origin",
+            dest="exit_origin",
+            action="store_false",
+            help="use the historical START-centered coordinates",
+        )
+    table.add_argument(
+        "--placement-check",
+        choices=("edge", "edge-and-marker"),
+        help="ask builders to classify a directed edge before committing their tile",
+    )
     model = sub.add_parser("ollama", help="join a private seat with a local Ollama model")
     model.add_argument("--model", required=True, help="installed Ollama model name")
     model.add_argument("--budget", type=float, default=30, help="maximum seconds per inference")

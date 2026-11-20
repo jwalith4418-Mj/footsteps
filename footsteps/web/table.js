@@ -55,7 +55,7 @@ function drawFloor(s, available) {
         const choose = node("button", at);
         choose.className = "square-choice";
         choose.title = "Place at " + at;
-        choose.onclick = () => { byId("square").value = JSON.stringify([x,y]); };
+        choose.onclick = () => { const s = byId("square"); s.value = JSON.stringify([x,y]); s.dispatchEvent(new Event("change")); };
         cell.append(choose);
       }
       grid.append(cell);
@@ -65,6 +65,8 @@ function drawFloor(s, available) {
 
 function optionLabel(key, v, state) {
   if (v === null) return key === "to" ? "Stay" : "Pass";
+  if (key === "can_step") return v ? "Open from origin to new tile" : "Blocked from origin to new tile";
+  if (key === "marker_on_origin") return v ? "Marker is on the origin" : "Marker is elsewhere";
   if (key === "tile") return "Face " + v;
   if (key === "rotation") return (90*v) + "° clockwise";
   if (key === "target") return "P" + v;
@@ -92,14 +94,38 @@ function controls(d) {
     form.onsubmit = e => { e.preventDefault(); send("/say", {revision: d.revision, text: input.value}); };
   } else if (d.choices) {
     const names = {tile: "Tile", at: "Square", rotation: "Rotation", vote: "Ballot", to: "Propose marker step", target: "Nominee"};
+    if (d.choices.origin) {
+      form.append(node("p", "The marker stays at " + point(d.state.marker) + " during placement. Read the edge from the chosen origin to the new tile."));
+    }
+    Object.assign(names, {origin: "Existing neighbor (origin)", can_step: "Step from origin to new tile", marker_on_origin: "Marker location"});
     const selects = {};
     for (const [key, values] of Object.entries(d.choices)) {
       const label = node("label", names[key]), select = node("select");
       if (key === "at") select.id = "square";
       for (const value of values) select.add(new Option(optionLabel(key, value, d.state), JSON.stringify(value)));
+      if (key === "can_step" || key === "marker_on_origin") {
+        select.add(new Option("Choose an answer", ""), 0);
+        select.value = "";
+        select.required = true;
+      }
       label.append(select);
       form.append(label);
       selects[key] = select;
+    }
+    if (selects.origin) {
+      function origins() {
+        const [x,y] = JSON.parse(selects.at.value);
+        const previous = selects.origin.value;
+        selects.origin.replaceChildren();
+        for (const p of d.choices.origin) {
+          if (Math.abs(p[0]-x) + Math.abs(p[1]-y) === 1)
+            selects.origin.add(new Option(point(p), JSON.stringify(p)));
+        }
+        if (Array.from(selects.origin.options).some(o => o.value === previous))
+          selects.origin.value = previous;
+      }
+      selects.at.onchange = origins;
+      origins();
     }
     if (selects.rotation) {
       const preview = node("div");
