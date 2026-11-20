@@ -28,6 +28,12 @@ The builder proposes either staying put or moving one square. For a move east, t
 
 Staying skips the movement vote. Otherwise all living players, including the builder, cast ballots simultaneously and then reveal them by name. Move on a majority yes. On a tie, use the builder's ballot, which may be no. Reaching the exit ends the game with a good-team win. Otherwise an empty bag at this point ends the game with a bad-team win, even if every bad player has been eliminated.
 
+## Discussion
+
+Everyone knows the discussion rules. When there is time to speak before a ballot, every seat hears each remark and knows who said it. Players on either team may tell the truth, lie, bluff, or stay silent. Players may claim either role. A promised vote leaves the speaker free to vote either way.
+
+A player can check a claim against the public floor and revealed ballots, and against private facts their own seat is entitled to know. Speaking gives nobody an extra way to inspect a hand, reveal a role, or verify an intention. For example, if P1 says “I’m Blue and I voted no last turn,” everyone can check P1’s revealed vote. A Blue listener can weigh the role claim alongside other evidence. A Red listener already knows P1’s team from setup. Both hear exactly the same words.
+
 ## Nominate
 
 Starting with the next living player after the builder, go once around the table, builder last. Each surviving player may pass or name one other living player. Resolve each nomination immediately with a simultaneous public vote of all living players, including the nominee. A strict majority yes eliminates the nominee. A tie fails. Skip eliminated seats for all subsequent decisions. Set their hands aside privately. Roles stay hidden during play.

@@ -4,7 +4,11 @@ COMMON_KNOWLEDGE = (
     "The starting team sizes and this information rule are common knowledge. Every seat knows "
     "them and knows that everyone else knows them. Good players are told only their own "
     "alignment. Every Bad player knows the complete lineup of both teams from setup. "
-    "An elimination is public. Roles are revealed publicly at game end."
+    "An elimination is public. Roles are revealed publicly at game end. "
+    "Discussion is public: every seat sees each remark and who said it. You and players on "
+    "either team may tell the truth, lie, bluff, or stay silent. Check claims against public "
+    "events and the private facts your seat is entitled to know. Speaking grants no extra "
+    "way to verify a role, hand, or intention. A promised vote is not binding."
 )
 
 

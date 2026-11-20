@@ -61,7 +61,7 @@
 #par[*Build.* The builder draws two tiles behind their screen. Place one tile from the whole hand with any quarter-turn rotation on an empty square touching START or an ordinary tile along an edge. EXIT alone gives no placement rights. Keep existing tiles fixed. Privately return one other tile to the bag and mix it well. On the last draw, take the single tile, place one from hand and skip the return.]
 #par[*Move.* The builder proposes one legal step or staying put. Staying skips the vote. Otherwise reveal ballots together. A majority yes moves the marker. On a tie use the builder’s ballot, which can be no. Check the exit and bag win conditions now.]
 #par[*Nominate.* Starting after the builder and ending with the builder, each surviving seat may pass or nominate one other living player. All living players, including the nominee, vote. Only a strict majority yes eliminates. Set that hand aside face down, keep the role hidden, and skip the seat thereafter. If at least one good player survives, continue even if every bad player is out. After nominations the next living seat after the builder builds.]
-#par[*First trial.* Play untimed. Keep discussion to one trip around the table before a disputed ballot. This discussion limit and tile mix are playtest settings. The full rules also cover timed play.]
+#par[*First trial.* Play untimed. Keep discussion to one trip around the table before a disputed ballot. Everyone hears each remark. Either team may tell the truth, bluff, or stay silent. Check claims using the public record and your own private information.]
 #subtitle[Observer notes]
 #par[Session / date #box(line(length: 38mm))  End turn #box(line(length: 12mm))  Winning team #box(line(length: 20mm))]
 #for prompt in (

@@ -23,7 +23,7 @@ All successful endpoints return the caller's current snapshot. `choices` is null
 
 The revision is the count of committed referee events, including automatic draws. A failed or late submission cannot fill a later decision. HTTP 409 means the opportunity is closed for this seat; refresh the snapshot before deciding again. HTTP 400 reports malformed or illegal input. If a POST response is lost, fetch the latest state. A committed ballot sets `voted` only in the voter's own view until the collective reveal.
 
-By default a ballot opens after 15 seconds of discussion and every decision has a 60-second response period. All living seats can speak once during discussion (500 characters maximum). The host checks its own monotonic clock even when clients disconnect. At a deadline it reveals missing ballots as timeouts counted as no, or applies the base rules' individual fallback. The server remains available after game end so seats can inspect the outcome.
+By default a ballot opens after 15 seconds of discussion and every decision has a 60-second response period. All living seats can speak once during discussion (500 characters maximum). Every seat receives the attributed remark in its history. Both teams may bluff. The host records what was said and offers no additional verification of its contents. The host checks its own monotonic clock even when clients disconnect. At a deadline it reveals missing ballots as timeouts counted as no, or applies the base rules' individual fallback. The server remains available after game end so seats can inspect the outcome.
 
 ## Playtest record
 
