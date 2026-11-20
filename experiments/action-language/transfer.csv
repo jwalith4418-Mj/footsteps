@@ -1,0 +1,17 @@
+source,role,rotated_hand,arm,reversed,choice,effect
+8101-bad1,good,False,named,False,"{""tile"": 182, ""rotation"": 0, ""at"": [-1, 0]}",no immediate step with a route within the remaining turns
+8101-bad1,good,False,named,True,"{""tile"": 182, ""rotation"": 1, ""at"": [2, 0]}",step available with a possible route to EXIT
+8101-bad1,good,False,payoff,False,"{""tile"": 182, ""rotation"": 0, ""at"": [2, 0]}",marker permanently trapped
+8101-bad1,good,False,payoff,True,"{""tile"": 182, ""rotation"": 1, ""at"": [2, 0]}",step available with a possible route to EXIT
+8101-bad2,bad,False,named,False,"{""tile"": 182, ""rotation"": 0, ""at"": [-1, 0]}",no immediate step with a route within the remaining turns
+8101-bad2,bad,False,named,True,"{""tile"": 182, ""rotation"": 1, ""at"": [2, 0]}",step available with a possible route to EXIT
+8101-bad2,bad,False,payoff,False,"{""tile"": 182, ""rotation"": 0, ""at"": [2, 0]}",marker permanently trapped
+8101-bad2,bad,False,payoff,True,"{""tile"": 182, ""rotation"": 0, ""at"": [2, 0]}",marker permanently trapped
+8102-bad1,good,False,named,False,"{""tile"": 121, ""rotation"": 0, ""at"": [-1, 0]}",no immediate step with a route within the remaining turns
+8102-bad1,good,False,named,True,"{""tile"": 121, ""rotation"": 0, ""at"": [2, 0]}",step available with a possible route to EXIT
+8102-bad1,good,False,payoff,False,"{""tile"": 121, ""rotation"": 0, ""at"": [-1, 0]}",no immediate step with a route within the remaining turns
+8102-bad1,good,False,payoff,True,"{""tile"": 121, ""rotation"": 0, ""at"": [2, 0]}",step available with a possible route to EXIT
+8102-bad2,bad,False,named,False,"{""tile"": 121, ""rotation"": 0, ""at"": [-1, 0]}",no immediate step with a route within the remaining turns
+8102-bad2,bad,False,named,True,"{""tile"": 121, ""rotation"": 1, ""at"": [2, 0]}",marker permanently trapped
+8102-bad2,bad,False,payoff,False,"{""tile"": 121, ""rotation"": 0, ""at"": [-1, 0]}",no immediate step with a route within the remaining turns
+8102-bad2,bad,False,payoff,True,"{""tile"": 121, ""rotation"": 1, ""at"": [2, 0]}",marker permanently trapped

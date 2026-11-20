@@ -3,6 +3,7 @@
 import json
 import re
 
+from .action_language import action_brief, ballot_names
 from .board import distance
 from .decision_notes import REASON_PROMPT, request_reason
 from .role_knowledge import role_information
@@ -108,7 +109,7 @@ def shortlist(snap):
     return [value for value, rank in zip(options, ranks, strict=True) if rank == best]
 
 
-def social_request(body, snap, *, explain, trust=True, human=False):
+def social_request(body, snap, *, explain, trust=True, human=False, explicit_actions=False):
     state, me = snap["state"], snap["seat"]
     role = state["role"]
     goal = tuple(state["goal"])
@@ -126,6 +127,8 @@ def social_request(body, snap, *, explain, trust=True, human=False):
         system += " You want your team to win. While the result is open, stay in play and make a difference. A posthumous team win still counts."
         if state["stage"] == "nominate" and role == "good":
             system += " Pass without concrete public evidence against a particular player. You may need their next build."
+    if explicit_actions:
+        system += " " + action_brief(state)
     if explain:
         system += REASON_PROMPT
     stage = state["stage"]
@@ -148,7 +151,12 @@ def social_request(body, snap, *, explain, trust=True, human=False):
     }
     if role == "bad":
         context["known_bad_allies"] = state["teammates"]
-    for name, winner, immediate in consequences(snap):
+    specific = (
+        ballot_names(state, snap["choices"]["vote"]) if explicit_actions and key == "vote" else None
+    )
+    for index, (name, winner, immediate) in enumerate(consequences(snap)):
+        if specific is not None:
+            name = specific[index]
         if winner:
             payoff = "WIN" if winner == role else "LOSS"
             name += f"__MY_{payoff}" + ("_NOW" if immediate else "_ASSURED")

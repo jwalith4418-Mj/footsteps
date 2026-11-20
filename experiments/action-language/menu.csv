@@ -1,0 +1,33 @@
+source,role,rotated_hand,arm,reversed,choice,effect
+1244867160-bad1+2,bad,False,literal,False,"{""tile"": 246, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,False,literal,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,bad,False,effects,False,"{""tile"": 246, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,False,effects,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,bad,False,named,False,"{""tile"": 246, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,False,named,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,bad,False,payoff,False,"{""tile"": 246, ""rotation"": 0, ""at"": [1, 1]}",marker permanently trapped
+1244867160-bad1+2,bad,False,payoff,True,"{""tile"": 246, ""rotation"": 0, ""at"": [1, 1]}",marker permanently trapped
+1244867160-bad1+2,bad,True,literal,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,True,literal,True,"{""tile"": 252, ""rotation"": 2, ""at"": [1, 1]}",marker permanently trapped
+1244867160-bad1+2,bad,True,effects,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,True,effects,True,"{""tile"": 252, ""rotation"": 0, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,bad,True,named,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,True,named,True,"{""tile"": 252, ""rotation"": 2, ""at"": [1, 1]}",marker permanently trapped
+1244867160-bad1+2,bad,True,payoff,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,bad,True,payoff,True,"{""tile"": 252, ""rotation"": 2, ""at"": [1, 1]}",marker permanently trapped
+1244867160-bad1+2,good,False,literal,False,"{""tile"": 246, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,good,False,literal,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,False,effects,False,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,False,effects,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,False,named,False,"{""tile"": 246, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,good,False,named,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,False,payoff,False,"{""tile"": 246, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,good,False,payoff,True,"{""tile"": 246, ""rotation"": 1, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,True,literal,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,good,True,literal,True,"{""tile"": 252, ""rotation"": 2, ""at"": [1, 1]}",marker permanently trapped
+1244867160-bad1+2,good,True,effects,False,"{""tile"": 252, ""rotation"": 0, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,True,effects,True,"{""tile"": 252, ""rotation"": 0, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,True,named,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,good,True,named,True,"{""tile"": 252, ""rotation"": 0, ""at"": [1, 1]}",step available with a possible route to EXIT
+1244867160-bad1+2,good,True,payoff,False,"{""tile"": 252, ""rotation"": 0, ""at"": [-1, -1]}",no immediate step with a route within the remaining turns
+1244867160-bad1+2,good,True,payoff,True,"{""tile"": 252, ""rotation"": 2, ""at"": [1, 1]}",marker permanently trapped

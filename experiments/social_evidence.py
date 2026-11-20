@@ -51,6 +51,9 @@ def social_game(
     paired_fifth_hand=False,
     audience=False,
     guest=None,
+    goal=(4, 2),
+    explicit_actions=False,
+    social_tools=False,
 ):
     def elimination(snap, sink):
         if outcome_policy:
@@ -59,6 +62,8 @@ def social_game(
                 model,
                 30,
                 outcome_policy=True,
+                explicit_actions=explicit_actions,
+                use_tools=social_tools,
                 no_think=True,
                 note_file=sink,
             )
@@ -74,6 +79,7 @@ def social_game(
     seats = range(len(roles))
     bad = "+".join(str(s) for s in seats if roles[s] == "bad")
     setup = social_deal(seed, roles, kit, paired_fifth_hand=paired_fifth_hand)
+    setup["goal"] = list(goal)
     table = Table(setup, Random(f"draw/{seed}"), discussion=1, color_teams=color_teams)
     table.record["table_id"] = secrets.token_hex(16)
     for s in seats:
@@ -97,7 +103,9 @@ def social_game(
                 if guest is not None and nominator == guest.seat:
                     statement = guest.ask("speech", before)["speech"]
                 else:
-                    statement = advocate(before, model, audience=audience)
+                    statement = advocate(
+                        before, model, audience=audience, explicit_actions=explicit_actions
+                    )
                 if statement:
                     quiet_table = deepcopy(table)
                     muted = {
@@ -139,6 +147,7 @@ def social_game(
                         model,
                         30,
                         guided=True,
+                        explicit_actions=explicit_actions,
                         social_guidance=social_guidance,
                         outcome_policy=outcome_policy,
                         named_moves=True,
@@ -240,7 +249,24 @@ def main():
     parser.add_argument("--seeds", type=int, nargs="+", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--private-notes", type=Path, required=True)
+    parser.add_argument("--goal", nargs=2, type=int, default=(4, 2), metavar=("X", "Y"))
+    parser.add_argument(
+        "--action-brief",
+        action="store_true",
+        help="give stage-specific instructions and ballot effects",
+    )
+    parser.add_argument(
+        "--social-tools",
+        action="store_true",
+        help="offer a public floor-history lookup on nominations and removal ballots",
+    )
     args = parser.parse_args()
+    if (args.action_brief or args.social_tools) and not (
+        args.model_floor and args.outcome_policy and args.debate
+    ):
+        parser.error("action and tool trials require --debate --model-floor --outcome-policy")
+    if tuple(args.goal) == (0, 0):
+        parser.error("goal must differ from START")
     if (
         args.model_floor or args.bad_brief or args.social_guidance or args.outcome_policy
     ) and not args.debate:
@@ -297,6 +323,9 @@ def main():
                     args.model_floor,
                     args.social_guidance,
                     args.outcome_policy,
+                    goal=args.goal,
+                    explicit_actions=args.action_brief,
+                    social_tools=args.social_tools,
                     kit=kit,
                     color_teams=args.color_teams,
                     paired_fifth_hand=args.paired_fifth_hand,

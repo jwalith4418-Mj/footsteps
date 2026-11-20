@@ -7,6 +7,7 @@ from http.client import HTTPConnection, HTTPException
 from math import isfinite
 from urllib.parse import urlsplit
 
+from .action_language import action_brief, ballot_names
 from .board import connects, distance, neighbors, rotate
 from .decision_notes import REASON_PROMPT, request_reason, save_note
 from .role_knowledge import role_information
@@ -113,7 +114,14 @@ dead ends or opportunities to eliminate good seats. A good forward build may hur
 
 
 def model_request(
-    snapshot, model, *, guided=False, named_moves=False, named_ballots=False, explain=False
+    snapshot,
+    model,
+    *,
+    guided=False,
+    named_moves=False,
+    named_ballots=False,
+    explain=False,
+    explicit_actions=False,
 ):
     state = snapshot["state"]
     fields = (
@@ -160,10 +168,20 @@ def model_request(
         schema["properties"]["to"] = {"type": "string", "enum": names}
         instructions = "Choose one named action in options.to and return its name as the to field."
     if named_ballots and state["stage"] in ("move_vote", "eliminate_vote"):
-        names = ["approve" if vote else "reject" for vote in choices["vote"]]
+        names = (
+            ballot_names(state, choices["vote"])
+            if explicit_actions
+            else ["approve" if vote else "reject" for vote in choices["vote"]]
+        )
         context["options"] = {"vote": names}
         schema["properties"]["vote"] = {"type": "string", "enum": names}
-        instructions = "Choose approve to carry out the proposal or reject to decline it. Return its name as the vote field."
+        instructions = (
+            "Return the chosen action name as the vote field."
+            if explicit_actions
+            else "Choose approve to carry out the proposal or reject to decline it. Return its name as the vote field."
+        )
+    if explicit_actions:
+        instructions += " " + action_brief(state)
     if explain:
         request_reason(schema)
         instructions += REASON_PROMPT
@@ -236,6 +254,7 @@ def infer(
     no_think=False,
     named_ballots=False,
     use_tools=False,
+    explicit_actions=False,
     social_guidance=False,
     outcome_policy=False,
     note_file=None,
@@ -266,9 +285,16 @@ def infer(
         named_moves=named_moves,
         named_ballots=named_ballots,
         explain=note_file is not None,
+        explicit_actions=explicit_actions,
     )
     if social:
-        social_request(body, snapshot, explain=note_file is not None, human=outcome_policy)
+        social_request(
+            body,
+            snapshot,
+            explain=note_file is not None,
+            human=outcome_policy,
+            explicit_actions=explicit_actions,
+        )
     if snapshot.get("team_names") == "colors":
         color_brief(body)
     if no_think:

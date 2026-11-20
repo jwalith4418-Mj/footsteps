@@ -58,6 +58,8 @@ class Table:
         if color_teams:
             self.record["team_names"] = "colors"
         self.history = [[] for _ in self.game.roles]
+        self.floor_turns = []
+        self.placed_at = None
         self.ready = set()
         self.started = False
         self.votes = {}
@@ -81,6 +83,25 @@ class Table:
         before.queue = game.queue.copy()
         game.apply(event)
         self.record["events"].append(event)
+        kind = event["kind"]
+        if kind == "place":
+            self.placed_at = tuple(event["at"])
+        if kind == "move_vote" or (kind == "propose" and event["to"] is None):
+            if kind == "move_vote":
+                result = "stepped" if game.marker != before.marker else "step_rejected"
+            else:
+                result = "proposal_timed_out" if event.get("timeout") else "builder_stayed"
+            self.floor_turns.append(
+                {
+                    "turn": before.turn,
+                    "builder": before.actor,
+                    "tile_at": self.placed_at,
+                    "marker_before": before.marker,
+                    "step_requested": before.pending if kind == "move_vote" else None,
+                    "marker_after": game.marker,
+                    "result": result,
+                }
+            )
         for seat, log in enumerate(self.history):
             message = describe(before, event, seat)
             if event["kind"] == "eliminate_vote":
@@ -172,6 +193,7 @@ class Table:
             "state": game.view(seat),
             "choices": self.choices(seat, now),
             "history": list(self.history[seat]),
+            "floor_turns": [row.copy() for row in self.floor_turns],
         }
 
     def submit(self, seat, revision, choice, now):
