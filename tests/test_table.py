@@ -12,13 +12,31 @@ from urllib.request import Request, urlopen
 
 from footsteps.ollama import Seat, ServiceError
 from footsteps.record import read, replay
-from footsteps.table import PAPER_KIT, DecisionConflict, Table, paper_setup
+from footsteps.table import PAPER_KIT, DecisionConflict, Table, fixed_kit, paper_setup
 from footsteps.table_server import TableServer
 
 CROSSING = read(Path(__file__).resolve().parents[1] / "examples/crossing.json")
 
 
 class LiveDecisions(unittest.TestCase):
+    def test_uniform_kit_counts_cover_separate_slots_and_survive_the_deal(self):
+        for seed in range(8):
+            low = fixed_kit(Random(seed), 16, 29, 29)
+            high = fixed_kit(Random(seed), 16, 35, 35)
+            self.assertTrue(all(a & b == a for a, b in zip(low, high, strict=True)))
+            for tiles, count in ((low, 29), (high, 35)):
+                self.assertEqual(sum((t & 15).bit_count() for t in tiles), count)
+                self.assertEqual(sum((t >> 4).bit_count() for t in tiles), count)
+                self.assertEqual(tiles, fixed_kit(Random(seed), 16, count, count))
+                self.assertNotEqual([t & 15 for t in tiles], [t >> 4 for t in tiles])
+                setup = paper_setup(Random(seed), kit=tiles)
+                self.assertCountEqual(sum(setup["hands"], setup["store"].copy()), tiles)
+        self.assertEqual(fixed_kit(Random(2), 2, 0, 8), (240, 240))
+        self.assertEqual(fixed_kit(Random(2), 2, 8, 0), (15, 15))
+        for counts in ((-1, 0), (0, 9)):
+            with self.assertRaises(ValueError):
+                fixed_kit(Random(1), 2, *counts)
+
     def test_discussion_and_sealed_ballots(self):
         table = Table(CROSSING["setup"], Random(1), seconds=20, discussion=5)
         for seat in range(4):

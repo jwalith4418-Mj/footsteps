@@ -34,8 +34,8 @@ POLICIES = ("exits", "route")
 DATA = Path(__file__).with_name("offsets.csv")
 
 
-def deal(seed, goal):
-    tiles = list(KIT)
+def deal(seed, goal, kit=KIT):
+    tiles = list(kit)
     Random(f"deal/{seed}").shuffle(tiles)
     return {
         "goal": list(goal),
@@ -45,8 +45,8 @@ def deal(seed, goal):
     }
 
 
-def trial(goal, seed, policy):
-    initial = deal(seed, goal)
+def trial(goal, seed, policy, *, kit=KIT):
+    initial = deal(seed, goal, kit)
     game = Game(initial)
     record = new_record(initial)
     draw_rng = Random(f"draw/{seed}")

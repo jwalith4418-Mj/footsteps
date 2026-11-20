@@ -16,7 +16,7 @@ from footsteps.board import distance
 from footsteps.decision_notes import open_private
 from footsteps.ollama import infer, request
 from footsteps.record import replay
-from footsteps.table import Table, paper_setup
+from footsteps.table import PAPER_KIT, Table, fixed_kit, paper_setup
 
 
 def approach(state):
@@ -35,6 +35,7 @@ def social_game(
     model_floor=False,
     social_guidance=False,
     outcome_policy=False,
+    kit=PAPER_KIT,
 ):
     def elimination(snap, sink):
         if outcome_policy:
@@ -50,7 +51,7 @@ def social_game(
 
     seats = range(len(roles))
     bad = "+".join(str(s) for s in seats if roles[s] == "bad")
-    setup = paper_setup(Random(seed), len(roles))
+    setup = paper_setup(Random(seed), len(roles), kit=kit)
     setup["roles"] = roles
     table = Table(setup, Random(f"draw/{seed}"), discussion=1)
     table.record["table_id"] = secrets.token_hex(16)
@@ -191,6 +192,8 @@ def main():
         help="use the hybrid seat policy for social decisions",
     )
     parser.add_argument("--roles", help="one explicit role layout for full model play, e.g. GBGB")
+    parser.add_argument("--kit-counts", type=int, nargs=2, metavar=("IN", "OUT"))
+    parser.add_argument("--kit-seed", type=int, help="fixed-count mix seed (default: 0)")
     parser.add_argument("--seeds", type=int, nargs="+", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--private-notes", type=Path, required=True)
@@ -211,6 +214,14 @@ def main():
         ):
             parser.error("--roles requires full model play and 3 or 4 seats with both G and B")
         layouts = (["good" if c == "G" else "bad" for c in args.roles],)
+    if args.kit_seed is not None and args.kit_counts is None:
+        parser.error("--kit-seed requires --kit-counts")
+    kit = PAPER_KIT
+    if args.kit_counts is not None:
+        try:
+            kit = fixed_kit(Random(args.kit_seed or 0), 16, *args.kit_counts)
+        except ValueError as err:
+            parser.error(str(err))
     args.out.mkdir(parents=True, exist_ok=False)
     args.private_notes.mkdir(mode=0o700, parents=True, exist_ok=False)
     request(
@@ -237,6 +248,7 @@ def main():
                     args.model_floor,
                     args.social_guidance,
                     args.outcome_policy,
+                    kit=kit,
                 )
             )
     write_rows(args.out / "choices.csv", rows)
