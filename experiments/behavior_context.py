@@ -3,7 +3,7 @@
 import json
 
 from footsteps.board import distance
-from footsteps.social import TRUST, intentions, social_request, stated_votes
+from footsteps.social import TRUST, social_request, stated_votes
 from footsteps.solo import sealed
 
 STRATEGIES = (
@@ -153,6 +153,39 @@ def perspective(body, snap, trust):
         {"role": "system", "content": system},
         {"role": "user", "content": json.dumps(context, separators=(",", ":"))},
     ]
+
+
+def intentions(body, snap):
+    """Let the model name a desired result, retaining a one-to-one map to legal commands."""
+    key = next(iter(snap["choices"]))
+    field = body["format"]["properties"][key]
+    context = json.loads(body["messages"][1]["content"])
+    actions = field["enum"]
+    labels = []
+    for action in actions:
+        if "__MY_WIN" in action:
+            name = "win"
+        elif "__MY_LOSS" in action:
+            name = "lose"
+        else:
+            name = action
+        labels.append(name)
+    names = [
+        label if labels.count(label) == 1 else f"{label}_by_{action.split('__')[0]}"
+        for label, action in zip(labels, actions, strict=True)
+    ]
+    context["options"] = dict(zip(names, actions, strict=True))
+    field["enum"] = names
+    if snap["state"]["role"] == "good" and snap["state"]["stage"] in ("nominate", "eliminate_vote"):
+        context["team_consideration"] = (
+            "Removal costs a possible ally. Weigh public behavior and whether a useful builder would be lost. Passing is a legal decision."
+        )
+    body["messages"][0]["content"] += (
+        " Select the name of the outcome you want. A win is your own team's win and a loss "
+        "is your own team's loss. When the game is still open, judge which action gains "
+        "time, trust or influence for you."
+    )
+    body["messages"][1]["content"] = json.dumps(context, separators=(",", ":"))
 
 
 def apply_strategy(body, snap, strategy):

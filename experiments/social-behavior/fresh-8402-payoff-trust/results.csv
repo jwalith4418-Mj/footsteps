@@ -1,0 +1,5 @@
+seed,seat,role,opening_no,removed_turn,builds,pivotal_ballots,winner,turns
+8402,1,bad,False,,2,0,good,6
+8402,1,good,False,,3,0,good,8
+8402,2,bad,False,,2,0,good,6
+8402,2,good,False,,3,0,good,9

@@ -46,3 +46,5 @@ The [single-model solitaire benchmark](model-solitaire/README.md) uses the same 
 The [turn-plan comparison](solitaire-skills/README.md) traces a movement failure through frozen tactics to unseen deals, with uniform and shortest-path controls on the same menus.
 
 The [three-seat social experiment](social/README.md) pairs the same elimination ballot with silence, a truthful accusation, or a false one, then compares scripted and model-controlled floors.
+
+The [social behavior trials](social-behavior/README.md) test whether a seat can earn trust on an inconsequential vote, use the opportunity to act, and recognize when its team can win after its own removal.
