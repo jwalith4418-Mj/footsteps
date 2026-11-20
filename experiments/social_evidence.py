@@ -105,6 +105,7 @@ def social_game(
         sink = files.enter_context(open_private(notes))
         if placement_check:
             checks = files.enter_context(open_private(notes.with_suffix(".checks.jsonl")))
+            check_info = {"table_id": table.record["table_id"], "model": model}
         if debate:
             muted_notes = files.enter_context(open_private(notes.with_suffix(".muted.jsonl")))
         while not table.game.winner:
@@ -176,7 +177,12 @@ def social_game(
                             raise
                         checks.write(
                             json.dumps(
-                                {"turn": state["turn"], "attempts": attempts, "fallback": str(exc)}
+                                {
+                                    **check_info,
+                                    "turn": state["turn"],
+                                    "attempts": attempts,
+                                    "fallback": str(exc),
+                                }
                             )
                             + "\n"
                         )
@@ -184,7 +190,14 @@ def social_game(
                         continue
                     if placement_check and stage == "place":
                         checks.write(
-                            json.dumps({"turn": state["turn"], "attempts": attempts}) + "\n"
+                            json.dumps(
+                                {
+                                    **check_info,
+                                    "turn": state["turn"],
+                                    "attempts": attempts,
+                                }
+                            )
+                            + "\n"
                         )
                 elif stage == "place":
                     # The drawing seat knows whether it must return a tile. Read its draw receipt.

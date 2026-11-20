@@ -41,6 +41,14 @@ There was also a genuine social consequence on turn five. The assisted movement 
 
 Keep the second question available as a private diagnostic. The next tactical experiment should give the player one opportunity to revise the proposed tile, rotation or square after reading its local consequences. Compare against a player given the same number of calls, and score the committed build and fallbacks on held-out positions. [Guest tactic transfer](https://github.com/othercriteria/footsteps/issues/76)
 
+## What correction frequency measures
+
+Score the **first answer per build** against the actual floor immediately before placement. On the eight shared turns, both modes got **3/3 open edges** and **1/5 blocked edges** right. The two-question mode located the marker **4/4 times when present** and **3/4 times when elsewhere**. A table with more open edges could make this same response pattern look much stronger. The matched modes encountered the same eight positions, so do not pool them as sixteen independent observations.
+
+Five of eight builds in the two-question game needed correction. On three, the model revised its answer about exactly the same origin, face, rotation and square, then committed. On two, it switched origins on retry, misread the second edge and fell back to a random placement. Count those outcomes separately. The feedback explicitly tells the builder what was wrong, so a correct repeat measures recovery with help. Persistent understanding can be tested on a fresh edge before revealing its answer.
+
+For comparisons across models, give each model the same held-out positions, include both true answers for each question, and report raw counts within those groups. Also report missing or unscorable replies and random placements over **all** opportunities. Keep the team objective as a separate score for the committed build. A Red player who knowingly seals an edge can have both a correct state reading and a successful tactic. An equally accurate Blue player can seal its own last viable route. The four free choices above illustrate how all checked builds could ultimately be accepted while none achieved the known tactic. This small panel has no player skill ranking. [Per-turn measurements](checks.csv) · [Measurement issue](https://github.com/othercriteria/footsteps/issues/82)
+
 ## Reproduce
 
 Run with local Ollama serving `qwen3.5:9b-q8_0`. These runs used a 4096-token context, temperature zero, seed one and thinking off. Use fresh output paths. Model or backend revisions can affect the replies.
@@ -56,8 +64,12 @@ for check in edge edge-and-marker; do
     --placement-check "$check" --out "$work/$check" --private-notes "$work/private-$check"
 done
 python -m experiments.social_summary "$work"
+python -m experiments.placement_audit \
+  --table "$work/edge/8602-bad1+3.json" "$work/private-edge/8602-bad1+3.checks.jsonl" \
+  --table "$work/edge-and-marker/8602-bad1+3.json" "$work/private-edge-and-marker/8602-bad1+3.checks.jsonl" \
+  > "$work/checks.csv"
 python -m footsteps view "$work/edge-and-marker/8602-bad1+3.json" --omniscient \
   --notes "$work/private-edge-and-marker/8602-bad1+3.jsonl" -o "$work/8602.html"
 ```
 
-The private `.checks.jsonl` file contains the attempts and referee feedback for each turn. The published counts retain the first answer’s correctness, attempt count and fallback indicator. The ordinary game record and the checked game records replay without those files.
+The private `.checks.jsonl` file contains the attempts and referee feedback for each turn. The audit emits one row per build. Empty correctness cells denote an unasked or unscorable question. An empty retry cell means there was no second submitted answer. The per-turn rows include the true conditions, correctness, acting team, attempt count, any change of subject and the fallback indicator. New private attempt logs include a table ID and model tag. The model column is empty for the archived logs from this Qwen run. Older logs are cross-checked against turns, committed builds and fallback events. The ordinary game record and the checked game records replay without those files.
