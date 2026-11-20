@@ -42,3 +42,5 @@ For multiplayer trials with model seats, see the [matched self-play games, mixed
 The [ballot experiment](ballots/README.md) tests order sensitivity on frozen votes and compares model voters with scripted voters on matched live deals.
 
 The [single-model solitaire benchmark](model-solitaire/README.md) uses the same private deals for local Qwen models and four scripted policies, plus reflected detours and rotated-replay checks.
+
+The [turn-plan comparison](solitaire-skills/README.md) traces a movement failure through frozen tactics to unseen deals, with uniform and shortest-path controls on the same menus.

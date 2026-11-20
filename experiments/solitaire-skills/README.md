@@ -24,6 +24,12 @@ The model picks one named plan. The referee applies its placement and proposal a
 
 The complete-turn tactic starts before the mandatory placement, with an all-closed hand. The straight step enters a dead end. One perpendicular step can reach EXIT in exactly four moves, provided the mandatory placement leaves that route open. Staying or building on the required detour can lose immediately. Reflections and reversed shuffled menus test preference for the action separately from preference for a slot.
 
+### Prospective result
+
+Qwen3.5 9B won all four development games, then passed all eight tactical presentations. Each tactical menu contained four complete plans and just one preserved a viable detour. The frozen candidate won **7/8 fresh games** on seeds 6001–6008, with zero certified trapped finishes or timeouts. It reached EXIT in six, eight or ten turns. Uniform won 0/8 and finished sealed on seven deals. Shortest won all eight in six turns. The model menus contained two to thirteen representatives per turn along the trajectories it played. All 278 selected plans across the six development and fresh arms matched their rebuilt menus, executed placements and subsequent moves.
+
+The result meets the declared performance criterion **with public pathfinding assistance**. Choosing from the offered plans mattered, and a short deterministic selector used the same scores better. The reports do not establish that the language model inferred the directed routes itself. The [pathfinder ablation](https://github.com/othercriteria/footsteps/issues/47) tests that distinction. [Plan choices on a final-turn win](fresh-plans-model/plans-6002.jsonl) · [The missed deal](fresh-plans-model/game-6008.json) · [Uniform results](fresh-plans-uniform/results.csv) · [Shortest results](fresh-plans-shortest/results.csv)
+
 ## Reproduce
 
 The model arms used local Ollama with temperature zero, seed 1, 8192 context tokens and direct structured answers. Use empty output directories. The scripted plan arms run offline.
@@ -34,5 +40,7 @@ python -m experiments.skill_probe --policy bound
 python -m experiments.skill_games --policy model --seeds 5001 5002 5003 5004 5005 5006 5007 5008 --out /tmp/footsteps-movement-repeat
 python -m experiments.plan_tactics
 python -m experiments.turn_plans --policy model --seeds 100 101 102 103 --out /tmp/footsteps-plans
+python -m experiments.turn_plans --policy model --seeds 6001 6002 6003 6004 6005 6006 6007 6008 --out /tmp/footsteps-new-deals
 python -m experiments.model_solitaire_audit experiments/solitaire-skills/*/
+python -m experiments.plan_audit experiments/solitaire-skills/*-plans-*
 ```
