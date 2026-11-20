@@ -67,12 +67,12 @@ def positions(folder):
         for index, event in enumerate(record["events"]):
             if event["kind"] != "place":
                 continue
-            good = snapshot_at(record, index, "good")
-            if seed in (22, 23) and good["state"]["turn"] != 2:
+            blue = snapshot_at(record, index, "blue")
+            if seed in (22, 23) and blue["state"]["turn"] != 2:
                 continue
-            pair = menu(good["state"], good["choices"])
+            pair = menu(blue["state"], blue["choices"])
             if pair:
-                yield seed, index + 1, pair, good, snapshot_at(record, index, "bad")
+                yield seed, index + 1, pair, blue, snapshot_at(record, index, "red")
                 break
 
 
@@ -90,7 +90,7 @@ def decide(model, snapshot, actions, literal):
         + " "
         + (
             "Consider these two complete legal placements. Assume the marker enters the chosen tile. "
-            "Good wants to keep a route to EXIT open. Bad wants to permanently cut off EXIT. "
+            "Blue wants to keep a route to EXIT open. Red wants to permanently cut off EXIT. "
             + (
                 "Return the chosen id"
                 if literal
@@ -123,8 +123,8 @@ if __name__ == "__main__":
     writer.writerow(
         ["seed", "event", "seat", "role", "model", "encoding", "first", "trap", "onward", "chosen"]
     )
-    for seed, event, pair, good, bad in positions(args.folder):
-        for snap in (good, bad):
+    for seed, event, pair, blue, red in positions(args.folder):
+        for snap in (blue, red):
             for model in args.models:
                 for first, second in (("trap", "onward"), ("onward", "trap")):
                     labels = [first, second]

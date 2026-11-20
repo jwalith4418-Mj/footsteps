@@ -11,7 +11,6 @@ from experiments.skill_probe import MODEL
 from footsteps.board import moves, optimistic_length, rotate
 from footsteps.ollama import INDEX_INSTRUCTIONS, model_request
 from footsteps.solo import sealed
-from footsteps.team_names import color_brief
 
 
 def representatives(snap):
@@ -40,7 +39,7 @@ def representatives(snap):
 def positions(transfer):
     if transfer:
         for seed, red in product((8101, 8102), (1, 2)):
-            source = ROOT / f"social/fresh-base/{seed}-bad{red}.json"
+            source = ROOT / f"social/fresh-base/{seed}-red{red}.json"
             yield source.stem, False, position(source, 10, 2)
     else:
         for blue, rotated in product((False, True), repeat=2):
@@ -86,7 +85,6 @@ def run(path, arms, transfer):
                     "required": ["build"],
                     "additionalProperties": False,
                 }
-                color_brief(body)
                 effect, choice = items[names.index(answer(body)["build"])]
                 rows.writerow(
                     [

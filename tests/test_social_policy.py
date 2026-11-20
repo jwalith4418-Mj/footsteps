@@ -14,7 +14,7 @@ class SocialPolicy(unittest.TestCase):
         for name, snap, preferred in cases():
             legal = next(iter(snap["choices"].values()))
             with self.subTest(case=name, role=snap["state"]["role"], seat=snap["seat"]):
-                if name in ("enter-exit", "seal-marker", "last-good"):
+                if name in ("enter-exit", "seal-marker", "last-blue"):
                     self.assertEqual(shortlist(snap), [preferred])
                     sink = io.StringIO()
                     with patch(
@@ -52,7 +52,7 @@ class SocialPolicy(unittest.TestCase):
         snap = deepcopy(snap)
         snap["state"].update(
             stage="propose",
-            role="good",
+            role="blue",
             goal=(2, 2),
             marker=(0, 0),
             store_count=3,
@@ -77,10 +77,10 @@ class SocialPolicy(unittest.TestCase):
         self.assertIn("(you)", ctx["subject"])
 
     def test_pivotal_risk_has_a_posthumous_winning_continuation(self):
-        # With bad P2 the next builder after an opening veto is always Good P1.
+        # With red P2 the next builder after an opening veto is always Blue P1.
         for move in (True, False):
             setup = {
-                "roles": ["good", "good", "bad"],
+                "roles": ["blue", "blue", "red"],
                 "goal": [0, 1],
                 "hands": [[8], [8], [8]],
                 "store": [32, 32],
@@ -109,5 +109,5 @@ class SocialPolicy(unittest.TestCase):
                 for s, v in enumerate((True, True, False)):
                     t.submit(s, t.revision, {"vote": v}, t.opens)
             self.assertEqual(
-                (t.game.winner, 2 in t.game.alive), ("bad", False) if move else ("good", True)
+                (t.game.winner, 2 in t.game.alive), ("red", False) if move else ("blue", True)
             )

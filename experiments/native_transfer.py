@@ -28,15 +28,15 @@ def transfer_panel(*, isolate_square=False, start_seed=9600):
                 )
                 goals = {
                     team: sum(success({**view, "role": team}, *a, None) for a in actions)
-                    for team in ("good", "bad")
+                    for team in ("blue", "red")
                 }
                 if all(0 < n <= len(actions) // 3 for n in goals.values()):
-                    for idx, team in enumerate(("good", "bad")):
+                    for idx, team in enumerate(("blue", "red")):
                         setup = with_exit_origin(record["setup"])
                         ox, oy = record["setup"]["goal"]
-                        roles = ["good"] * 4
-                        roles[game.actor if idx else (game.actor + 1) % 4] = "bad"
-                        t = Table({**setup, "roles": roles}, Random(0), color_teams=True)
+                        roles = ["blue"] * 4
+                        roles[game.actor if idx else (game.actor + 1) % 4] = "red"
+                        t = Table({**setup, "roles": roles}, Random(0))
                         t.started = True
                         for old in record["events"][:rev]:
                             e = old.copy()

@@ -127,7 +127,7 @@ if __name__ == "__main__":
         for heading, goal in HEADINGS.items():
             t = Table(
                 with_exit_origin(
-                    {"roles": ["good"], "hands": [[65]], "store": [65, 65], "goal": goal}
+                    {"roles": ["blue"], "hands": [[65]], "store": [65, 65], "goal": goal}
                 ),
                 Random(0),
             )

@@ -25,14 +25,14 @@ def game(root, private, seed, model, arm, scope, *, corridor=None, give_opening=
         key = f"corridor-{corridor}-{key}"
         if give_opening:
             key = f"guided-{key}"
-        roles = ["good"]
+        roles = ["blue"]
         goal = {"east": [2, 0], "north": [0, 2]}[corridor]
         setup = {"roles": roles, "goal": goal, "hands": [[65]], "store": [65, 65]}
     else:
-        roles = ["good", "bad", "good", "good"]
+        roles = ["blue", "red", "blue", "blue"]
         setup = social_deal(seed, roles, fixed_kit(Random(8700), 16, 29, 29))
         setup["goal"] = [2, 2]
-    t = Table(with_exit_origin(setup), Random(f"draw/{seed}"), discussion=1, color_teams=True)
+    t = Table(with_exit_origin(setup), Random(f"draw/{seed}"), discussion=1)
     t.record["table_id"] = secrets.token_hex(16)
     for seat in range(len(roles)):
         t.join(seat, 0)

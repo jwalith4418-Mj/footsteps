@@ -30,7 +30,7 @@ def run(source, output):
             assert game.stage == "draw" and game.alive == [0, 2, 3]
             play_out(game, branch, policy, draws, Random(seed))
             assert branch["events"][11] == record["events"][11]
-            if replay(branch).winner == "good":
+            if replay(branch).winner == "blue":
                 if not wins and policy == "exits":
                     output.write_text(json.dumps(branch, separators=(",", ":")) + "\n")
                 wins += 1

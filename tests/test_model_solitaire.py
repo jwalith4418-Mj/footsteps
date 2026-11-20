@@ -85,7 +85,7 @@ class ModelSolitaire(unittest.TestCase):
                         t.commit({"kind": "discard", "tile": 255})
                     t.commit({"kind": "propose", "to": dest})
                     t.commit({"kind": "move_vote", "votes": [True]})
-                self.assertEqual(t.game.winner, "good")
+                self.assertEqual(t.game.winner, "blue")
                 self.assertEqual(t.game.turn, 5)
 
     @patch("experiments.model_solitaire.request")

@@ -41,26 +41,26 @@
 #pagebreak()
 
 #heading[Seats, roles and ballots]
-#par[Cut along the lines. Keep seat signs visible. Shuffle the four role cards face down and deal one privately to each seat. Read yours privately. This kit has one bad player, so no teammate recognition step is needed.]
+#par[Cut along the lines. Keep seat signs visible. Shuffle the four role cards face down and deal one privately to each seat. Read yours privately. This kit has one Red player, so no teammate recognition step is needed.]
 #align(center, grid(columns: (39mm,) * 4, gutter: 0pt,
   ..four.map(i => card(39mm, 18mm, text(weight: "bold")[SEAT P#i])),
-  ..("GOOD", "GOOD", "GOOD", "BAD").map(role => card(39mm, 25mm, [Role \ #text(size: 15pt, weight: "bold", role)]))))
+  ..("BLUE", "BLUE", "BLUE", "RED").map(role => card(39mm, 25mm, [Role \ #text(size: 15pt, weight: "bold", role)]))))
 #v(4mm)
 #align(center, grid(columns: (39mm,) * 4, gutter: 0pt,
   ..("YES", "NO").map(vote => four.map(i => card(39mm, 23mm, [P#i \ #text(size: 15pt, weight: "bold", vote)]))).flatten()))
 #v(3mm)
 #subtitle[Set up the floor]
-#par[Choose P0 before roles are seen. Seat P1–P3 clockwise from P0. Put the marker on START. Put EXIT four tile widths east and two north of START, measuring center to center. Reserve the empty squares in between. Give each player two random floor tiles behind a screen. Keep the other eight in an opaque bag. Books or folded sheets make good screens.]
+#par[Choose P0 before roles are seen. Seat P1–P3 clockwise from P0. Put the marker on START. Put EXIT four tile widths east and two north of START, measuring center to center. Reserve the empty squares in between. Give each player two random floor tiles behind a screen. Keep the other eight in an opaque bag. Books or folded sheets work as screens.]
 #subtitle[Commit and reveal a ballot]
 #par[Each living player puts one named ballot face down in front of them. Keep the unused ballot concealed. Reveal together once all have committed. Announce each response by seat. If playing with deadlines, record a missed ballot as timed out and count it as no. Retrieve both ballots privately before the next vote.]
 #subtitle[Win conditions]
-#par[Good wins immediately on reaching EXIT. Bad wins if the bag is empty after movement and the marker has missed EXIT, or the last good player is eliminated. Eliminated players share their team’s result. Reveal roles at the end.]
+#par[Blue wins immediately on reaching EXIT. Red wins if the bag is empty after movement and the marker has missed EXIT, or the last Blue player is eliminated. Eliminated players share their team’s result. Reveal roles at the end.]
 #pagebreak()
 
 #heading[Run and observe the trial]
 #par[*Build.* The builder draws two tiles behind their screen. Place one tile from the whole hand with any quarter-turn rotation on an empty square touching START or an ordinary tile along an edge. EXIT alone gives no placement rights. Keep existing tiles fixed. Privately return one other tile to the bag and mix it well. On the last draw, take the single tile, place one from hand and skip the return.]
 #par[*Move.* The builder proposes one legal step or staying put. Staying skips the vote. Otherwise reveal ballots together. A majority yes moves the marker. On a tie use the builder’s ballot, which can be no. Check the exit and bag win conditions now.]
-#par[*Nominate.* Starting after the builder and ending with the builder, each surviving seat may pass or nominate one other living player. All living players, including the nominee, vote. Only a strict majority yes eliminates. Set that hand aside face down, keep the role hidden, and skip the seat thereafter. If at least one good player survives, continue even if every bad player is out. After nominations the next living seat after the builder builds.]
+#par[*Nominate.* Starting after the builder and ending with the builder, each surviving seat may pass or nominate one other living player. All living players, including the nominee, vote. Only a strict majority yes eliminates. Set that hand aside face down, keep the role hidden, and skip the seat thereafter. If at least one Blue player survives, continue even if every Red player is out. After nominations the next living seat after the builder builds.]
 #par[*First trial.* Play untimed. Keep discussion to one trip around the table before a disputed ballot. Everyone hears each remark. Either team may tell the truth, bluff, or stay silent. Check claims using the public record and your own private information.]
 #subtitle[Observer notes]
 #par[Session / date #box(line(length: 38mm))  End turn #box(line(length: 12mm))  Winning team #box(line(length: 20mm))]

@@ -74,7 +74,7 @@ class Rules(unittest.TestCase):
                             game.marker, original.pending if approved else original.marker
                         )
                         if prefix == 12:
-                            self.assertEqual(game.winner, "good" if approved else "bad")
+                            self.assertEqual(game.winner, "blue" if approved else "red")
 
     def test_rejected_events_leave_each_phase_unchanged(self):
         cases = [
@@ -108,11 +108,11 @@ class Rules(unittest.TestCase):
             g.apply({"kind": "nominate", "target": None})
         self.assertEqual((g.actor, g.stage, g.alive), (1, "draw", [1, 2, 3]))
 
-    def test_all_good_gone(self):
+    def test_all_blue_gone(self):
         r = deepcopy(EXAMPLE)
-        r["setup"]["roles"] = ["bad", "bad", "bad", "good"]
+        r["setup"]["roles"] = ["red", "red", "red", "blue"]
         r["events"] = r["events"][:7]
-        self.assertEqual(replay(r).winner, "bad")
+        self.assertEqual(replay(r).winner, "red")
 
     def test_final_draw_and_posthumous_win(self):
         g = before(11)
@@ -121,14 +121,14 @@ class Rules(unittest.TestCase):
         self.assertEqual(len(g.hands[1]), 1)
         self.assertEqual(g.alive, [0, 1, 2])
         g.apply({"kind": "propose", "to": None})
-        self.assertEqual(g.winner, "bad")
-        self.assertEqual(replay(EXAMPLE).winner, "good")
+        self.assertEqual(g.winner, "red")
+        self.assertEqual(replay(EXAMPLE).winner, "blue")
         with self.assertRaises(ValueError):
             g.apply({"kind": "draw", "tiles": []})
 
     def test_privacy(self):
         r = deepcopy(EXAMPLE)
-        r["setup"]["roles"] = ["good", "bad", "bad", "good"]
+        r["setup"]["roles"] = ["blue", "red", "red", "blue"]
         g = Game(r["setup"])
         self.assertNotIn("hand", g.view())
         self.assertNotIn("teammates", g.view(0))
@@ -155,15 +155,15 @@ class Rules(unittest.TestCase):
 
     def test_unfinished_accounts_reveal_only_known_allies(self):
         record = deepcopy(EXAMPLE)
-        record["setup"]["roles"] = ["good", "bad", "bad", "good"]
+        record["setup"]["roles"] = ["blue", "red", "red", "blue"]
         record["events"] = record["events"][:4]
         for seat, teammate in [(1, 2), (2, 1)]:
             account = render(record, seat)
-            self.assertIn(f"Fellow bad players: [{teammate}]", account)
+            self.assertIn(f"Fellow Red players: [{teammate}]", account)
             self.assertIn("Next decision: **move_vote**", account)
             self.assertNotIn("Roles revealed", account)
             self.assertNotIn("returned 18", account)
-        self.assertNotIn("Fellow bad players", render(record))
+        self.assertNotIn("Fellow Red players", render(record))
         with self.assertRaises(ValueError):
             render(record, 1, full=True)
 
@@ -187,7 +187,7 @@ class Solitaire(unittest.TestCase):
             for policy in POLICIES:
                 a, rec = simulate(initial, seed, policy, True)
                 g = replay(json.loads(json.dumps(rec)))
-                self.assertEqual(a["win"], int(g.winner == "good"))
+                self.assertEqual(a["win"], int(g.winner == "blue"))
                 self.assertEqual(len(g.store) + len(g.board) - 2, 8)
                 self.assertEqual(g.hands, [[]])
                 self.assertEqual((a, rec), simulate(initial, seed, policy, True))

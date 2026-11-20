@@ -117,7 +117,7 @@ def public_ballot(state, ctx, names, arm, schema):
         winner = movement_winner(landing, tuple(state["goal"]), state["store_count"])
         ctx["candidates"][label] = {
             "shared_marker_if_this_outcome_wins_the_ballot": landing,
-            "game_result": {"good": "Blue wins", "bad": "Red wins", None: "play continues"}[winner],
+            "game_result": {"blue": "Blue wins", "red": "Red wins", None: "play continues"}[winner],
             "fewest_additional_steps_with_perfect_future_tiles": optimistic,
         }
     if arm != "public-result":
@@ -210,12 +210,12 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140, action_prefix=
                 {k: {"type": "integer"} for k in ("x", "y", "tile", "rotation")}
             )
         ctx = {
-            "team": "Blue" if s["role"] == "good" else "Red",
+            "team": s["role"].capitalize(),
             "seat": snap["seat"],
             "living": s["alive"],
             "proposer": s["actor"],
             "pending_step": s["pending"],
-            "initial_red_count": s["bad_count"],
+            "initial_red_count": s["red_count"],
             "floor": s["board"],
             "known_allies": s.get("teammates", []),
             "stage": stage,
@@ -250,7 +250,7 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140, action_prefix=
         if arm == "personal":
             system = (
                 "Your private team is RED. You win if Blue cannot reach EXIT in time. "
-                if s["role"] == "bad"
+                if s["role"] == "red"
                 else "Your private team is BLUE. You win if the marker reaches EXIT in time. "
             ) + system
         if arm == "public-result" or binary_ballot:
@@ -334,18 +334,18 @@ def run(root, private, case, seed, arm, model, *, max_reply=140):
     if max_reply != 140:
         key += f"-r{max_reply}"
     if case in HEADINGS:
-        initial = {"roles": ["good"], "goal": HEADINGS[case], "hands": [[65]], "store": [65, 65]}
+        initial = {"roles": ["blue"], "goal": HEADINGS[case], "hands": [[65]], "store": [65, 65]}
     elif case == "solo":
         initial = setup(seed, (3, 2), 2, 7, 0.55)
     else:
         roles = (
-            ["good", "bad", "good", "good"]
+            ["blue", "red", "blue", "blue"]
             if case == "four"
-            else ["good", "bad", "good", "bad", "good"]
+            else ["blue", "red", "blue", "red", "blue"]
         )
         initial = social_deal(seed, roles, fixed_kit(Random(8700), 16, 29, 29))
         initial["goal"] = [2, 2]
-    t = Table(with_exit_origin(initial), Random(f"draw/{seed}"), discussion=1, color_teams=True)
+    t = Table(with_exit_origin(initial), Random(f"draw/{seed}"), discussion=1)
     t.record["table_id"] = secrets.token_hex(16)
     for seat in range(len(t.game.roles)):
         t.join(seat, 0)

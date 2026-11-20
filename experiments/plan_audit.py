@@ -36,7 +36,7 @@ def audit_game(path, make_plans=plans):
                     raise ValueError(f"{path}: offered menu differs on turn {table.game.turn}")
                 pick = row["pick"]
                 if type(pick) is not int or not 0 <= pick < len(menu):
-                    raise ValueError(f"{path}: bad selection index")
+                    raise ValueError(f"{path}: invalid selection index")
                 selected = menu[pick]
                 if selected["place"] != {k: e[k] for k in ("at", "tile", "rotation")}:
                     raise ValueError(f"{path}: build does not match plan")

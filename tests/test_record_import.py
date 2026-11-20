@@ -2,6 +2,7 @@
 
 import json
 import unittest
+from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -20,8 +21,35 @@ class FullAccountImport(unittest.TestCase):
         return path
 
     def test_plain_json_still_imports(self):
-        self.assertEqual(read(EXAMPLE)["format"], 1)
+        self.assertEqual(read(EXAMPLE)["format"], 3)
         replay(read(EXAMPLE))
+
+    def test_old_wire_ids_upgrade_once_and_keep_speech_and_seat_visibility(self):
+        archived = json.loads((Path(__file__).parent / "fixtures/crossing-v1.json").read_text())
+        for version in (1, 2):
+            raw = deepcopy(archived)
+            raw["format"] = version
+            raw["setup"]["start"] = [7, 9] if version == 1 else [0, 0]
+            raw["table_id"] = "fixture"
+            # The speaker may use the exact spellings of historical wire IDs.
+            speech = "My team's name was " + raw["setup"]["roles"][3]
+            raw["remarks"] = [{"after_event": 4, "seat": 3, "text": speech}]
+            original = deepcopy(raw)
+            imported = read(self.write(render(raw, full=True)))
+            self.assertEqual(raw, original)
+            self.assertEqual(imported["format"], 3)
+            self.assertEqual(imported["setup"], read(EXAMPLE)["setup"])
+            for field in ("table_id", "events", "remarks"):
+                self.assertEqual(imported[field], raw[field])
+            self.assertEqual(replay(imported).winner, "blue")
+            public = transcript(imported)["frames"]
+            self.assertNotIn("roles", public[0])
+            self.assertEqual(public[4]["remarks"][0]["text"], speech)
+            self.assertEqual(transcript(imported, 3)["frames"][0]["role"], "red")
+            self.assertNotIn("teammates", transcript(imported, 0)["frames"][0])
+        invalid = {**imported, "setup": {**imported["setup"], "roles": archived["setup"]["roles"]}}
+        with self.assertRaisesRegex(ValueError, "invalid teams"):
+            replay(invalid)
 
     def test_full_markdown_round_trip(self):
         record = read(EXAMPLE)

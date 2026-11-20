@@ -46,7 +46,7 @@ On the twelve named-turn social choices, median reported prompt tokens were 783 
 
 ## One lookup that changed the whole floor
 
-On the matched five-seat 8602 deal, all eight builders requested a lookup and all eight submitted a placement in time. Only Blue P2 on turn three actually placed the inspected face. Red won by depletion on turn eight. The floor already guaranteed that result five turns earlier. [Lookup receipts](receipts.csv) · [Full record](social/8602-bad1+3.json) · [Ordinary comparison](../exit-origin/social/8602-bad1+3.json)
+On the matched five-seat 8602 deal, all eight builders requested a lookup and all eight submitted a placement in time. Only Blue P2 on turn three actually placed the inspected face. Red won by depletion on turn eight. The floor already guaranteed that result five turns earlier. [Lookup receipts](receipts.csv) · [Full record](social/8602-red1+3.json) · [Ordinary comparison](../exit-origin/social/8602-red1+3.json)
 
 Immediately before **event 22**, the marker was on face 47 at (−1, −2). Its only exit points east to the unbuilt square (0, −2). P2 looked up face 82 and put it on exactly that square. With two clockwise quarter turns its entrance would face west and its exits would face north and south. The marker could step onto it, with a three-step route from its original square under optimistic future tiles. P2 chose three turns instead. That gives a north entrance and east/west exits. The facing edge was closed and the referee certifies permanent confinement. The recorded reason even named a different destination from the actual submitted action. This is a case where correcting rotation alone at the chosen face and square would have preserved a chance.
 
@@ -63,13 +63,13 @@ python -m experiments.rotation_probe "$work/decisions.csv"
 python -m experiments.rotation_probe "$work/named.csv" --named-rotations
 python -m experiments.rotation_probe "$work/invariant.csv" --controls
 python -m experiments.rotation_summary "$work"
-python -m experiments.social_evidence --roles GBGBG --paired-fifth-hand --color-teams \
+python -m experiments.social_evidence --roles BRBRB --paired-fifth-hand \
   --arm receipt --debate --model-floor --outcome-policy --kit-counts 29 29 \
   --kit-seed 8700 --seeds 8602 --goal 2 2 --action-brief --exit-origin \
   --rotation-aid tool --named-rotations --out "$work/social" --private-notes "$work/private"
-python -m experiments.rotation_summary "$work" --social-notes "$work/private/8602-bad1+3.jsonl" > "$work/receipts.csv"
-python -m footsteps view "$work/social/8602-bad1+3.json" --omniscient \
-  --notes "$work/private/8602-bad1+3.jsonl" -o "$work/8602.html"
+python -m experiments.rotation_summary "$work" --social-notes "$work/private/8602-red1+3.jsonl" > "$work/receipts.csv"
+python -m footsteps view "$work/social/8602-red1+3.json" --omniscient \
+  --notes "$work/private/8602-red1+3.jsonl" -o "$work/8602.html"
 ```
 
 The base rules and record format retain all four rotations. Printed-only is an experimental restriction on the choices offered. Human handling time, the credibility of a constrained builder’s explanation, and whether redesigning the kit would improve a fixed-orientation game remain open.

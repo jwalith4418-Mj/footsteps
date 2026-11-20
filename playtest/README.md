@@ -2,7 +2,7 @@
 
 Print [the three-page kit](kit.pdf) at actual size on Letter or A4. The PDF has a 200 × 255 mm page and a 32 mm calibration square. Bring scissors, an opaque bag, and screens for four hands. The PDF includes cut pieces, a turn reference and an observer form. [Full rules](../docs/rules.md)
 
-Use the base-1 rules with three good seats and one bad seat. Deal two tiles to each player from a supply of sixteen, leaving eight turns for EXIT six steps away at (0, 0), with START at (−4, −2). The trial gives the group two movement opportunities beyond the shortest path. This is a starting point for observing handling and deduction. Its balance at a social table is unmeasured.
+Use the base-1 rules with three Blue seats and one Red seat. Deal two tiles to each player from a supply of sixteen, leaving eight turns for EXIT six steps away at (0, 0), with START at (−4, −2). The trial gives the group two movement opportunities beyond the shortest path. This is a starting point for observing handling and deduction. Its balance at a social table is unmeasured.
 
 Mark the origin on the observer sheet before the first turn so spoken coordinates and written observations agree.
 

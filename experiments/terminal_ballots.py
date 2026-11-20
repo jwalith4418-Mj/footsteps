@@ -10,6 +10,7 @@ from experiments.action_probe import position
 from experiments.goal_pursuit import decide
 from experiments.native_summary import rows
 from experiments.skill_probe import MODEL
+from footsteps.record import read
 
 
 class BallotOrder:
@@ -24,7 +25,7 @@ def panel(model, conditions):
     games = Path(__file__).with_name("goal-pursuit") / "games"
     for case, seats in (("four-9501-brief", (1, 2)), ("five-9901-brief", (1, 3))):
         source = games / f"{case}.json"
-        record = json.loads(source.read_text())
+        record = read(source)
         revision = len(record["events"]) - 1
         assert record["events"][revision]["kind"] == "move_vote"
         receipts = {

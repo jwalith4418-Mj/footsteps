@@ -35,9 +35,9 @@ def positions():
             yield f"record-e{n}", view_before_vote(table, 3), None
         table.commit(event)
 
-    # Bad P0 builds a dead end to the east. North goes directly to the open EXIT.
-    setup = {"goal": [0, 1], "roles": ["bad", "good"], "hands": [[8], [9]], "store": [16, 32]}
-    for case, destination in [("exit", [0, 1]), ("trap", [1, 0]), ("eliminate-good", None)]:
+    # Red P0 builds a dead end to the east. North goes directly to the open EXIT.
+    setup = {"goal": [0, 1], "roles": ["red", "blue"], "hands": [[8], [9]], "store": [16, 32]}
+    for case, destination in [("exit", [0, 1]), ("trap", [1, 0]), ("eliminate-blue", None)]:
         table = Table(setup, Random(0))
         for event in [
             {"kind": "draw", "tiles": [16, 32]},
@@ -50,8 +50,8 @@ def positions():
             table.commit({"kind": "nominate", "target": None})  # P1 passes
             table.commit({"kind": "nominate", "target": 1})  # P0 nominates P1
         for seat in (0, 1):
-            good = setup["roles"][seat] == "good"
-            yield case, view_before_vote(table, seat), good if case == "exit" else not good
+            blue = setup["roles"][seat] == "blue"
+            yield case, view_before_vote(table, seat), blue if case == "exit" else not blue
 
 
 def preview(snapshot):
@@ -65,9 +65,9 @@ def preview(snapshot):
         def outcome(pos):
             pos = tuple(pos)
             if pos == goal:
-                return "the marker reaches EXIT and good wins"
+                return "the marker reaches EXIT and blue wins"
             if not state["store_count"]:
-                return "the store is empty and bad wins"
+                return "the store is empty and red wins"
             if sealed(board, pos, goal):
                 return "the marker can never reach EXIT from this square"
             return f"the marker is {distance(pos, goal)} steps from EXIT by Manhattan distance"
@@ -77,15 +77,15 @@ def preview(snapshot):
         remaining = [p for p in state["alive"] if p != pending]
         yes = f"P{pending} is eliminated and seats {remaining} survive"
         if (
-            state["role"] == "bad"
+            state["role"] == "red"
             and set(remaining) <= {snapshot["seat"], *state["teammates"]}
             or (
                 pending == snapshot["seat"]
-                and state["role"] == "good"
-                and state["player_count"] - state["bad_count"] == 1
+                and state["role"] == "blue"
+                and state["player_count"] - state["red_count"] == 1
             )
         ):
-            yes += ", so no good seat remains and bad wins"
+            yes += ", so no blue seat remains and red wins"
         no = f"P{pending} remains alive"
     return f"If approved, {yes}. If rejected, {no}."
 

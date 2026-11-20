@@ -1,0 +1,25 @@
+{
+  "format": 1,
+  "rules": "base-1",
+  "setup": {
+    "goal": [2, 0],
+    "roles": ["good", "good", "good", "bad"],
+    "hands": [[40], [9], [33], [0]],
+    "store": [18, 12]
+  },
+  "events": [
+    {"kind": "draw", "tiles": [18, 12]},
+    {"kind": "place", "tile": 40, "at": [1, 0], "rotation": 0},
+    {"kind": "discard", "tile": 18},
+    {"kind": "propose", "to": [1, 0]},
+    {"kind": "move_vote", "votes": [true, true, null, false]},
+    {"kind": "nominate", "target": 3},
+    {"kind": "eliminate_vote", "votes": [true, true, true, false]},
+    {"kind": "nominate", "target": null},
+    {"kind": "nominate", "target": null},
+    {"kind": "draw", "tiles": [18]},
+    {"kind": "place", "tile": 9, "at": [0, 1], "rotation": 1},
+    {"kind": "propose", "to": [2, 0]},
+    {"kind": "move_vote", "votes": [true, true, false]}
+  ]
+}

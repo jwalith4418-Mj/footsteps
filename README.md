@@ -32,7 +32,7 @@ New tables and solitaire games put EXIT at (0, 0). The usual layout starts at (â
 
 For the experimental placement interface, add `--placement-check edge-and-marker` to the table command. Builders identify a neighboring tile, read the directed edge into the new tile and say whether the marker occupies the chosen origin. `--placement-check edge` asks only about the edge. [Worked positions and results](experiments/placement-check/README.md)
 
-For three players, add `--seats 3` to deal two good roles and one bad. Open the private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
+For three players, add `--seats 3` to deal two Blue roles and one Red. Open the private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
 
 For rotation assistance, an Ollama seat can use `--rotation-aid table` or `--rotation-aid tool`. The latter lets it request one held face by number. Add `--named-rotations` for literal clockwise turn names. [Comparison and tool-use observations](experiments/rotation/README.md)
 

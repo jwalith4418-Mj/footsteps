@@ -1,22 +1,19 @@
 """Tabulate paired decisions, accepted placements, and whole-game behavior from saved traces."""
 
 import argparse
-import json
 from collections import Counter, defaultdict
 from itertools import product
 from pathlib import Path
 from statistics import median
 
+from experiments.archive_rows import json_rows as rows
 from experiments.native_probe import panel
 from experiments.native_transfer import transfer_panel
 from experiments.rotation_probe import success
 from footsteps.board import distance, moves
 from footsteps.game import Game
+from footsteps.record import read
 from footsteps.solo import sealed
-
-
-def rows(path):
-    return [json.loads(line) for line in path.read_text().splitlines()]
 
 
 def probe_results(path):
@@ -89,12 +86,12 @@ def placement_diagnosis(paths):
         print(
             *key,
             "|",
-            " / ".join(str(c[k]) for k in ("good", "bad", "turn", "piece", "square", "missing")),
+            " / ".join(str(c[k]) for k in ("blue", "red", "turn", "piece", "square", "missing")),
         )
 
 
 def game_results(path):
-    record = json.loads(path.read_text())
+    record = read(path)
     game = Game(record["setup"])
     decisions = rows(path.with_suffix(".calls.jsonl"))
     by_revision = defaultdict(list)

@@ -15,13 +15,12 @@ from footsteps.ollama import consultation, decode_choice, model_request, request
 from footsteps.seat_tools import tile
 from footsteps.solo import sealed
 from footsteps.table import Table
-from footsteps.team_names import color_brief
 
 ARMS = ("ordinary", "fixed", "table", "tool")
 
 
 def single_face(face, goal, at):
-    table = Table({"hands": [[]], "store": [face] * 4, "goal": goal, "roles": ["good"]}, Random(0))
+    table = Table({"hands": [[]], "store": [face] * 4, "goal": goal, "roles": ["blue"]}, Random(0))
     table.join(0, 0)
     snap = table.view(0, 0)
     snap["choices"]["at"] = [at]
@@ -38,12 +37,12 @@ def cases():
         snap = single_face(face, goal, at)
         task = f"Place your tile at the specified square with an entrance on {entry} and exit on {outward}."
         yield f"ports-{face}-{turns}", snap, task, turns
-    yield "Blue-8602", position(ROOT / "exit-origin/social/8602-bad1+3.json", 41, 4), "", None
+    yield "Blue-8602", position(ROOT / "exit-origin/social/8602-red1+3.json", 41, 4), "", None
     yield "Red-guest", position(GUEST, 23, 2), "", None
     for seed, red in product((8101, 8102), (1, 2)):
         yield (
             f"transfer-{seed}-R{red}",
-            position(ROOT / f"social/fresh-base/{seed}-bad{red}.json", 10, 2),
+            position(ROOT / f"social/fresh-base/{seed}-red{red}.json", 10, 2),
             "",
             None,
         )
@@ -55,7 +54,7 @@ def success(state, tile_id, rotation, at, target):
     board = dict(state["board"])
     board[at] = rotate(tile_id, rotation)
     marker, goal = state["marker"], state["goal"]
-    if state["role"] == "bad":
+    if state["role"] == "red":
         return sealed(board, marker, goal)
     # All social prefixes used here drew two and will return one tile.
     return any(
@@ -72,8 +71,6 @@ def pick(snap, model, arm, task, reverse, named):
     body = model_request(
         snap, model, show_rotations=arm == "table", explicit_actions=True, named_rotations=named
     )
-    if snap.get("team_names") == "colors":
-        color_brief(body)
     body["think"] = False
     ctx = json.loads(body["messages"][1]["content"])
     if task:

@@ -9,7 +9,6 @@ from footsteps.board import distance
 from footsteps.decision_notes import save_note
 from footsteps.ollama import model_request, request
 from footsteps.role_knowledge import role_information
-from footsteps.team_names import color_brief
 
 
 def progress_ballots(snap):
@@ -45,7 +44,7 @@ def progress_ballots(snap):
     return rows
 
 
-def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, strategy="baseline"):
+def social_choice(snap, model, arm, sink, *, reverse=False, red_brief=False, strategy="baseline"):
     stage = snap["state"]["stage"]
     body = model_request(snap, model, guided=True, named_ballots=True, explain=True)
     body["think"] = False
@@ -82,9 +81,9 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, str
         context["published_movement_ballots"] = progress_ballots(snap)
         body["messages"][0]["content"] += (
             " Check the published movement ballots before attributing a vote. Distance counts squares to EXIT. "
-            "A player's accusation or nomination is a claim, not proof. If good, weigh evidence for and "
+            "A player's accusation or nomination is a claim, not proof. If Blue, weigh evidence for and "
             "against removing this particular player; with insufficient evidence you can pass or reject. "
-            "Bad may benefit from removing good seats."
+            "Red may benefit from removing Blue seats."
         )
     if arm == "receipt" and key == "vote":
         nominee = f"P{snap['state']['pending']}"
@@ -95,12 +94,12 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, str
             if nominee in row["votes"]
         ]
         context["nominee_voting_record"] = receipts
-    if bad_brief and snap["state"]["role"] == "bad" and snap["state"]["bad_count"] == 1:
+    if red_brief and snap["state"]["role"] == "red" and snap["state"]["red_count"] == 1:
         others = [f"P{i}" for i in snap["state"]["alive"] if i != snap["seat"]]
         context["private_role_card"] = (
-            f"You are P{snap['seat']}, the only Bad player. The other living players "
-            f"({', '.join(others)}) are all Good. You win if they are all eliminated or "
-            "if the marker misses EXIT before time expires. Judge this choice for Bad."
+            f"You are P{snap['seat']}, the only Red player. The other living players "
+            f"({', '.join(others)}) are all Blue. You win if they are all eliminated or "
+            "if the marker misses EXIT before time expires. Judge this choice for Red."
         )
     body["messages"][1]["content"] = json.dumps(context, separators=(",", ":"))
     apply_strategy(body, {**snap, "choices": {key: options}}, strategy)
@@ -128,7 +127,7 @@ def advocate(snap, model, *, audience=False, explicit_actions=False):
         "messages": [
             {
                 "role": "system",
-                "content": "You nominated another player in Footsteps. Good wants the marker to reach EXIT. Bad wants time to run out or all good seats eliminated. Address the other players in one short public sentence to persuade them to remove your nominee. You may stay silent with an empty string. Use the public floor or ballots to make your case. Keep your role and hand private.",
+                "content": "You nominated another player in Footsteps. Blue wants the marker to reach EXIT. Red wants time to run out or all Blue seats eliminated. Address the other players in one short public sentence to persuade them to remove your nominee. You may stay silent with an empty string. Use the public floor or ballots to make your case. Keep your role and hand private.",
             },
             {
                 "role": "user",
@@ -136,7 +135,7 @@ def advocate(snap, model, *, audience=False, explicit_actions=False):
                     {
                         **role_information(snap),
                         "initial_seats": state["player_count"],
-                        "initial_bad": state["bad_count"],
+                        "initial_red": state["red_count"],
                         "you": snap["seat"],
                         "your_role": state["role"],
                         "alive": state["alive"],
@@ -156,7 +155,5 @@ def advocate(snap, model, *, audience=False, explicit_actions=False):
             " Consider what listeners on the other team would infer about your allegiance and "
             "why they would support your proposal. If you lack a credible public case, you can stay silent."
         )
-    if snap.get("team_names") == "colors":
-        color_brief(body)
     reply = json.loads(request(11434, "/api/chat", body, 30)["message"]["content"])
     return reply["statement"].strip()

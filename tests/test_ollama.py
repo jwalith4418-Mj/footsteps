@@ -102,9 +102,9 @@ class ModelSeat(unittest.TestCase):
         request.return_value = {"message": {"content": '{"tile":2,"rotation":3,"at":0}'}}
         expected = {"tile": 40, "rotation": 3, "at": self.build["choices"]["at"][0]}
         self.assertEqual(infer(self.build, "test", 1), expected)
-        for bad in ('{"vote":true}', '{"vote":-1}', '{"vote":2}', "{}", "null", "text"):
-            with self.subTest(bad=bad), self.assertRaises(ValueError):
-                request.return_value = {"message": {"content": bad}}
+        for invalid in ('{"vote":true}', '{"vote":-1}', '{"vote":2}', "{}", "null", "text"):
+            with self.subTest(reply=invalid), self.assertRaises(ValueError):
+                request.return_value = {"message": {"content": invalid}}
                 infer(self.ballot, "test", 1)
 
     def test_seat_link_and_model_budget_validation(self):
@@ -119,11 +119,11 @@ class ModelSeat(unittest.TestCase):
 
     @patch("footsteps.ollama.time.sleep")
     def test_closed_window_refreshes_without_resubmitting(self, _sleep):
-        over = {"phase": "over", "state": {"winner": "bad"}}
+        over = {"phase": "over", "state": {"winner": "red"}}
         seat = Mock()
         seat.call.side_effect = [self.ballot, ServiceError(409), over]
         decide = Mock(return_value={"vote": True})
-        self.assertEqual(play_seat(seat, "test", 10, decide=decide, report=Mock()), "bad")
+        self.assertEqual(play_seat(seat, "test", 10, decide=decide, report=Mock()), "red")
         self.assertEqual(
             [c.args[0] for c in seat.call.call_args_list], ["/ready", "/choice", "/state"]
         )
@@ -136,7 +136,7 @@ class ModelSeat(unittest.TestCase):
     @patch("footsteps.ollama.time.sleep")
     @patch("footsteps.ollama.time.monotonic", side_effect=[0, 2, 3, 3.1])
     def test_late_reply_is_dropped_once_then_next_decision_runs(self, clock, sleep):
-        over = {"phase": "over", "state": {"winner": "good"}}
+        over = {"phase": "over", "state": {"winner": "blue"}}
         seat = Mock()
         seat.call.side_effect = [self.ballot, self.ballot, {**self.ballot, "revision": 6}, over]
         model = Mock(return_value={"vote": True})

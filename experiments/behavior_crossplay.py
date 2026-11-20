@@ -43,7 +43,7 @@ def scripted(snap, walk):
     state, options = snap["state"], snap["choices"]
     stage = state["stage"]
     if stage == "propose":
-        return {"to": None if state["role"] == "bad" else walk}
+        return {"to": None if state["role"] == "red" else walk}
     if stage == "move_vote":
         return {"vote": vote_intent(state)}
     evidence = suspects(snap)
@@ -53,10 +53,10 @@ def scripted(snap, walk):
 
 
 def game(seed, seat, role, store, strategy, model, output, notes):
-    bad = seat if role == "bad" else 3 - seat
+    red = seat if role == "red" else 3 - seat
     setup = paper_setup(Random(seed), 3)
     setup["store"] = setup["store"][:store]
-    setup["roles"] = ["bad" if s == bad else "good" for s in range(3)]
+    setup["roles"] = ["red" if s == red else "blue" for s in range(3)]
     table = Table(setup, Random(f"draw/{seed}"), discussion=1)
     table.record["table_id"] = secrets.token_hex(16)
     pick = Random(f"build/{seed}")
@@ -172,7 +172,7 @@ def main():
         writer = None
         for seed in args.seeds:
             for seat in (1, 2):
-                for role in ("bad", "good"):
+                for role in ("red", "blue"):
                     name = f"{seed}-P{seat}-{role}"
                     with open_private(args.private_notes / (name + ".jsonl")) as notes:
                         result = game(

@@ -14,7 +14,7 @@ from footsteps.ollama import request
 
 def run(path, model):
     positions = list(panel()) + list(transfer_panel())
-    sample = {"Blue-82-escape", "Red-guest", "held-9600-E10-good", "held-9600-E10-bad"}
+    sample = {"Blue-82-escape", "Red-guest", "held-9600-E10-blue", "held-9600-E10-red"}
     with path.open("x") as out:
         for idx, (name, snap, _, _) in enumerate(p for p in positions if p[0] in sample):
             tools = build_tools(snap, "hand")

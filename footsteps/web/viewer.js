@@ -2,7 +2,7 @@
 
 const data = JSON.parse(document.getElementById("transcript").textContent);
 const frames = data.frames;
-const teamName = (role) => data.team_labels?.[role] || role;
+const teamName = (role) => role[0].toUpperCase() + role.slice(1);
 const el = (id) => document.getElementById(id);
 const coordinate = (p) => "(" + p.join(", ") + ")";
 const same = (a, b) => a && b && a[0] === b[0] && a[1] === b[1];
@@ -117,7 +117,7 @@ function drawFloor(f) {
 }
 
 function decision(f) {
-  if (f.winner) return (data.team_labels?.[f.winner] || (f.winner === "good" ? "Good" : "Bad")) + " team wins";
+  if (f.winner) return teamName(f.winner) + " team wins";
   if (f.stage === "move_vote") return "Vote on moving to " + coordinate(f.pending);
   if (f.stage === "eliminate_vote") return "Vote on eliminating P" + f.pending;
   if (f.stage === "nominate") return "P" + f.nominator + " may nominate";
@@ -178,7 +178,7 @@ function showState(f) {
   }
   if (f.teammates) {
     el("allies").hidden = false;
-    el("allies").textContent = (data.team_labels?.bad || "Bad") + " teammates: " + (f.teammates.map((i) => "P" + i).join(", ") || "none");
+    el("allies").textContent = "Red" + " teammates: " + (f.teammates.map((i) => "P" + i).join(", ") || "none");
   }
 }
 
@@ -301,7 +301,7 @@ document.addEventListener("keydown", (event) => {
 
 document.title = data.title + " · Footsteps";
 el("title").textContent = data.title;
-el("summary").textContent = data.players + (data.players === 1 ? " player" : " players") + " · " + data.bad + " " + teamName("bad") + " · Goal " + coordinate(data.goal);
+el("summary").textContent = data.players + (data.players === 1 ? " player" : " players") + " · " + data.red + " " + teamName("red") + " · Goal " + coordinate(data.goal);
 el("perspective").textContent = data.omniscient ? "Omniscient · All hands and roles" : data.seat === null ? "Public view" : "P" + data.seat + " · Private view";
 const turns = new Map();
 frames.forEach((f, i) => { if (!turns.has(f.turn)) turns.set(f.turn, i); });

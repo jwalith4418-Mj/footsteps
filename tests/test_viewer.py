@@ -56,7 +56,7 @@ class TranscriptViewer(unittest.TestCase):
         self.assertNotIn("events", data)
         frames = data["frames"]
         self.assertEqual(frames[0]["hand"], [0])
-        self.assertEqual(frames[0]["role"], "bad")
+        self.assertEqual(frames[0]["role"], "red")
         self.assertNotIn("18", frames[1]["message"])
         self.assertNotIn(3, frames[7]["alive"])
         self.assertNotIn("roles", frames[-2])

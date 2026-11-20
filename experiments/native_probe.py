@@ -15,7 +15,7 @@ from footsteps.ollama import request
 
 def panel():
     yield from cases()
-    yield "Blue-82-escape", position(ROOT / "rotation/social/8602-bad1+3.json", 21, 2), "", None
+    yield "Blue-82-escape", position(ROOT / "rotation/social/8602-red1+3.json", 21, 2), "", None
 
 
 def one_call(snap, model, task, structured, log):

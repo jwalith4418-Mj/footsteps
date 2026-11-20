@@ -8,7 +8,7 @@ from experiments.social_probe import nomination
 from experiments.social_prompt import progress_ballots, social_choice
 from footsteps.record import read
 
-PILOT = Path(__file__).resolve().parents[1] / "experiments/social/pilot/8001-bad1.json"
+PILOT = Path(__file__).resolve().parents[1] / "experiments/social/pilot/8001-red1.json"
 
 
 class SocialEvidence(unittest.TestCase):

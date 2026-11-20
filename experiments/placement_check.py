@@ -48,7 +48,7 @@ def trial(rows, case, mode, reverse, snap, forced=None, *, joint):
             marker, goal = state["marker"], state["goal"]
             tactical = (
                 sealed(board, marker, goal)
-                if state["role"] == "bad"
+                if state["role"] == "red"
                 else any(
                     optimistic_length(board, step, goal, state["store_count"] + 1) is not None
                     for step in moves(board, marker)
@@ -60,7 +60,7 @@ def trial(rows, case, mode, reverse, snap, forced=None, *, joint):
 
 
 def run(output, joint):
-    blue = ROOT / "exit-origin/social/8602-bad1+3.json"
+    blue = ROOT / "exit-origin/social/8602-red1+3.json"
     with output.open("x") as f:
         rows = csv.writer(f, lineterminator="\n")
         rows.writerow(

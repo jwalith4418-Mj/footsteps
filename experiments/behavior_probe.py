@@ -15,7 +15,7 @@ from footsteps.record import read
 from footsteps.solo import sealed
 from footsteps.table import Table
 
-SOURCE = Path(__file__).with_name("social") / "debate-role/8201-bad1.json"
+SOURCE = Path(__file__).with_name("social") / "debate-role/8201-red1.json"
 
 
 def prefix(setup, events):
@@ -34,29 +34,29 @@ def cases():
         if line["after_event"] == exact.revision:
             exact.say(line["seat"], exact.revision, line["text"], 0)
     yield "8201-self", exact.view(1, exact.opens), False
-    for bad in (1, 2):
-        setup = {**record["setup"], "roles": ["bad" if s == bad else "good" for s in range(3)]}
+    for red in (1, 2):
+        setup = {**record["setup"], "roles": ["red" if s == red else "blue" for s in range(3)]}
         opening = prefix(setup, record["events"][:4])
-        yield "ordinary-move", opening.view(bad, opening.opens), None
-        yield "ordinary-move", opening.view(3 - bad, opening.opens), True
+        yield "ordinary-move", opening.view(red, opening.opens), None
+        yield "ordinary-move", opening.view(3 - red, opening.opens), True
         quiet = prefix(setup, [*record["events"][:4], {"kind": "move_vote", "votes": [True] * 3}])
         yield "quiet-opening", quiet.view(1, quiet.opens), None
 
     # Same three-seat rules, short floors for consequences that can be checked exactly.
-    for good in (0, 2):
-        roles = ["good" if i == good else "bad" for i in range(3)]
+    for blue in (0, 2):
+        roles = ["blue" if i == blue else "red" for i in range(3)]
         setup = {"goal": [0, 1], "roles": roles, "hands": [[8], [8], [8]], "store": [32, 32]}
         events = [
             {"kind": "draw", "tiles": [32, 32]},
             {"kind": "place", "tile": 8, "at": [1, 0], "rotation": 0},
             {"kind": "discard", "tile": 32},
         ]
-        bad = 2 - good
+        red = 2 - blue
         for case, dest in (("enter-exit", [0, 1]), ("seal-marker", [1, 0])):
             table = prefix(setup, [*events, {"kind": "propose", "to": dest}])
-            for seat in (good, bad):
-                yield case, table.view(seat, table.opens), (seat == good) == (case == "enter-exit")
-        for label, dest, target in (("last-good", None, good), ("sealed-self", [1, 0], bad)):
+            for seat in (blue, red):
+                yield case, table.view(seat, table.opens), (seat == blue) == (case == "enter-exit")
+        for label, dest, target in (("last-blue", None, blue), ("sealed-self", [1, 0], red)):
             history = [*events, {"kind": "propose", "to": dest}]
             if dest:
                 history.append({"kind": "move_vote", "votes": [True, True, True]})
@@ -64,18 +64,18 @@ def cases():
             if dest:
                 assert sealed(table.game.board, table.game.marker, table.game.goal)
             # P1 nominates in one seating; advance the other to P0 or P2.
-            nominator = 1 if good == 0 else 2 if target != 2 else 0
+            nominator = 1 if blue == 0 else 2 if target != 2 else 0
             while table.game.queue[0] != nominator:
                 table.commit({"kind": "nominate", "target": None})
             table.submit(nominator, table.revision, {"target": target}, table.opens)
-            for seat in (bad, good) if not dest else (bad,):
-                yield label, table.view(seat, table.opens), None if dest else seat == bad
+            for seat in (red, blue) if not dest else (red,):
+                yield label, table.view(seat, table.opens), None if dest else seat == red
 
 
 def tradeoffs():
     record = read(SOURCE)
     for focal in (1, 2):
-        roles = ["bad" if s == focal else "good" for s in range(3)]
+        roles = ["red" if s == focal else "blue" for s in range(3)]
         opening = prefix({**record["setup"], "roles": roles}, record["events"][:4])
         for s in (0, 3 - focal):
             opening.say(
@@ -114,7 +114,7 @@ def decide(snap, model, strategy, sink, reverse=False):
         return infer(snap, model, 30, no_think=True, outcome_policy=True, note_file=sink)
     if snap["state"]["stage"] != "move_vote":
         return social_choice(
-            snap, model, "receipt", sink, reverse=reverse, bad_brief=True, strategy=strategy
+            snap, model, "receipt", sink, reverse=reverse, red_brief=True, strategy=strategy
         )
     options = snap["choices"]["vote"]
     if reverse:

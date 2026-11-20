@@ -12,7 +12,7 @@ from footsteps.record import read, replay
 from footsteps.table import DecisionConflict, Table
 from footsteps.viewer import transcript
 
-RECORD = Path(__file__).resolve().parents[1] / "experiments/exit-origin/social/8602-bad1+3.json"
+RECORD = Path(__file__).resolve().parents[1] / "experiments/exit-origin/social/8602-red1+3.json"
 
 
 def before_build(mode="edge-and-marker"):

@@ -33,7 +33,7 @@ def paper_setup(rng, seats=4, *, kit=PAPER_KIT):
     require(len(kit) == len(PAPER_KIT), "use a sixteen-tile kit")
     tiles = list(kit)
     rng.shuffle(tiles)
-    roles = ["good"] * (seats - 1) + ["bad"]
+    roles = ["blue"] * (seats - 1) + ["red"]
     rng.shuffle(roles)
     return {
         "goal": [4, 2],
@@ -48,9 +48,7 @@ class DecisionConflict(ValueError):
 
 
 class Table:
-    def __init__(
-        self, setup, rng, seconds=60, discussion=15, *, color_teams=False, placement_check=None
-    ):
+    def __init__(self, setup, rng, seconds=60, discussion=15, *, placement_check=None):
         require(isfinite(seconds) and seconds > 0, "decision time must be positive")
         require(isfinite(discussion) and discussion >= 0, "discussion time must be nonnegative")
         require(placement_check in (None, "edge", "edge-and-marker"), "unknown placement check")
@@ -67,8 +65,6 @@ class Table:
         self.record = new_record(setup)
         if placement_check:
             self.record["placement_check"] = placement_check
-        if color_teams:
-            self.record["team_names"] = "colors"
         self.history = [[] for _ in self.game.roles]
         self.floor_turns = []
         self.placed_at = None
@@ -242,7 +238,6 @@ class Table:
         )
         end = self.opens if phase == "discussion" else self.deadline
         return {
-            **({"team_names": "colors"} if self.record.get("team_names") == "colors" else {}),
             "seat": seat,
             "phase": phase,
             "revision": self.revision,

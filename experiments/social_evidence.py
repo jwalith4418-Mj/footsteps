@@ -43,12 +43,11 @@ def social_game(
     notes,
     arm,
     debate=False,
-    bad_brief=False,
+    red_brief=False,
     model_floor=False,
     social_guidance=False,
     outcome_policy=False,
     kit=PAPER_KIT,
-    color_teams=False,
     paired_fifth_hand=False,
     audience=False,
     guest=None,
@@ -77,12 +76,12 @@ def social_game(
             model,
             arm,
             sink,
-            bad_brief=bad_brief,
+            red_brief=red_brief,
             strategy="payoff-trust" if social_guidance else "baseline",
         )
 
     seats = range(len(roles))
-    bad = "+".join(str(s) for s in seats if roles[s] == "bad")
+    red = "+".join(str(s) for s in seats if roles[s] == "red")
     setup = social_deal(seed, roles, kit, paired_fifth_hand=paired_fifth_hand)
     setup["goal"] = list(goal)
     if exit_origin:
@@ -91,7 +90,6 @@ def social_game(
         setup,
         Random(f"draw/{seed}"),
         discussion=1,
-        color_teams=color_teams,
         placement_check=placement_check,
     )
     table.record["table_id"] = secrets.token_hex(16)
@@ -146,7 +144,7 @@ def social_game(
                     calls.append(
                         dict(
                             seed=seed,
-                            bad=bad,
+                            red=red,
                             **({"seat": seat, "muted_vote": comparison} if debate else {}),
                             turn=state["turn"],
                             event=snap["revision"] + 1,
@@ -212,12 +210,12 @@ def social_game(
                     destination = plan["to"]
                     choice = plan["place"]
                 elif stage == "propose":
-                    delay = state["role"] == "bad" and state["turn"] >= 3
+                    delay = state["role"] == "red" and state["turn"] >= 3
                     choice = {"to": None if delay else destination}
                 elif stage == "discard":
                     choice = {"tile": min(choices["tile"], key=lambda f: (f.bit_count(), f))}
                 elif stage == "move_vote":
-                    choice = {"vote": approach(state) == (state["role"] == "good")}
+                    choice = {"vote": approach(state) == (state["role"] == "blue")}
                 elif stage == "nominate":
                     other = 3 - seat
                     choice = {
@@ -234,7 +232,7 @@ def social_game(
     assert replay(table.record).winner == table.game.winner
     output.write_text(json.dumps(table.record, separators=(",", ":")) + "\n")
     print(
-        f"{seed=} P{bad} bad: {table.game.winner} turn {table.game.turn}, {len(calls)} recorded social choices",
+        f"{seed=} P{red} red: {table.game.winner} turn {table.game.turn}, {len(calls)} recorded social choices",
         flush=True,
     )
     if guest is not None:
@@ -259,9 +257,9 @@ def main():
         help="all seats model nominations and elimination votes; nominator may speak",
     )
     parser.add_argument(
-        "--bad-brief",
+        "--red-brief",
         action="store_true",
-        help="spell out what the sole bad seat knows on its elimination decisions",
+        help="spell out what the sole red seat knows on its elimination decisions",
     )
     parser.add_argument(
         "--model-floor",
@@ -279,14 +277,9 @@ def main():
         help="use the hybrid seat policy for social decisions",
     )
     parser.add_argument(
-        "--color-teams",
-        action="store_true",
-        help="call the teams Blue and Red in model prompts and replay",
-    )
-    parser.add_argument(
         "--audience", action="store_true", help="ask speakers to consider other-team listeners"
     )
-    parser.add_argument("--roles", help="one explicit role layout for full model play, e.g. GBGB")
+    parser.add_argument("--roles", help="one explicit role layout for full model play, e.g. BRBR")
     parser.add_argument(
         "--paired-fifth-hand",
         action="store_true",
@@ -331,25 +324,23 @@ def main():
     if tuple(args.goal) == (0, 0):
         parser.error("goal must differ from START")
     if (
-        args.model_floor or args.bad_brief or args.social_guidance or args.outcome_policy
+        args.model_floor or args.red_brief or args.social_guidance or args.outcome_policy
     ) and not args.debate:
         parser.error(
-            "--model-floor, --bad-brief, --social-guidance and --outcome-policy require --debate"
+            "--model-floor, --red-brief, --social-guidance and --outcome-policy require --debate"
         )
     if args.audience and not args.debate:
         parser.error("--audience requires --debate")
-    if args.color_teams and not (args.debate and args.model_floor and args.outcome_policy):
-        parser.error("--color-teams requires --debate --model-floor --outcome-policy")
-    layouts = (["good", "bad", "good"], ["good", "good", "bad"])
+    layouts = (["blue", "red", "blue"], ["blue", "blue", "red"])
     if args.roles is not None:
         if not (
             args.model_floor
             and args.debate
             and len(args.roles) in (3, 4, 5)
-            and set(args.roles) == {"G", "B"}
+            and set(args.roles) == {"B", "R"}
         ):
-            parser.error("--roles requires full model play and 3 to 5 seats with both G and B")
-        layouts = (["good" if c == "G" else "bad" for c in args.roles],)
+            parser.error("--roles requires full model play and 3 to 5 seats with both B and R")
+        layouts = (["blue" if c == "B" else "red" for c in args.roles],)
     if args.paired_fifth_hand and (args.roles is None or len(args.roles) != 5):
         parser.error("--paired-fifth-hand requires a five-seat layout")
     if args.kit_seed is not None and args.kit_counts is None:
@@ -371,8 +362,8 @@ def main():
     rows = []
     for seed in args.seeds:
         for roles in layouts:
-            bad = "+".join(str(s) for s, role in enumerate(roles) if role == "bad")
-            name = f"{seed}-bad{bad}"
+            red = "+".join(str(s) for s, role in enumerate(roles) if role == "red")
+            name = f"{seed}-red{red}"
             rows.extend(
                 social_game(
                     seed,
@@ -382,7 +373,7 @@ def main():
                     args.private_notes / f"{name}.jsonl",
                     args.arm,
                     args.debate,
-                    args.bad_brief,
+                    args.red_brief,
                     args.model_floor,
                     args.social_guidance,
                     args.outcome_policy,
@@ -394,7 +385,6 @@ def main():
                     explicit_actions=args.action_brief,
                     social_tools=args.social_tools,
                     kit=kit,
-                    color_teams=args.color_teams,
                     paired_fifth_hand=args.paired_fifth_hand,
                     audience=args.audience,
                 )

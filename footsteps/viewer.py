@@ -6,7 +6,6 @@ from pathlib import Path
 from .decision_notes import applied_note, notes_for_record
 from .game import require
 from .record import describe, replay, starting_game
-from .team_names import COLORS
 
 WEB = Path(__file__).with_name("web")
 
@@ -38,7 +37,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
     def capture(kind, turn, message):
         view = game.view(seat)
         # The floor is write-once. Encode placements once and reconstruct their display by index.
-        for key in ("board", "placements", "player_count", "bad_count", "goal", "start"):
+        for key in ("board", "placements", "player_count", "red_count", "goal", "start"):
             del view[key]
         if omniscient:
             view["hands"] = [hand.copy() for hand in game.hands]
@@ -101,11 +100,10 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
     return {
         "seat": seat,
         "omniscient": omniscient,
-        **({"team_labels": COLORS} if record.get("team_names") == "colors" else {}),
         "start": tuple(map(str, setup["start"])),
         "goal": tuple(map(str, setup["goal"])),
         "players": setup["player_count"],
-        "bad": setup["bad_count"],
+        "red": setup["red_count"],
         "frames": frames,
     }
 

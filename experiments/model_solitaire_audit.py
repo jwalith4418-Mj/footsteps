@@ -1,11 +1,11 @@
 """Check archived solitaire scores, model fallbacks, chance and rotated game histories."""
 
 import argparse
-import csv
 from collections import Counter
 from pathlib import Path
 from random import Random
 
+from experiments.archive_rows import csv_rows
 from footsteps.board import distance, rotate
 from footsteps.game import Game
 from footsteps.record import read
@@ -26,7 +26,7 @@ def rotate_event(event):
 
 def scores(game):
     return (
-        int(game.winner == "good"),
+        int(game.winner == "blue"),
         game.turn,
         distance(game.marker, game.goal),
         int(sealed(game.board, game.marker, game.goal)),
@@ -35,7 +35,7 @@ def scores(game):
 
 def audit(folder):
     with (folder / "results.csv").open(newline="") as handle:
-        results = list(csv.DictReader(handle))
+        results = list(csv_rows(handle))
     controls = {"random", "greedy", "exits", "route"}
     players = {row["player"] for row in results}
     if not controls <= players or len(players - controls) != 1:
@@ -46,13 +46,13 @@ def audit(folder):
         seed = int(path.stem.split("-")[1])
         record = read(path)
         initial = setup(seed, (4, 2), 2, 10, 0.55)
-        if initial != record["setup"]:
+        if {**initial, "start": [0, 0]} != record["setup"]:
             raise ValueError(f"{path}: initial deal differs")
         game = Game(initial)
         turned = Game({**initial, "goal": clockwise(initial["goal"])})
         rng = Random(f"draw/{seed}")
         with (folder / f"calls-{seed}.csv").open(newline="") as handle:
-            calls = list(csv.DictReader(handle))
+            calls = list(csv_rows(handle))
         remaining_calls = iter(calls)
         for index, event in enumerate(record["events"], 1):
             if game.stage == "draw":

@@ -1,10 +1,10 @@
-"""Summarize counterbalanced replies and good builders' votes on their own closer moves."""
+"""Summarize counterbalanced replies and blue builders' votes on their own closer moves."""
 
 import argparse
-import csv
 from collections import defaultdict
 from pathlib import Path
 
+from experiments.archive_rows import csv_rows
 from footsteps.board import distance
 from footsteps.game import Game
 from footsteps.record import read
@@ -14,7 +14,7 @@ def probe_counts(files):
     pairs = defaultdict(dict)
     for path in files:
         with path.open(newline="") as handle:
-            for r in csv.DictReader(handle):
+            for r in csv_rows(handle):
                 key = r["model"], r["encoding"], r["case"], r["seat"], r["preferred"]
                 if r["first"] in pairs[key]:
                     raise ValueError(f"duplicate response for {key}")
@@ -32,7 +32,7 @@ def self_votes(path):
     for event in record["events"]:
         if (
             game.stage == "move_vote"
-            and game.roles[game.actor] == "good"
+            and game.roles[game.actor] == "blue"
             and distance(game.pending, game.goal) < distance(game.marker, game.goal)
         ):
             votes.append(event["votes"][game.alive.index(game.actor)])
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             normal if key[-1] == "control" else "-",
             reverse if key[-1] == "control" else "-",
         )
-    print("game good-closer-self-no missing total")
+    print("game blue-closer-self-no missing total")
     for path in sorted(folder.glob("*/game.json")):
         votes = self_votes(path)
         print(path.parent.name, votes.count(False), votes.count(None), len(votes))

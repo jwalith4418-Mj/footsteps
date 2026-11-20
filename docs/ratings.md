@@ -8,7 +8,7 @@ Use three Blue and two Red. Freeze the rules, tile kit, offset, turn budget and 
 
 For each starting deal and role layout play three games. In the first, the anchor policy plays all seats. In the second replace one Red with the candidate. In the third replace one Blue. The four other seats in each comparison run the same policies on the same starting hands. Later play can diverge. Use the same chance stream convention and record realized draws, decisions, timeouts and the terminal reason. Shuffle execution order within a block using a recorded seed. Isolate sessions and fix concurrency when wall-clock limits matter. Keep incomplete runs in a ledger with a reason and rerun an interrupted block before including it.
 
-The schedule rotates both Red seats around the table. Each candidate plays once per physical seat on each side per deal. Consecutive deal blocks alternate adjacent and separated Red pairs. The CSV uses B for Blue and R for Red. The current social runner uses G for Blue and B for Red. Translate the team column explicitly when constructing a setup. A row identifies a planned table, not a played game.
+The schedule rotates both Red seats around the table. Each candidate plays once per physical seat on each side per deal. Consecutive deal blocks alternate adjacent and separated Red pairs. The schedule and social runner both use B for Blue and R for Red. A row identifies a planned table, not a played game.
 
 ```sh
 python -m experiments.rating_schedule --seeds 9001 9002 --anchor qwen-baseline-v1 --candidate qwen-candidate-v1 > /tmp/footsteps-panel.csv

@@ -1,10 +1,8 @@
 # Recording a game
 
-The full JSON has a numeric `format` (1 or 2), a `rules` identifier (`base-1`), a realized `setup`, and an ordered `events` array. Seat indices start at zero. Setup contains the goal coordinate, roles and starting hands in seat order, and the bag as an array of face numbers with multiplicity. Seat 0 builds first. Face IDs preserve true orientation. The referee rotates a face only when applying the placement.
+The full JSON has a numeric `format` (currently 3), a `rules` identifier (`base-1`), a realized `setup`, and an ordered `events` array. Seat indices start at zero. Setup contains the goal coordinate, roles and starting hands in seat order, and the bag as an array of face numbers with multiplicity. Seat 0 builds first. Face IDs preserve true orientation. The referee rotates a face only when applying the placement.
 
-Format 1 fixes START at (0, 0). Format 2 requires both `setup.start` and `setup.goal` as distinct integer coordinate pairs. The host writes format 2 when the setup supplies an explicit start. For example, `"start":[-4,-2],"goal":[0,0]` gives the paper layout with EXIT at the origin. Every placement, movement proposal, public remark and note uses the table’s coordinates throughout. Both formats use the same rule and event vocabulary. Older format-1 readers reject format 2 at the version check.
-
-An optional top-level `"team_names": "colors"` displays the `good` team as Blue and the `bad` team as Red. Both names describe the same base-1 objectives. Stored role IDs and legal actions are identical. Replays show player remarks and private notes verbatim.
+Format 3 stores team IDs as `"blue"` and `"red"` and requires an explicit START. For example, `"start":[-4,-2],"goal":[0,0]` gives the paper layout. The importer upgrades format 1 with START at (0, 0) and format 2 with its recorded START. It maps historical role IDs once on import. Exports use format 3. Events, coordinates, table IDs, remarks and private sidecar associations survive the upgrade. The base-1 rules are unchanged.
 
 An optional top-level `placement_check` records the builder interface used at a live table (`edge` or `edge-and-marker`). The replay uses the committed tile, square, and rotation. Builder answers and rejected attempts stay private.
 
