@@ -5,11 +5,13 @@ import os
 import secrets
 import threading
 import time
+from contextlib import ExitStack
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from random import Random, SystemRandom
 from tempfile import NamedTemporaryFile
 
+from .decision_notes import open_private
 from .game import with_exit_origin
 from .record import read
 from .table import DecisionConflict, Table, fixed_kit, paper_setup
@@ -166,7 +168,16 @@ def serve(args):
         color_teams=args.color_teams,
         placement_check=args.placement_check,
     )
-    with TableServer(table, args.save, args.port) as server:
+    with ExitStack() as stack:
+        if args.private_rotations:
+            if args.save.resolve() == args.private_rotations.resolve():
+                raise ValueError("choose separate record and private rotation files")
+            if args.private_rotations.exists():
+                raise FileExistsError(args.private_rotations)
+            table.record["table_id"] = secrets.token_hex(16)
+        server = stack.enter_context(TableServer(table, args.save, args.port))
+        if args.private_rotations:
+            table.rotation_log = stack.enter_context(open_private(args.private_rotations))
         print(f"Referee record: {args.save.resolve()}")
         for token, seat in server.tokens.items():
             print(f"P{seat}  http://127.0.0.1:{server.server_port}/#{token}", flush=True)

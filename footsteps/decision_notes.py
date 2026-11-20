@@ -30,6 +30,10 @@ def save_note(file, snapshot, model, choice, reason, used):
         "tools": used,
         "reason": reason.strip()[:240] if isinstance(reason, str) else None,
     }
+    write_private_row(file, row)
+
+
+def write_private_row(file, row):
     try:
         file.write(json.dumps(row, separators=(",", ":")) + "\n")
         file.flush()
@@ -77,8 +81,23 @@ def notes_for_record(record, notes):
         ):
             raise ValueError("decision note version or table ID does not match this record")
         rev = row.get("revision")
-        if type(rev) is not int or not 0 <= rev < len(record["events"]):
+        rotation = row.get("kind") == "hand_rotation"
+        if type(rev) is not int or not 0 <= rev < len(record["events"]) + int(rotation):
             raise ValueError("decision note refers to an event outside this record")
+        if rotation:
+            if not (
+                type(row.get("seat")) is int
+                and isinstance(row.get("piece"), str)
+                and row["piece"].startswith("H")
+                and row["piece"][1:].isascii()
+                and row["piece"][1:].isdigit()
+                and type(row.get("face")) is int
+                and 0 <= row["face"] < 256
+                and all(type(row.get(k)) is int and 0 <= row[k] < 4 for k in ("from", "to"))
+            ):
+                raise ValueError("invalid private hand rotation")
+            grouped.setdefault(rev, []).append(row)
+            continue
         if (
             type(row.get("seat")) is not int
             or not isinstance(row.get("model"), str)

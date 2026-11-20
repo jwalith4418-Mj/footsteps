@@ -48,6 +48,11 @@ def main():
     )
     viewer.add_argument("-o", "--output", type=Path, required=True, help="destination HTML file")
     table = sub.add_parser("table", help="host a paper-kit table on localhost")
+    table.add_argument(
+        "--private-rotations",
+        type=Path,
+        help="record private hand turns to a new owner-only JSONL attachment",
+    )
     table.add_argument("--save", required=True, type=Path, help="new private referee JSON path")
     table.add_argument(
         "--port", default=0, type=int, help="loopback port (default: choose a free port)"

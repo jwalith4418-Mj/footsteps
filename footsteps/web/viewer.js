@@ -202,6 +202,16 @@ function entry(i, current) {
       text.append(line);
     }
   }
+  if (f.hand_rotations) {
+    const details = make("details", "decision-notes");
+    details.open = current;
+    details.append(make("summary", "", "Private hand rotations (" + f.hand_rotations.length + ")"));
+    for (const r of f.hand_rotations) {
+      details.append(make("p", "", "P" + r.seat + " turned " + r.piece + " (face " + r.face +
+        ") from " + (90 * r.from) + "° to " + (90 * r.to) + "° clockwise from print."));
+    }
+    text.append(details);
+  }
   if (f.decision_notes) {
     const details = make("details", "decision-notes");
     details.open = current;

@@ -4,6 +4,7 @@ from copy import copy
 from math import isfinite
 
 from .board import frontier, moves
+from .decision_notes import write_private_row
 from .fallback import timeout
 from .game import Game, checked_placement, require
 from .record import describe, new_record
@@ -55,6 +56,7 @@ class Table:
         require(placement_check in (None, "edge", "edge-and-marker"), "unknown placement check")
         self.placement_check = placement_check
         self.game = Game(setup)
+        self.rotation_log = None
         self.pieces = [{} for _ in self.game.hands]
         self.next_handle = [1 for _ in self.game.hands]
         for seat, hand in enumerate(self.game.hands):
@@ -104,7 +106,22 @@ class Table:
             raise DecisionConflict("Hand is closed at this revision")
         require(isinstance(handle, str) and handle in self.pieces[seat], "unknown held piece")
         require(type(rotation) is int and 0 <= rotation < 4, "choose 0–3 clockwise quarter turns")
-        face, _ = self.pieces[seat][handle]
+        face, previous = self.pieces[seat][handle]
+        if rotation != previous and self.rotation_log is not None:
+            write_private_row(
+                self.rotation_log,
+                {
+                    "version": 1,
+                    "kind": "hand_rotation",
+                    "table_id": self.record["table_id"],
+                    "revision": revision,
+                    "seat": seat,
+                    "piece": handle,
+                    "face": face,
+                    "from": previous,
+                    "to": rotation,
+                },
+            )
         self.pieces[seat][handle] = (face, rotation)
 
     def commit(self, event, *, handle=None):
