@@ -42,7 +42,7 @@ python -m experiments.goal_probes ballots "$out/ballots.jsonl" --arm brief
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases four --arms brief --seeds 9501
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases five --arms brief baseline --seeds 9901
 python -m experiments.goal_pursuit "$out/games" "$out/private" --cases five --arms last --max-reply 320 --seeds 9901
-python -m experiments.goal_audit "$out"
+python -m experiments.goal_audit "$out" --private "$out/private"
 ```
 
 ## What survived the solitaire checks
@@ -51,12 +51,13 @@ The clock and rotation worksheet alone won **1/4** corridor games. Its only win 
 
 The self-authored probe named the correct remaining clock in all eight first answers, but none of the eight original build/landing combinations could finish in time. After one private check, six placements were legal and two plans were viable. One was the printed southbound corridor. This distinguishes reading the arithmetic, picking a location and preserving a directed route. The system that passed the gate enumerates outcomes and gives a time bound to the model. Its wins cannot be attributed to unaided planning.
 
+The frozen brief reached EXIT on **6/6 ordinary deals**, taking 5, 5, 6, 5, 5 and 5 turns on seeds 9811–9816 respectively. All 123 decisions arrived in time. A uniform draw from the same displayed outcomes won **0/6**. The initial displacement needs at least five steps, and these deals allow seven. Results therefore say relatively little about longer games or sustained route planning through a dense board.
+
 ## What the 12-entry history can omit
 
 The client supplies its own message list to Ollama at every decision. The floor, current marker, EXIT and private role are reconstructed from the seat view. Individual history entries and statements older than the last twelve can drop out. Model notes from previous decisions are not included. A cached prompt prefix helps evaluate requests that share text. It cannot supply an old observation that the client left out of the new request.
 
 In one measured interval of the 4k run, all 121 completed runner requests reported zero input truncation and the largest sequence was 1,675 tokens. One sampled structured forecast hit its separate 140-token reply cap. On the archived 9501 all-native social table, 23/28 nomination decisions omitted at least one earlier public remark. The first lost remark was P1’s opening case for removing P0. The experiments preserve the existing history projection. [Matched 4k/8k and history follow-up](https://github.com/othercriteria/footsteps/issues/91) · [Ollama chat request and response fields](https://docs.ollama.com/api/chat)
-
 
 ## Social transfer
 
@@ -74,3 +75,7 @@ The last condition recovered two Red seals on each four-floor panel. In the long
 ### A backward step with a defensible Yes vote
 
 We replayed three real ballot positions from the all-native 9501 game to the same four seats. At event 5, a step east reduces Manhattan distance but leaves an optimistic route of five further steps, versus four after staying. All three Blue seats approved again. Red missed the reply cap. At event 16, going back to START leaves a six-step optimistic route and staying leaves no route in time. The historical Blue Yes and Red No each served their respective teams on that floor, despite the private claim that START was closer to EXIT. With the brief, **all four** approved the return, including Red. By event 26 both outcomes are out of time and all four seats approved. A substantive spatial error in a note and a strategically defensible ballot can coexist. [Ballot receipts](ballots.jsonl) · [Original issue and correction](https://github.com/othercriteria/footsteps/issues/55#issuecomment-7051619999)
+
+### Following the choices through a whole game
+
+The two four-seat 9501 games have identical initial hands, bag, roles and EXIT. On the earlier native-hand table Blue cut the last timely route on turn 3. The assisted Blue builders preserved a route on all three turns where their hands could instead cut it. The marker traveled east past EXIT's column, turned north, and entered EXIT from the east. Red P1 had the same ability to cut every timely route on turn 2 and kept one open. On the last ballot all four seats voted Yes. Red's private explanation described reaching EXIT as its team's primary objective. That final vote is a particularly clear case of a team-objective error. Passing the solitaire gate made the social error easier to identify. [Original record](../native-actions/games/9501-hand-build.json) · [Assisted record](games/four-9501-brief.json)

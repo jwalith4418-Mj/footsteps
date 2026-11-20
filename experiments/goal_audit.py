@@ -8,6 +8,7 @@ from pathlib import Path
 from experiments.goal_pursuit import budget, choices_for, floor_report
 from experiments.native_summary import game_results, rows
 from footsteps.board import frontier, rotate
+from footsteps.decision_notes import applied_note, notes_for_record, read_notes
 from footsteps.record import replay, starting_game
 
 
@@ -90,7 +91,27 @@ def social_floor(record):
     return {"teams": result, "builds": builds, "ballots": ballots}
 
 
-def report(root):
+def check_private(record, decisions, path):
+    game = starting_game(record)
+    # Missing replies may have a recorded attempt or no note. Every accepted action must match.
+    accepted = {(r["revision"], r["seat"]) for r in decisions if r["status"] == "accepted"}
+    grouped = notes_for_record(record, read_notes([path]))
+    matched = set()
+    for rev, event in enumerate(record["events"]):
+        for row in grouped.get(rev, []):
+            if row.get("kind") == "hand_rotation":
+                continue
+            ok = applied_note(game, event, row)["matches"]
+            key = (rev, row["seat"])
+            assert ok == (key in accepted)
+            if ok:
+                matched.add(key)
+        game.apply(event)
+    assert matched == accepted
+    return len(matched)
+
+
+def report(root, private=None):
     games = root / "games"
     totals = defaultdict(Counter)
     for p in sorted(games.glob("*.json")):
@@ -101,6 +122,13 @@ def report(root):
             totals[group]["games"] += 1
             totals[group]["wins"] += game.winner == "good"
         game_results(p)
+        if private:
+            print(
+                "verified private choices",
+                check_private(
+                    record, rows(p.with_suffix(".calls.jsonl")), private / (p.stem + ".jsonl")
+                ),
+            )
         if len(game.roles) > 1:
             print("social floor", json.dumps(social_floor(record)))
             stats, examples = history_window(record, rows(p.with_suffix(".calls.jsonl")))
@@ -141,4 +169,8 @@ def report(root):
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("root", nargs="?", type=Path, default=Path(__file__).with_name("goal-pursuit"))
-    report(p.parse_args().root)
+    p.add_argument(
+        "--private", type=Path, help="also verify choices in local omniscient decision notes"
+    )
+    args = p.parse_args()
+    report(args.root, args.private)
