@@ -32,6 +32,18 @@ class SkillDecisions(unittest.TestCase):
                     all(p["steps"] is None for p in plans({**state, "draw_count": 1}, choices))
                 )
 
+    @patch(
+        "experiments.turn_plans.optimistic_length",
+        side_effect=AssertionError("unexpected path search"),
+    )
+    @patch("experiments.turn_plans.sealed", side_effect=AssertionError("unexpected flood fill"))
+    def test_local_plan_cards_use_only_immediate_edges(self, _sealed, _length):
+        state, choices = position(1, 1)
+        menu = plans(state, choices, local=True)
+        self.assertTrue(all(set(p) == {"to", "place", "distance", "edges"} for p in menu))
+        self.assertTrue(any(p["to"] == (0, 1) and "E:unbuilt:2" in p["edges"] for p in menu))
+        self.assertTrue(any(p["to"] == (1, 0) and not p["edges"] for p in menu))
+
     @patch("experiments.skill_probe.request")
     def test_card_returns_original_action_and_only_seat_visible_consequences(self, request):
         table = detour_table(-1, -1, 5)

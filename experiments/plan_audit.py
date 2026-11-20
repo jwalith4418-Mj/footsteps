@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from functools import partial
 from pathlib import Path
 from random import Random
 
@@ -59,9 +60,14 @@ def audit_game(path, make_plans=plans):
 if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("folders", type=Path, nargs="+")
-    for folder in cli.parse_args().folders:
+    cli.add_argument("--local", action="store_true")
+    args = cli.parse_args()
+    for folder in args.folders:
         print(
             folder.name,
-            sum(audit_game(p) for p in sorted(folder.glob("game-*.json"))),
+            sum(
+                audit_game(p, partial(plans, local=args.local))
+                for p in sorted(folder.glob("game-*.json"))
+            ),
             "complete plans checked",
         )

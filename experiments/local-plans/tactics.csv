@@ -1,0 +1,9 @@
+sx,sy,reverse,plans,possible,index,to,possible_selected
+-1,-1,False,6,1,4,stay,False
+-1,-1,True,6,1,3,stay,False
+-1,1,False,6,1,5,stay,False
+-1,1,True,6,1,5,stay,False
+1,-1,False,6,1,4,stay,False
+1,-1,True,6,1,0,stay,False
+1,1,False,6,1,5,stay,False
+1,1,True,6,1,3,stay,False
