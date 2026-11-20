@@ -21,3 +21,5 @@ An optional live-table placement check asks the builder to read a specific edge.
 Keep quarter turns in base-1. Requiring printed orientation reduced cooperative wins on matched paper-kit deals. Hand rotation tables and private lookup are optional seat interfaces. [Matched games and model choices](../experiments/rotation/README.md)
 
 Offer native placement and reversible per-copy orientation as opt-in seat interfaces. Keep indexed play available as a control. The first model used its hand to solve explicit port puzzles, and rarely turned pieces during tactical play. Distinguish finding a useful square from reading the tile that fits it when evaluating future aids. [Native action trials](../experiments/native-actions/README.md)
+
+For social model trials use an explicit consequence for each floor action when studying play above basic pathfinding. Keep the ordinary seat as a control. A stated first landing and feedback on a single build were insufficient in the short solitaire probes. The assisted seat preserved directed detours and reached EXIT on held-out games. [Goal-pursuit gate and social transfer](../experiments/goal-pursuit/README.md)

@@ -68,3 +68,5 @@ The [placement check](placement-check/README.md) asks builders to classify a dir
 The [rotation comparison](rotation/README.md) pairs printed-only and freely rotated games, then compares automatic orientation tables with observed private tool calls on matched model decisions.
 
 The [native action comparison](native-actions/README.md) follows each private rotation and preview through to the committed placement. It pairs literal native calls, a rotatable hand and indexed menus on the same tactical floors and complete social deals.
+
+The [goal-pursuit gate](goal-pursuit/README.md) tests model-authored first landings, corrections to individual plans, and outcome-assisted decisions on held-out solitaire deals before applying the frozen setup to multiplayer play.
