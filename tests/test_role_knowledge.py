@@ -38,7 +38,10 @@ class RoleKnowledge(unittest.TestCase):
         good = seat_view(roles, 1)
         lone_bad = seat_view(["bad", "good", "good", "good"], 0)
         for snap in (bad, good, lone_bad):
-            self.assertEqual(role_information(snap)["common_knowledge"], COMMON_KNOWLEDGE)
+            briefing = role_information(snap)["common_knowledge"]
+            self.assertEqual(briefing, COMMON_KNOWLEDGE)
+            for rule in ("every seat sees each remark", "either team may", "lie", "no extra"):
+                self.assertIn(rule, briefing)
         self.assertNotIn(3, bad["state"]["alive"])
         self.assertEqual(
             role_information(bad)["your_private_role_information"],
