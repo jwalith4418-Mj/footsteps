@@ -3,9 +3,11 @@
 import json
 import re
 
+from experiments.behavior_context import apply_strategy
 from footsteps.board import distance
 from footsteps.decision_notes import save_note
 from footsteps.ollama import model_request, request
+from footsteps.role_knowledge import role_information
 
 
 def progress_ballots(snap):
@@ -41,7 +43,7 @@ def progress_ballots(snap):
     return rows
 
 
-def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False):
+def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, strategy="baseline"):
     stage = snap["state"]["stage"]
     body = model_request(snap, model, guided=True, named_ballots=True, explain=True)
     body["think"] = False
@@ -71,7 +73,7 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False):
         body["messages"][0]["content"] += (
             f"\nThis is an elimination decision. You are P{snap['seat']}. Living seats: {alive}. "
             f"{decision} The marker stays in place either way. Use the action names in options. "
-            "Use public behavior as evidence. You cannot see other players' roles. "
+            "Use your private role information and the table's public behavior. "
             "Explain your judgment about the player, or why you pass."
         )
     if arm in ("ledger", "receipt"):
@@ -99,6 +101,8 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False):
             "if the marker misses EXIT before time expires. Judge this choice for Bad."
         )
     body["messages"][1]["content"] = json.dumps(context, separators=(",", ":"))
+    apply_strategy(body, {**snap, "choices": {key: options}}, strategy)
+    labels = body["format"]["properties"][key]["enum"]
     reply = json.loads(request(11434, "/api/chat", body, 30)["message"]["content"])
     chosen = {key: options[labels.index(reply[key])]}
     save_note(sink, snap, model, chosen, reply["reason"], [])
@@ -128,6 +132,9 @@ def advocate(snap, model):
                 "role": "user",
                 "content": json.dumps(
                     {
+                        **role_information(snap),
+                        "initial_seats": state["player_count"],
+                        "initial_bad": state["bad_count"],
                         "you": snap["seat"],
                         "your_role": state["role"],
                         "alive": state["alive"],

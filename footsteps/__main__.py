@@ -71,6 +71,11 @@ def main():
     model.add_argument("--model", required=True, help="installed Ollama model name")
     model.add_argument("--budget", type=float, default=30, help="maximum seconds per inference")
     model.add_argument(
+        "--social-policy",
+        choices=("assisted", "prompt"),
+        help="frame decisions around the seat's team; assisted also prefers provable team outcomes",
+    )
+    model.add_argument(
         "--guided", action="store_true", help="supply forward-build examples and team guidance"
     )
     model.add_argument(
@@ -103,6 +108,8 @@ def main():
                     decide=partial(
                         infer,
                         guided=args.guided,
+                        social_guidance=args.social_policy == "prompt",
+                        outcome_policy=args.social_policy == "assisted",
                         named_moves=args.named_moves,
                         no_think=args.no_think,
                         named_ballots=args.named_ballots,

@@ -9,7 +9,9 @@ from urllib.parse import urlsplit
 
 from .board import connects, distance, neighbors, rotate
 from .decision_notes import REASON_PROMPT, request_reason, save_note
+from .role_knowledge import role_information
 from .seat_tools import query, spec_for
+from .social import SOCIAL_STAGES, shortlist, social_request
 from .solo import exits
 
 RULES = """You play one seat at a Footsteps table. Good wants the shared marker to reach
@@ -131,6 +133,7 @@ def model_request(
     context = {k: state[k] for k in fields if k in state}
     choices = snapshot["choices"]
     context.update(
+        **role_information(snapshot),
         seat=snapshot["seat"],
         hand=[tile(face) for face in state["hand"]],
         board=[[pos, tile(face)] for pos, face in state["board"]],
@@ -232,9 +235,29 @@ def infer(
     no_think=False,
     named_ballots=False,
     use_tools=False,
+    social_guidance=False,
+    outcome_policy=False,
     note_file=None,
 ):
     deadline = time.monotonic() + seconds
+    social = (social_guidance or outcome_policy) and snapshot["state"]["stage"] in SOCIAL_STAGES
+    if social and outcome_policy:
+        key, legal = next(iter(snapshot["choices"].items()))
+        eligible = shortlist(snapshot)
+        if len(eligible) < len(legal):
+            if len(eligible) == 1:
+                choice = {key: eligible[0]}
+                if note_file is not None:
+                    save_note(
+                        note_file,
+                        snapshot,
+                        "Footsteps outcome policy",
+                        choice,
+                        "Unique preferred team outcome if the action takes effect.",
+                        [],
+                    )
+                return choice
+            snapshot = {**snapshot, "choices": {key: eligible}}
     body = model_request(
         snapshot,
         model,
@@ -243,6 +266,8 @@ def infer(
         named_ballots=named_ballots,
         explain=note_file is not None,
     )
+    if social:
+        social_request(body, snapshot, explain=note_file is not None, human=outcome_policy)
     if no_think:
         body["think"] = False
     used = []

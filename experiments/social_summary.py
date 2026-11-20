@@ -39,7 +39,7 @@ def game_totals(root):
                     if stage == "nominate":
                         target = action["target"]
                         assert row["choice"] == ("" if target is None else str(target))
-                        if seat == int(bad):
+                        if game.roles[seat] == "bad":
                             totals["bad nomination chances"] += 1
                             totals["bad nominations"] += target is not None
                     else:
