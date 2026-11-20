@@ -110,6 +110,16 @@ def main():
     model.add_argument(
         "--no-think", action="store_true", help="disable Ollama thinking for this seat"
     )
+    model.add_argument(
+        "--rotation-aid",
+        choices=("table", "tool"),
+        help="show the builder all held orientations or offer a private face lookup",
+    )
+    model.add_argument(
+        "--named-rotations",
+        action="store_true",
+        help="answer placement rotation with an absolute turn name",
+    )
     model.add_argument("--named-ballots", action="store_true", help="vote using approve and reject")
     model.add_argument(
         "--tools", action="store_true", help="let the model consult one stage-specific board tool"
@@ -144,6 +154,8 @@ def main():
                         named_ballots=args.named_ballots or args.action_brief,
                         explicit_actions=args.action_brief,
                         use_tools=args.tools,
+                        rotation_aid=args.rotation_aid,
+                        named_rotations=args.named_rotations,
                         note_file=notes,
                     ),
                 )

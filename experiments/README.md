@@ -64,3 +64,5 @@ The [guest tactic and ballot comparison](action-language/README.md) tests whethe
 The [EXIT-origin comparison](exit-origin/README.md) tests distance reading, directed detours, matched solitaire deals and a five-seat table in two coordinate systems.
 
 The [placement check](placement-check/README.md) asks builders to classify a directed edge and, optionally, locate the marker before committing. Frozen positions and matched five-seat tables measure what players can read and what they then build.
+
+The [rotation comparison](rotation/README.md) pairs printed-only and freely rotated games, then compares automatic orientation tables with observed private tool calls on matched model decisions.

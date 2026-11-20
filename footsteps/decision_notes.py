@@ -103,7 +103,18 @@ def applied_note(game, event, row):
         if stage == "draw" or actor != seat:
             raise ValueError("decision note does not match the acting seat")
         actual = {k: v for k, v in event.items() if k not in ("kind", "timeout")}
+    # Only project the tool receipt fields. Sidecars can have additional private metadata.
+    tools = (
+        [
+            {k: tool[k] for k in ("name", "ok", "status", "tile") if k in tool}
+            for tool in row.get("tools", [])
+            if isinstance(tool, dict) and isinstance(tool.get("name"), str)
+        ]
+        if isinstance(row.get("tools"), list)
+        else []
+    )
     return {
+        **({"tools": tools} if tools else {}),
         "seat": seat,
         "model": row["model"],
         "reason": row.get("reason"),

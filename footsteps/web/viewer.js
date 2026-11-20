@@ -210,6 +210,10 @@ function entry(i, current) {
       const line = make("p");
       line.append(make("strong", "", "P" + note.seat + " · " + note.model + " "));
       line.append(document.createTextNode(note.reason || "No explanation supplied."));
+      for (const tool of note.tools || []) {
+        const face = Number.isInteger(tool.tile) ? " · face " + tool.tile : "";
+        line.append(make("small", "", tool.name + face + " · " + (tool.status || (tool.ok ? "answered" : "error"))));
+      }
       details.append(line);
       if (!note.matches) {
         details.append(make("p", "", "Attempt differed from the recorded event: " + JSON.stringify(note.choice)));

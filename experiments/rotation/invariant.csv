@@ -1,0 +1,9 @@
+face,invariance_stated,reverse,model,rotation,prompt_tokens,output_tokens,status,lookup,requested_face,seconds
+0,False,False,qwen3.5:9b-q8_0,0,1309,58,accepted,answered,0,3.669
+0,False,True,qwen3.5:9b-q8_0,0,1309,58,accepted,answered,0,4.079
+0,True,False,qwen3.5:9b-q8_0,0,1337,59,accepted,answered,0,4.231
+0,True,True,qwen3.5:9b-q8_0,0,1337,58,accepted,answered,0,3.979
+255,False,False,qwen3.5:9b-q8_0,0,1349,52,accepted,answered,255,3.734
+255,False,True,qwen3.5:9b-q8_0,0,1349,51,accepted,answered,255,4.68
+255,True,False,qwen3.5:9b-q8_0,0,1377,52,accepted,answered,255,4.009
+255,True,True,qwen3.5:9b-q8_0,0,1377,51,accepted,answered,255,3.612

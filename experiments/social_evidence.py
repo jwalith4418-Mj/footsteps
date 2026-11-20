@@ -57,6 +57,8 @@ def social_game(
     social_tools=False,
     exit_origin=False,
     placement_check=None,
+    rotation_aid=None,
+    named_rotations=False,
 ):
     def elimination(snap, sink):
         if outcome_policy:
@@ -171,6 +173,8 @@ def social_game(
                             no_think=True,
                             note_file=sink,
                             placement_attempts=attempts,
+                            rotation_aid=rotation_aid,
+                            named_rotations=named_rotations,
                         )
                     except (ValueError, TimeoutError) as exc:
                         if not placement_check or stage != "place":
@@ -313,7 +317,11 @@ def main():
         help="reproduce historical START-centered panels",
     )
     parser.add_argument("--placement-check", choices=("edge", "edge-and-marker"))
+    parser.add_argument("--rotation-aid", choices=("table", "tool"))
+    parser.add_argument("--named-rotations", action="store_true")
     args = parser.parse_args()
+    if (args.rotation_aid or args.named_rotations) and not args.model_floor:
+        parser.error("rotation aids require --model-floor")
     if args.placement_check and not args.model_floor:
         parser.error("--placement-check requires --model-floor")
     if (args.action_brief or args.social_tools) and not (
@@ -381,6 +389,8 @@ def main():
                     goal=args.goal,
                     exit_origin=args.exit_origin,
                     placement_check=args.placement_check,
+                    rotation_aid=args.rotation_aid,
+                    named_rotations=args.named_rotations,
                     explicit_actions=args.action_brief,
                     social_tools=args.social_tools,
                     kit=kit,

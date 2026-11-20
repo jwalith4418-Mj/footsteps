@@ -34,6 +34,8 @@ For the experimental placement interface, add `--placement-check edge-and-marker
 
 For three players, add `--seats 3` to deal two good roles and one bad. Open the private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
 
+For rotation assistance, an Ollama seat can use `--rotation-aid table` or `--rotation-aid tool`. The latter lets it request one held face by number. Add `--named-rotations` for literal clockwise turn names. [Comparison and tool-use observations](experiments/rotation/README.md)
+
 To put a local model in one seat, run `python -m footsteps ollama --model qwen2.5:3b` and paste its private link. [Recorded model game](experiments/ollama-crossing.md) · [Mixed-strength self-play and workstation timings](experiments/model-panel/README.md)
 
 The host checkpoints the secret referee record. Only the selected seat's view and history go to its browser. Use the exported record for postgame review or a public transcript. [Local seat API and timing](docs/table.md)

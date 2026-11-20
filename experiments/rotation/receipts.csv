@@ -1,0 +1,9 @@
+turn,event,seat,status,requested_face,placed_face,rotation,timeout
+1,2,0,answered,22,41,0,False
+2,12,1,answered,29,47,0,False
+3,22,2,answered,82,82,3,False
+4,32,3,answered,58,225,0,False
+5,42,4,answered,58,100,0,False
+6,51,0,answered,22,140,0,False
+7,61,1,answered,29,140,0,False
+8,71,2,answered,37,178,0,False

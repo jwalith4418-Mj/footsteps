@@ -17,3 +17,5 @@ The [seat rating design](ratings.md) specifies matched substitutions on both tea
 New games anchor coordinates at EXIT by default. The [matched origin trial](../experiments/exit-origin/README.md) checks the distance calculation and route choice separately. Public speech, actions and referee records share the origin chosen at setup.
 
 An optional live-table placement check asks the builder to read a specific edge. A second question asks whether the marker is on the chosen origin. Keep both available for model trials. Track first answers, corrections and random fallbacks separately from whether the move helped the team. [Placement trials](../experiments/placement-check/README.md)
+
+Keep quarter turns in base-1. Requiring printed orientation reduced cooperative wins on matched paper-kit deals. Hand rotation tables and private lookup are optional seat interfaces. [Matched games and model choices](../experiments/rotation/README.md)
