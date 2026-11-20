@@ -1,6 +1,8 @@
 # Recording a game
 
-The full JSON has a numeric `format` (currently 1), a `rules` identifier (`base-1`), a realized `setup`, and an ordered `events` array. Seat indices start at zero. Setup contains the goal coordinate, roles and starting hands in seat order, and the bag as an array of face numbers with multiplicity. Seat 0 builds first. Face IDs preserve true orientation. The referee rotates a face only when applying the placement.
+The full JSON has a numeric `format` (1 or 2), a `rules` identifier (`base-1`), a realized `setup`, and an ordered `events` array. Seat indices start at zero. Setup contains the goal coordinate, roles and starting hands in seat order, and the bag as an array of face numbers with multiplicity. Seat 0 builds first. Face IDs preserve true orientation. The referee rotates a face only when applying the placement.
+
+Format 1 fixes START at (0, 0). Format 2 requires both `setup.start` and `setup.goal` as distinct integer coordinate pairs. The host writes format 2 when the setup supplies an explicit start. For example, `"start":[-4,-2],"goal":[0,0]` gives the paper layout with EXIT at the origin. Every placement, movement proposal, public remark and note uses the table’s coordinates throughout. Both formats use the same rule and event vocabulary. Older format-1 readers reject format 2 at the version check.
 
 An optional top-level `"team_names": "colors"` displays the `good` team as Blue and the `bad` team as Red. Both names describe the same base-1 objectives. Stored role IDs and legal actions are identical. Replays show player remarks and private notes verbatim.
 

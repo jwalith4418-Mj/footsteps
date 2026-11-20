@@ -10,6 +10,7 @@ from pathlib import Path
 from random import Random, SystemRandom
 from tempfile import NamedTemporaryFile
 
+from .game import with_exit_origin
 from .record import read
 from .table import DecisionConflict, Table, fixed_kit, paper_setup
 
@@ -153,6 +154,8 @@ def serve(args):
         setup = paper_setup(rng, args.seats, kit=kit)
     else:
         setup = paper_setup(rng, args.seats)
+    if args.exit_origin:
+        setup = with_exit_origin(setup)
     table = Table(setup, rng, args.seconds, args.discussion, color_teams=args.color_teams)
     with TableServer(table, args.save, args.port) as server:
         print(f"Referee record: {args.save.resolve()}")

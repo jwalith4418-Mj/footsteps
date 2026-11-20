@@ -60,3 +60,5 @@ The [public discussion comparison](public-discussion/README.md) follows a checka
 In the [blinded guest-seat trial](blind-guest/README.md), an independent agent called a trap before voting to enter it, then used a true public correction to deflect suspicion after closing the floor.
 
 The [guest tactic and ballot comparison](action-language/README.md) tests whether local model seats can see a permanent block coming, execute it, and check an accusation against the public floor history.
+
+The [EXIT-origin comparison](exit-origin/README.md) tests distance reading, directed detours, matched solitaire deals and a five-seat table in two coordinate systems.

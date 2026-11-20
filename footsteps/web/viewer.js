@@ -13,7 +13,7 @@ const titles = {
   move_vote: "Movement vote", nominate: "Nomination", eliminate_vote: "Elimination vote",
 };
 const tiles = [
-  {p: ["0", "0"], face: 255, label: "Start", at: 0},
+  {p: data.start, face: 255, label: "Start", at: 0},
   {p: data.goal, face: 255, label: "Exit", at: 0},
 ];
 frames.forEach((f, i) => {

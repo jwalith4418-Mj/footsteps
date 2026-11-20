@@ -14,7 +14,7 @@ Pick an exit square, a tile mix, total supply N, private hand size M, and team s
 
 Hands are private to their owners.
 
-The floor is a square grid with no boundary. Put the start tile at (0, 0), the exit tile at the chosen distinct square, and the marker at the start. Both special tiles permit entry and exit on all four sides and are outside the supply N. North increases y and east increases x.
+The floor is a square grid with no boundary. Place START and EXIT at the chosen displacement and put the marker on START. Agree on one coordinate system for the whole table. For an exit four squares east and two north, you can call START (0, 0) and EXIT (4, 2), or call EXIT (0, 0) and START (−4, −2). In the latter convention a marker at (x, y) needs at least |x| + |y| steps to reach EXIT. Arrows and missing tiles can force a longer route or close it entirely. Both special tiles permit entry and exit on all four sides and are outside the supply N. North increases y and east increases x.
 
 ## Build
 

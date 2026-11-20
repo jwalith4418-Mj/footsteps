@@ -46,7 +46,7 @@ function drawFloor(s, available) {
       if (board.has(at)) {
         const isExit = at === point(s.goal), marked = at === point(s.marker);
         const proposed = s.stage === "move_vote" && at === point(s.pending);
-        const label = isExit ? "Exit" : x === 0 && y === 0 ? "Start" : "";
+        const label = isExit ? "Exit" : at === point(s.start) ? "Start" : "";
         const face = tile(board.get(at), (marked ? "● " : "") + label,
           [isExit && "exit", marked && "marked", proposed && "pending"].filter(Boolean).join(" "));
         face.title = at + " · " + face.title;

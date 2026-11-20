@@ -8,13 +8,15 @@ from .board import rotate
 from .game import Game, require
 from .team_names import COLORS
 
-FORMAT = 1
+FORMAT = 1  # Default format with START implicit at the origin.
+EXPLICIT_START_FORMAT = 2
 RULES = "base-1"
 FENCE = "\n```json footsteps-record\n"
 
 
 def new_record(setup):
-    return {"format": FORMAT, "rules": RULES, "setup": deepcopy(setup), "events": []}
+    version = EXPLICIT_START_FORMAT if "start" in setup else FORMAT
+    return {"format": version, "rules": RULES, "setup": deepcopy(setup), "events": []}
 
 
 def read(path):
@@ -65,14 +67,24 @@ def describe(game, event, seat=None):
     return f"{'Movement' if kind == 'move_vote' else 'Elimination'} ballots — {votes}."
 
 
-def replay(record, *, lines=None, seat=None):
+def starting_game(record):
     require(
         type(record.get("format")) is int
-        and record["format"] == FORMAT
+        and record["format"] in (FORMAT, EXPLICIT_START_FORMAT)
         and record.get("rules") == RULES,
         "unsupported record format or rules version",
     )
-    game = Game(record["setup"])
+    setup = record["setup"]
+    if record["format"] == FORMAT:
+        # Format 1 always started at the origin, even with extra setup metadata.
+        setup = {k: v for k, v in setup.items() if k != "start"}
+    else:
+        require("start" in setup, "format 2 requires an explicit start")
+    return Game(setup)
+
+
+def replay(record, *, lines=None, seat=None):
+    game = starting_game(record)
     require(isinstance(record["events"], list), "expected an event list")
     if lines is not None:
         labels = COLORS if record.get("team_names") == "colors" else {"good": "good", "bad": "bad"}

@@ -30,14 +30,22 @@ def faces(values):
     )
 
 
+def with_exit_origin(setup):
+    """Express a fresh setup in coordinates measured from its EXIT."""
+    gx, gy = point(setup["goal"])
+    sx, sy = point(setup.get("start", START))
+    return {**setup, "start": [sx - gx, sy - gy], "goal": [0, 0]}
+
+
 class Game:
     def __init__(self, setup):
         setup = deepcopy(setup)
         self.goal = point(setup["goal"])
-        require(self.goal != START, "start and goal must differ")
-        self.board = {START: OPEN, self.goal: OPEN}
+        self.start = point(setup.get("start", START))
+        require(self.goal != self.start, "start and goal must differ")
+        self.board = {self.start: OPEN, self.goal: OPEN}
         self.placements = {}
-        self.marker = START
+        self.marker = self.start
         self.roles = setup["roles"]
         self.hands = setup["hands"]
         self.store = setup["store"]
@@ -193,6 +201,7 @@ class Game:
     def view(self, seat=None):
         """Fresh public snapshot, optionally including one player's private information."""
         v = {
+            "start": self.start,
             "goal": self.goal,
             "marker": self.marker,
             "actor": self.actor,
