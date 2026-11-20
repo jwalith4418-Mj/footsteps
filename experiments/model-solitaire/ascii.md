@@ -24,6 +24,17 @@ We tokenized all 29 model decisions in the Qwen3.8 direct run on development dea
 
 JSON was shortest at all 29 decisions. The vertex chart added 20–58 tokens per decision and 19.5% in aggregate. Replacing the spoke drawing with the vertex chart saved 42.8% across this game. Busy or widely separated boards can change the result. The live trial selected the vertex chart. [Per-decision counts](chart-tokens.csv) · [Protocol and three-position measurement before play](https://github.com/othercriteria/footsteps/issues/43)
 
+## Play on matched positions
+
+Qwen3.8 27B ran with thinking disabled and the full legal menu. Both presentations completed 116 decisions on the same four initial deals without a fallback. The chart changed play but produced no additional wins. It improved two final distances by one step and also produced a certified trap on deal 103.
+
+| Presentation | Wins | Final distances on 100, 101, 102, 103 | Certified trapped finishes | Detours chosen | Median decision latency |
+|---|---:|---|---:|---:|---:|
+| JSON | 0/4 | 6, 4, 4, 6 | 0/4 | 1/8 | 832 ms |
+| Vertex chart | 0/4 | 6, 4, 3, 5 | 1/4 | 2/8 | 921 ms |
+
+The chart did not reach the prespecified threshold of two additional wins or four additional detour choices for a fresh-deal trial. The mirrored menus all describe the same tactic, and a single decode per menu gives little precision. Keep the chart as a reproducible option. These timings came from successive panels and include queue and prompt processing. [Chart decisions](27b-ascii/detours.csv) · [Seed 103 replay](27b-ascii/game-103.json) · [Matched direct replay](27b-dev-direct/game-103.json)
+
 ## Reproduce
 
 ```sh

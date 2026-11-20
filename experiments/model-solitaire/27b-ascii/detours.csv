@@ -1,0 +1,9 @@
+sx,sy,reversed,move,correct
+1,1,False,"1,0",False
+1,1,True,"1,0",False
+1,-1,False,"1,0",False
+1,-1,True,"1,0",False
+-1,1,False,"-1,0",False
+-1,1,True,"0,1",True
+-1,-1,False,"-1,0",False
+-1,-1,True,"0,-1",True
