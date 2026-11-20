@@ -40,3 +40,5 @@ The last command reconstructs an eight-turn win on a straight-line goal. To test
 For multiplayer trials with model seats, see the [matched self-play games, mixed lineups and timing measurements](model-panel/README.md).
 
 The [ballot experiment](ballots/README.md) tests order sensitivity on frozen votes and compares model voters with scripted voters on matched live deals.
+
+The [single-model solitaire benchmark](model-solitaire/README.md) uses the same private deals for local Qwen models and four scripted policies, plus reflected detours and rotated-replay checks.
