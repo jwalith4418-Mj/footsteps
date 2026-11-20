@@ -1,0 +1,9 @@
+sx,sy,reversed,move,correct
+1,1,False,ValueError: generation reached its token limit,False
+1,1,True,ValueError: generation reached its token limit,False
+1,-1,False,ValueError: generation reached its token limit,False
+1,-1,True,ValueError: generation reached its token limit,False
+-1,1,False,ValueError: generation reached its token limit,False
+-1,1,True,ValueError: generation reached its token limit,False
+-1,-1,False,ValueError: generation reached its token limit,False
+-1,-1,True,ValueError: generation reached its token limit,False

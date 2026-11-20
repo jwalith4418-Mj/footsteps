@@ -1,0 +1,297 @@
+{
+  "format": 1,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      4,
+      2
+    ],
+    "hands": [
+      [
+        163,
+        103
+      ]
+    ],
+    "store": [
+      79,
+      232,
+      100,
+      130,
+      109,
+      8,
+      75,
+      54,
+      124,
+      139
+    ],
+    "roles": [
+      "good"
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        54,
+        139
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        0,
+        1
+      ],
+      "tile": 103,
+      "rotation": 1,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 54,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        75,
+        79
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        1
+      ],
+      "tile": 79,
+      "rotation": 1,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 139,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        124,
+        139
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        2
+      ],
+      "tile": 75,
+      "rotation": 1,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 139,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        232,
+        130
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        0
+      ],
+      "tile": 130,
+      "rotation": 1,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 232,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        8,
+        100
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        -1
+      ],
+      "tile": 163,
+      "rotation": 2,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 124,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        139,
+        124
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 139,
+      "rotation": 2,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 124,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        124,
+        54
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        2,
+        -1
+      ],
+      "tile": 124,
+      "rotation": 3,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 54,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        54,
+        109
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        0,
+        2
+      ],
+      "tile": 8,
+      "rotation": 2,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 109,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        232,
+        109
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        -1
+      ],
+      "tile": 232,
+      "rotation": 3,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 100,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        100
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        1,
+        -2
+      ],
+      "tile": 54,
+      "rotation": 1,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": null,
+      "timeout": true
+    }
+  ]
+}

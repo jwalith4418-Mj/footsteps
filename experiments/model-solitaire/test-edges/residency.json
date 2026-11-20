@@ -1,0 +1,8 @@
+[
+  {
+    "name": "qwen2.5:32b",
+    "size": 22314273995,
+    "size_vram": 19750935592,
+    "context_length": 8192
+  }
+]
