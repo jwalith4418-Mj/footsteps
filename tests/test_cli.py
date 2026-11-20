@@ -189,6 +189,7 @@ class Commands(unittest.TestCase):
 
     def test_host_checkpoints_both_deals_at_launch_and_shutdown(self):
         for flags, seats in [
+            (("--exit-origin", "--crossing"), 4),
             (("--crossing",), 4),
             (("--seats", "3", "--color-teams"), 3),
             (("--kit-counts", "29", "29", "--kit-seed", "8700"), 4),
@@ -212,5 +213,8 @@ class Commands(unittest.TestCase):
                     tiles = sum(record["setup"]["hands"], record["setup"]["store"].copy())
                     self.assertEqual(sum((t & 15).bit_count() for t in tiles), 29)
                     self.assertEqual(sum((t >> 4).bit_count() for t in tiles), 29)
-                if "--crossing" in flags:
+                if "--exit-origin" in flags:
+                    self.assertEqual((record["format"], replay(record).marker), (2, (-2, 0)))
+                    self.assertEqual(replay(record).goal, (0, 0))
+                elif "--crossing" in flags:
                     self.assertEqual(record["setup"], read(EXAMPLE)["setup"])

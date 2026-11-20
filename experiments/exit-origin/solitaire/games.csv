@@ -1,0 +1,9 @@
+origin,seed,model,win,turns,end_distance,sealed,fallback
+start,9101,qwen3.5:9b-q8_0,0,10,5,1,0
+exit,9101,qwen3.5:9b-q8_0,0,10,5,1,0
+exit,9102,qwen3.5:9b-q8_0,0,10,6,0,0
+start,9102,qwen3.5:9b-q8_0,0,10,6,0,0
+start,9103,qwen3.5:9b-q8_0,0,10,5,0,0
+exit,9103,qwen3.5:9b-q8_0,0,10,5,1,0
+exit,9104,qwen3.5:9b-q8_0,0,10,5,0,0
+start,9104,qwen3.5:9b-q8_0,0,10,3,1,0

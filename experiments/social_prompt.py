@@ -14,7 +14,7 @@ from footsteps.team_names import color_brief
 
 def progress_ballots(snap):
     """Recover direction and named votes from complete published referee sentences."""
-    marker = (0, 0)
+    marker = snap["state"].get("start", (0, 0))
     rows = []
     goal = snap["state"]["goal"]
     proposal = None

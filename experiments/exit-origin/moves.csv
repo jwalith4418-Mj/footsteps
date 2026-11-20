@@ -1,0 +1,33 @@
+case,kind,origin,reversed,eligible,picked,qualifies
+game-4001-e42,recorded,start,False,"0,2 1,1","0,2",True
+game-4001-e42,recorded,exit,False,"0,2 1,1","0,2",True
+game-4001-e42,recorded,start,True,"0,2 1,1","0,0",False
+game-4001-e42,recorded,exit,True,"0,2 1,1","0,0",False
+game-4002-e4,recorded,start,False,"0,1","0,1",True
+game-4002-e4,recorded,exit,False,"0,1","0,1",True
+game-4002-e4,recorded,start,True,"0,1","0,1",True
+game-4002-e4,recorded,exit,True,"0,1","0,1",True
+game-4003-e4,recorded,start,False,"0,1","0,1",True
+game-4003-e4,recorded,exit,False,"0,1","0,1",True
+game-4003-e4,recorded,start,True,"0,1","0,1",True
+game-4003-e4,recorded,exit,True,"0,1","0,1",True
+game-4004-e4,recorded,start,False,"0,1","0,1",True
+game-4004-e4,recorded,exit,False,"0,1","0,1",True
+game-4004-e4,recorded,start,True,"0,1","0,1",True
+game-4004-e4,recorded,exit,True,"0,1","0,1",True
+"-1,-1",tight,start,False,"0,-1","0,-1",True
+"-1,-1",tight,exit,False,"0,-1","-1,0",False
+"-1,-1",tight,start,True,"0,-1","0,-1",True
+"-1,-1",tight,exit,True,"0,-1","0,-1",True
+"-1,1",tight,start,False,"0,1","0,1",True
+"-1,1",tight,exit,False,"0,1","0,1",True
+"-1,1",tight,start,True,"0,1","0,1",True
+"-1,1",tight,exit,True,"0,1","-1,0",False
+"1,-1",tight,start,False,"0,-1","1,0",False
+"1,-1",tight,exit,False,"0,-1","0,-1",True
+"1,-1",tight,start,True,"0,-1","1,0",False
+"1,-1",tight,exit,True,"0,-1","1,0",False
+"1,1",tight,start,False,"0,1","0,1",True
+"1,1",tight,exit,False,"0,1","0,1",True
+"1,1",tight,start,True,"0,1","1,0",False
+"1,1",tight,exit,True,"0,1","1,0",False

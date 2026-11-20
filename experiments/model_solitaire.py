@@ -11,6 +11,7 @@ from random import Random
 from experiments.seat_chart import seat_chart
 from footsteps.board import connects, distance, neighbors, rotate
 from footsteps.fallback import timeout
+from footsteps.game import with_exit_origin
 from footsteps.ollama import request, tile
 from footsteps.record import replay
 from footsteps.solo import sealed, setup, simulate
@@ -170,11 +171,22 @@ def decide(
 
 
 def run_game(
-    seed, model, out, aided=False, think=False, chart=False, *, decide_fn=None, table_id=None
+    seed,
+    model,
+    out,
+    aided=False,
+    think=False,
+    chart=False,
+    *,
+    decide_fn=None,
+    table_id=None,
+    exit_origin=False,
 ):
     if decide_fn is None:
         decide_fn = decide
     initial = setup(seed, (4, 2), 2, 10, 0.55)
+    if exit_origin:
+        initial = with_exit_origin(initial)
     table = Table(initial, Random(f"draw/{seed}"), discussion=0)
     rng = Random(f"fallback/{seed}")
     if table_id is not None:

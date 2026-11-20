@@ -4,12 +4,13 @@ from footsteps.ollama import tile
 
 
 def seat_chart(state):
+    start = tuple(state.get("start", (0, 0)))
     marker, goal = tuple(state["marker"]), tuple(state["goal"])
     labels = {}
     faces = set(state["hand"])
     for point, face in state["board"]:
         pos = tuple(point)
-        if pos == (0, 0):
+        if pos == start:
             name = "S"
         elif pos == goal:
             name = "X"

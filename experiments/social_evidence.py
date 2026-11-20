@@ -14,6 +14,7 @@ from experiments.social_prompt import advocate, social_choice
 from experiments.turn_plans import plans, score
 from footsteps.board import distance
 from footsteps.decision_notes import open_private
+from footsteps.game import with_exit_origin
 from footsteps.ollama import infer, request
 from footsteps.record import replay
 from footsteps.table import PAPER_KIT, Table, fixed_kit, paper_setup
@@ -54,6 +55,7 @@ def social_game(
     goal=(4, 2),
     explicit_actions=False,
     social_tools=False,
+    exit_origin=False,
 ):
     def elimination(snap, sink):
         if outcome_policy:
@@ -80,6 +82,8 @@ def social_game(
     bad = "+".join(str(s) for s in seats if roles[s] == "bad")
     setup = social_deal(seed, roles, kit, paired_fifth_hand=paired_fifth_hand)
     setup["goal"] = list(goal)
+    if exit_origin:
+        setup = with_exit_origin(setup)
     table = Table(setup, Random(f"draw/{seed}"), discussion=1, color_teams=color_teams)
     table.record["table_id"] = secrets.token_hex(16)
     for s in seats:
@@ -260,6 +264,9 @@ def main():
         action="store_true",
         help="offer a public floor-history lookup on nominations and removal ballots",
     )
+    parser.add_argument(
+        "--exit-origin", action="store_true", help="put EXIT at (0,0) at this table"
+    )
     args = parser.parse_args()
     if (args.action_brief or args.social_tools) and not (
         args.model_floor and args.outcome_policy and args.debate
@@ -324,6 +331,7 @@ def main():
                     args.social_guidance,
                     args.outcome_policy,
                     goal=args.goal,
+                    exit_origin=args.exit_origin,
                     explicit_actions=args.action_brief,
                     social_tools=args.social_tools,
                     kit=kit,

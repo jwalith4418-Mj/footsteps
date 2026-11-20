@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from .decision_notes import applied_note, notes_for_record
-from .game import Game, require
-from .record import describe, replay
+from .game import require
+from .record import describe, replay, starting_game
 from .team_names import COLORS
 
 WEB = Path(__file__).with_name("web")
@@ -19,14 +19,14 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
     grouped = notes_for_record(record, notes)
     # Validate before interpreting events for display (including the reported event index).
     replay(record)
-    game = Game(record["setup"])
+    game = starting_game(record)
     setup = game.view(seat)
     frames = []
 
     def capture(kind, turn, message):
         view = game.view(seat)
         # The floor is write-once. Encode placements once and reconstruct their display by index.
-        for key in ("board", "placements", "player_count", "bad_count", "goal"):
+        for key in ("board", "placements", "player_count", "bad_count", "goal", "start"):
             del view[key]
         if omniscient:
             view["hands"] = [hand.copy() for hand in game.hands]
@@ -38,7 +38,9 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
         frames.append(frame)
         return frame
 
-    capture("setup", 1, "The marker starts at (0, 0). The floor is ready for the first draw.")
+    capture(
+        "setup", 1, f"The marker starts at {game.start}. The floor is ready for the first draw."
+    )
     for revision, event in enumerate(record["events"]):
         attached = [applied_note(game, event, row) for row in grouped.get(revision, [])]
         kind, turn = event["kind"], game.turn
@@ -83,6 +85,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
         "seat": seat,
         "omniscient": omniscient,
         **({"team_labels": COLORS} if record.get("team_names") == "colors" else {}),
+        "start": tuple(map(str, setup["start"])),
         "goal": tuple(map(str, setup["goal"])),
         "players": setup["player_count"],
         "bad": setup["bad_count"],

@@ -10,6 +10,7 @@ def glyph(name, face):
 
 
 def seat_chart(state):
+    start = tuple(state.get("start", (0, 0)))
     marker, goal = tuple(state["marker"]), tuple(state["goal"])
     board = {tuple(p): face for p, face in state["board"]}
     xs, ys = zip(*board, strict=True)
@@ -25,7 +26,7 @@ def seat_chart(state):
         for x in columns:
             pos = (x, y)
             face = board.get(pos)
-            name = "START" if pos == (0, 0) else "EXIT" if pos == goal else str(face)
+            name = "START" if pos == start else "EXIT" if pos == goal else str(face)
             cells.append(glyph(("@" if pos == marker else "") + name, face))
         for row in range(3):
             prefix = f"y={y:>2}  " if row == 1 else "      "

@@ -6,6 +6,7 @@ from getpass import getpass
 from pathlib import Path
 
 from .decision_notes import open_private, read_notes, save_private_export
+from .game import with_exit_origin
 from .ollama import Seat, infer, play_seat
 from .record import read, render
 from .solo import POLICIES, setup, simulate
@@ -20,7 +21,9 @@ def main():
     solo = sub.add_parser("solo", help="run one solitaire policy and print its account")
     solo.add_argument("--policy", choices=("human", *POLICIES), default="exits")
     solo.add_argument("--seed", type=int, default=0)
-    solo.add_argument("--goal", nargs=2, type=int, default=(4, 2))
+    solo.add_argument(
+        "--goal", nargs=2, type=int, default=(4, 2), help="EXIT offset east and north from START"
+    )
     solo.add_argument("--hand", type=int, default=2)
     solo.add_argument("--store", type=int, default=10, help="tiles after deal")
     solo.add_argument("--density", type=float, default=0.55)
@@ -68,6 +71,12 @@ def main():
     supply.add_argument(
         "--crossing", action="store_true", help="use the public two-turn demo setup"
     )
+    for command in (solo, table):
+        command.add_argument(
+            "--exit-origin",
+            action="store_true",
+            help="set EXIT to (0,0) for this game and its replay",
+        )
     model = sub.add_parser("ollama", help="join a private seat with a local Ollama model")
     model.add_argument("--model", required=True, help="installed Ollama model name")
     model.add_argument("--budget", type=float, default=30, help="maximum seconds per inference")
@@ -136,6 +145,8 @@ def main():
             if args.hand < 0 or args.store < 1 or not 0 <= args.density <= 1:
                 parser.error("hand >= 0, store >= 1, density between 0 and 1 required")
             initial = setup(args.seed, args.goal, args.hand, args.store, args.density)
+            if args.exit_origin:
+                initial = with_exit_origin(initial)
             if args.policy == "human":
                 rec = play(initial, args.seed)
             else:
