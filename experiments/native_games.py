@@ -19,11 +19,17 @@ from footsteps.record import replay
 from footsteps.table import Table, fixed_kit
 
 
-def game(root, private, seed, model, arm, scope):
+def game(root, private, seed, model, arm, scope, *, corridor=None):
     key = f"{seed}-{arm}-{scope}"
-    roles = ["good", "bad", "good", "good"]
-    setup = social_deal(seed, roles, fixed_kit(Random(8700), 16, 29, 29))
-    setup["goal"] = [2, 2]
+    if corridor:
+        key = f"corridor-{corridor}-{key}"
+        roles = ["good"]
+        goal = {"east": [2, 0], "north": [0, 2]}[corridor]
+        setup = {"roles": roles, "goal": goal, "hands": [[65]], "store": [65, 65]}
+    else:
+        roles = ["good", "bad", "good", "good"]
+        setup = social_deal(seed, roles, fixed_kit(Random(8700), 16, 29, 29))
+        setup["goal"] = [2, 2]
     t = Table(with_exit_origin(setup), Random(f"draw/{seed}"), discussion=1, color_teams=True)
     t.record["table_id"] = secrets.token_hex(16)
     for seat in range(len(roles)):
@@ -122,9 +128,14 @@ if __name__ == "__main__":
     )
     cli.add_argument("--scope", choices=("build", "all"), default="build")
     cli.add_argument("--model", default=MODEL)
+    cli.add_argument(
+        "--corridor",
+        choices=("east", "north"),
+        help="two-turn solitaire corridor with a directed straight in hand",
+    )
     args = cli.parse_args()
     args.root.mkdir(exist_ok=True, parents=True)
     args.private.mkdir(exist_ok=True, parents=True)
     for seed in args.seeds:
         for arm in args.arms:
-            game(args.root, args.private, seed, args.model, arm, args.scope)
+            game(args.root, args.private, seed, args.model, arm, args.scope, corridor=args.corridor)

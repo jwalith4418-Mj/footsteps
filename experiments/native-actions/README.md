@@ -42,9 +42,11 @@ Menu, direct and hand each scored 2/8, all on Blue. Their accepted commitments w
 
 Restricting the same hand interface to that square yielded 4/8 (two Blue and two Red), including seven accepted commitments. For the three floors where both seats committed, changing the builder’s role left its piece and rotation identical every time. Face 29 helped Blue on seed 9600, face 150 sealed the marker for Red on 9601, and face 41 helped Blue on 9602. The extra Red hits therefore give little evidence of deliberate sabotage. The intervention helps distinguish “played a winning build” from “changed the build in pursuit of the assigned objective.”
 
+The optional four-orientation lookup was requested on **22/22** archived and fresh tactical decisions. The fit arm secured 3/14 and 1/8 tactical witnesses respectively, with 6/14 and 3/8 timely commits. On fresh seed 9603 both roles turned H4 (face 243) twice clockwise. Blue ran out of time. Red committed it on the disputed square, which satisfied the Blue criterion. Lookup frequency measures demand for the information. The committed choice and deadline show whether the model could use it.
+
 ## First replies under the clock
 
-Across the ordinary native direct and hand arms, every initial reply on the tactical panels reached the 320-token cap without making a call (44/44). Retries often worked. We compared just the first reply on Red-guest, Blue-82-escape, and both seat assignments of fresh floor 9600. The original prompt produced 0/4 calls. Raising the cap to 768 produced 1/4. Appending a short user message after the state, “Send exactly one native function call now,” produced 4/4. Median wall times were 11.65, 14.93 and 4.89 seconds respectively. The measurement counts a single advertised function name. For playing strength, the follow-up cued hand uses the full decision loop and scores the actual placements.
+Across the ordinary native direct and hand arms, every initial reply on the tactical panels reached the 320-token cap without making a call (44/44). Retries often worked. We compared just the first reply on Red-guest, Blue-82-escape, and both seat assignments of fresh floor 9600. The original prompt produced 0/4 calls. Raising the cap to 768 produced 1/4. Appending a short user message after the state, “Send exactly one native function call now,” produced 4/4. Median wall times were 11.65, 14.93 and 4.89 seconds respectively. The measurement counts a single advertised function name. With the full decision loop, the cue delivered 14/14 archived and 8/8 fresh commitments. It matched the ordinary hand's 4/14 archived witnesses, slipped from 2/8 to 1/8 on fresh decisions, and fell from 11/16 to 5/16 on port readings. On the port tasks it used a private turn only twice, down from nine times. A faster first reply can also mean prematurely placing the printed face. Keep the cue in the experiment harness.
 
 ## Complete social tables
 
@@ -70,6 +72,8 @@ python -m experiments.native_transfer "$out/transfer-fit.jsonl" --arms fit
 python -m experiments.native_transfer "$out/isolated-square.jsonl" --arms hand --isolate-square
 python -m experiments.native_games "$out/games" "$out/private" --seeds 9501
 python -m experiments.native_games "$out/games" "$out/private" --seeds 9501 --arms hand --scope all
+python -m experiments.native_games "$out/games" "$out/private" --corridor east
+python -m experiments.native_games "$out/games" "$out/private" --corridor north
 python -m experiments.native_summary "$out"
 python -m footsteps view "$out/games/9501-hand-all.json" --omniscient \
   --notes "$out/private/9501-hand-all.jsonl" -o "$out/9501-hand-all.html"

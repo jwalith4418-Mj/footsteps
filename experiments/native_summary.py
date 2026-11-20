@@ -96,6 +96,10 @@ def placement_diagnosis(paths):
 def game_results(path):
     record = json.loads(path.read_text())
     game = Game(record["setup"])
+    decisions = rows(path.with_suffix(".calls.jsonl"))
+    by_revision = defaultdict(list)
+    for row in decisions:
+        by_revision[row["revision"]].append(row)
     steps = rotations = 0
     first_trap = None
     eliminations = []
@@ -103,6 +107,18 @@ def game_results(path):
     builds = []
     for index, event in enumerate(record["events"], 1):
         marker, alive, actor, turn = game.marker, set(game.alive), game.actor, game.turn
+        stage = event["kind"]
+        if stage == "draw":
+            receipts = {}
+        elif stage in ("move_vote", "eliminate_vote"):
+            receipts = dict(zip(game.alive, [v is not None for v in event["votes"]], strict=True))
+        else:
+            seat = game.queue[0] if stage == "nominate" else actor
+            receipts = {seat: not event.get("timeout", False)}
+        actual = by_revision.pop(index - 1, [])
+        assert all((row["turn"], row["stage"]) == (turn, stage) for row in actual)
+        assert len(actual) == len(receipts)
+        assert {row["seat"]: row["status"] == "accepted" for row in actual} == receipts
         game.apply(event)
         nearest = min(nearest, distance(game.marker, game.goal))
         steps += marker != game.marker
@@ -113,7 +129,7 @@ def game_results(path):
             first_trap = (turn, index)
         for seat in sorted(alive - set(game.alive)):
             eliminations.append((turn, seat))
-    decisions = rows(path.with_suffix(".calls.jsonl"))
+    assert game.winner and not by_revision
     print(
         path.stem,
         game.winner,
