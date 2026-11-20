@@ -1,0 +1,25 @@
+layout,names,floor,audience,remark
+BRBR,classic,printed,False,P0 just moved the marker closer to EXIT; let's vote them out before they win.
+BRBR,classic,printed,True,"If you keep me, we all lose; vote to remove my nominee and save your own seats."
+BRBR,classic,fixed,False,P0 just moved us closer to EXIT; let's eliminate them now before they get too far ahead.
+BRBR,classic,fixed,True,"If you keep me, we all lose; vote to remove me and save your own seats."
+BRBR,colors,printed,False,"P1, you are the only Red player alive; if we eliminate P0 now, we leave P2 alone to build a path to EXIT while we sit idle—vote no to keep us both in the game."
+BRBR,colors,printed,True,"If we eliminate a teammate now, the Red team loses its only chance to stop Blue from reaching EXIT before time runs out."
+BRBR,colors,fixed,False,P0 is a Red player who just moved the marker closer to EXIT; voting to eliminate them helps Blue win.
+BRBR,colors,fixed,True,"If you keep me here, Blue wins instantly; vote to remove my nominee and save your own seats."
+BRBB,classic,printed,False,"P1, you are the only Bad player and know exactly where we all are; if you truly want to win by eliminating us, why would you nominate a Good player who just moved forward instead of letting us survive?"
+BRBB,classic,printed,True,"Since I am the only Bad player and you all voted to move the marker closer to Exit, removing me now is your best chance to stop my inevitable elimination later."
+BRBB,classic,fixed,False,P0 just moved us closer to EXIT; let's eliminate them now before they get too far ahead.
+BRBB,classic,fixed,True,"P1 is the only Bad player; if we eliminate P0 now, P1 will surely nominate us next and win by default."
+BRBB,colors,printed,False,"Since I am the only Red player and you all voted to move the marker closer to Exit, removing my nominee now would only delay our inevitable victory for no reason."
+BRBB,colors,printed,True,"If we eliminate the only Blue player left, Red wins immediately; please vote to remove P0."
+BRBB,colors,fixed,False,"Since I am the only Red player and you all voted to move the marker closer to Exit, removing my nominee now would only delay our inevitable victory for no reason."
+BRBB,colors,fixed,True,"If you keep me here, Blue gets to move again and might eliminate one of your teammates; vote no to stop them now."
+BRBRB,classic,printed,False,P0 just moved the marker closer to EXIT; we should eliminate them now before they get too close.
+BRBRB,classic,printed,True,"If you keep me, we all lose; vote to remove the threat and save yourselves."
+BRBRB,classic,fixed,False,P0 just moved us closer to EXIT; let's eliminate them before they get too far ahead.
+BRBRB,classic,fixed,True,P0 just moved the marker closer to EXIT; we should eliminate them now before they score for Good.
+BRBRB,colors,printed,False,P0 is a Red player who just helped us move the marker closer to Exit; voting to eliminate them would only help Blue win.
+BRBRB,colors,printed,True,"If we eliminate Player 0 now, the Red team loses its only remaining seat and will be wiped out on the next turn."
+BRBRB,colors,fixed,False,"P0 just moved us closer to the exit; if we eliminate them now, Red wins by default and Blue loses their only chance."
+BRBRB,colors,fixed,True,"If we eliminate Blue's only remaining player now, Red wins instantly without needing to wait for time to run out."

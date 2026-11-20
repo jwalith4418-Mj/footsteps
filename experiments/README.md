@@ -54,3 +54,5 @@ The [common-knowledge check](known-roles/README.md) tests what good and bad play
 The [tile-density comparison](tile-density/README.md) tests uniform supplies of exactly 29 entrances and exits against 35 of each, the printed totals, and the older per-side probability generator.
 
 The [minority-team games](minority/README.md) compare a lone obstructing player with a pair of obstructing players on a five-seat floor, and Good/Bad names with Blue/Red. They include the exact printed-kit listener position and a cooperative continuation after the lone Red is eliminated.
+
+The [public discussion comparison](public-discussion/README.md) follows a checkable accusation through three speakers after both teams were explicitly told they could bluff.
