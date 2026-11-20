@@ -38,3 +38,5 @@ python -m footsteps table --kit-counts 29 29 --kit-seed 8700 --save /tmp/footste
 ```
 
 The same two kit options work with `python -m experiments.social_evidence`. Set both the kit seed and the deal seed to reproduce a social setup. A replay stores the actual faces, hands and store.
+
+In the [first four-seat social comparison](../four-seat/README.md), a good listener cast the pivotal vote to remove another good player on the 29/29 kit. The printed kit produced fourteen failed nominations.
