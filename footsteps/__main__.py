@@ -61,6 +61,7 @@ def main():
     model.add_argument(
         "--no-think", action="store_true", help="disable Ollama thinking for this seat"
     )
+    model.add_argument("--named-ballots", action="store_true", help="vote using approve and reject")
     args = parser.parse_args()
     try:
         if args.command == "ollama":
@@ -69,7 +70,11 @@ def main():
                 args.model,
                 args.budget,
                 decide=partial(
-                    infer, guided=args.guided, named_moves=args.named_moves, no_think=args.no_think
+                    infer,
+                    guided=args.guided,
+                    named_moves=args.named_moves,
+                    no_think=args.no_think,
+                    named_ballots=args.named_ballots,
                 ),
             )
             print(f"{winner.capitalize()} team wins.")
