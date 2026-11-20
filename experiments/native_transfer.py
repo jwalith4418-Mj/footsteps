@@ -14,10 +14,10 @@ from footsteps.game import Game, with_exit_origin
 from footsteps.table import Table, fixed_kit
 
 
-def transfer_panel(*, isolate_square=False):
+def transfer_panel(*, isolate_square=False, start_seed=9600):
     kit = fixed_kit(Random(8700), 16, 29, 29)
     count = 0
-    for seed in range(9600, 9700):
+    for seed in range(start_seed, start_seed + 100):
         _, record = trial((3, 2), seed, "route", kit=kit)
         game = Game(record["setup"])
         for rev, event in enumerate(record["events"]):

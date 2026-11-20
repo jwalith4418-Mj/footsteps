@@ -36,6 +36,22 @@ def game(root, private, seed, model, arm, scope, *, corridor=None, give_opening=
     t.record["table_id"] = secrets.token_hex(16)
     for seat in range(len(roles)):
         t.join(seat, 0)
+    play(t, key, root, private, model, arm, scope, corridor=corridor, give_opening=give_opening)
+
+
+def play(
+    t,
+    key,
+    root,
+    private,
+    model,
+    arm,
+    scope,
+    *,
+    corridor=None,
+    give_opening=False,
+    floor_policy=None,
+):
     speaker = None
     with (
         open_private(private / f"{key}.jsonl") as notes,
@@ -54,7 +70,7 @@ def game(root, private, seed, model, arm, scope, *, corridor=None, give_opening=
                 if text:
                     t.say(speaker, revision, text, now - t.discussion)
             missed = False
-            for seat in range(len(roles)):
+            for seat in range(len(t.game.roles)):
                 if t.revision != revision:
                     break
                 snap = t.view(seat, now)
@@ -66,7 +82,9 @@ def game(root, private, seed, model, arm, scope, *, corridor=None, give_opening=
                 started = monotonic()
                 status = "accepted"
                 try:
-                    if native:
+                    if floor_policy is not None and stage in ("place", "propose", "move_vote"):
+                        choice = floor_policy(snap, model, notes, log)
+                    elif native:
 
                         def orient(handle, turns, seat=seat, revision=revision, now=now):
                             t.orient(seat, revision, handle, turns, now)
@@ -112,7 +130,10 @@ def game(root, private, seed, model, arm, scope, *, corridor=None, give_opening=
                             "seat": seat,
                             "revision": revision,
                             "stage": stage,
-                            "interface": arm if native else "menu",
+                            "interface": arm
+                            if native
+                            or (floor_policy and stage in ("place", "propose", "move_vote"))
+                            else "menu",
                             "status": status,
                             "seconds": round(monotonic() - started, 3),
                             "calls": log,
