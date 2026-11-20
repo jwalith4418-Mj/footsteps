@@ -1,0 +1,8 @@
+[
+  {
+    "name": "qwen3.5:9b-q8_0",
+    "size": 9252047420,
+    "size_vram": 9252047420,
+    "context_length": 8192
+  }
+]

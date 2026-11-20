@@ -12,9 +12,25 @@ Each deal uses goal (4,2), a two-tile starting hand, ten tiles in the post-deal 
 
 In the detour fixture, one step gets closer to EXIT but the tile has no exits. The perpendicular step increases Manhattan distance and has an exit facing the goal side of the board. We reflected both axes and exchanged the order of the two moves on each resulting board. Stay is available first in all eight menus. We score the explicit progressing detour. Waiting can leave the position recoverable. The eight answers represent four reflected presentations of a single tactic.
 
+## Matched games
+
+All three direct-answer models lost the same four development deals with the coordinate-list prompt. On deal 100, Qwen2.5 placed face 163 east of START without a west entrance, then spent the remaining turns building beyond the marker. Qwen3.8 finished that deal at START as well. With the edge report, Qwen3.8 won deal 101 in six turns, and Qwen3.5 9B won deals 101 and 103 in seven and eight. The models made every decision within the direct-answer clock. [32B stalled opening](dev/game-100.json) · [27B six-turn win](27b-dev-edges/game-101.json) · [9B eight-turn win](9b-dev-edges/game-103.json)
+
+| Model | Direct wins / 4 | Aided wins / 4 | Detours / 8, direct | Detours / 8, aided |
+|---|---:|---:|---:|---:|
+| Qwen2.5 32B | 0 | 0 | 1 | 1 |
+| Qwen3.5 9B Q8 | 0 | 2 | 5 | 0 |
+| Qwen3.8 27B RANA-layout | 0 | 1 | 1 | 0 |
+
+The newer-model selection used development wins first, then detour choices and distance in the event of a tie. This sent aided Qwen3.5 9B to the eight fresh deals. The four scripted controls offer a scale for those exact deals. Random won 0/8, greedy 3/8, exits 7/8 and route 8/8. Route finished in six to eight turns. Qwen2.5 32B won 0/8 in each of its direct and aided arms. The selected Qwen3.5 9B also won 0/8 and finished in three certified traps. All eight deals were solvable by at least one of the scripted policies. [9B holdout scores](9b-test-edges/results.csv) · [Matched 32B scores](test-edges/results.csv)
+
+Qwen3.5 9B with edge information stayed seven times and entered the dead end once on the loose detour. We repeated the eight decisions with a five-tile starting store and showed the four remaining movement opportunities explicitly. It gave the same eight answers. In the tight position every route around the dead end needs at least four moves. A stay leaves three. A regression test plays the four-move winning continuation on each reflection. [Tight diagnostic](9b-test-edges/tight-detours.csv)
+
+The [ASCII trial and tokenizer measurements](ascii.md) test whether a spatial representation changes the same model's decisions.
+
 ## Workstation and evidence
 
-The RTX 4090 has 24 GiB of VRAM. Each run uses one model for every move. Tags were local, and each folder contains a residency sample, referee records, model decision latencies and errors, and per-seed model and baseline scores. The decision clock is 30 seconds. A missed or malformed response takes the referee's seeded timeout action. The first cold 32B load exceeded the clock before making a decision. All scored runs preload the model separately.
+The RTX 4090 has 24 GiB of VRAM. Each run uses one model for every move. Tags were local, and each folder contains a residency sample, referee records, model decision latencies and errors, and per-seed model and baseline scores. Direct answers use temperature zero, seed 1, an 8192-token context, a 96-token generation limit and a 30-second decision clock. A missed or malformed response takes the referee's seeded timeout action. The first cold 32B load exceeded the clock before making a decision. All scored runs preload the model separately.
 
 | Ollama tag | Weight identity |
 |---|---|
@@ -26,7 +42,7 @@ The 27B file contains base weights with the RANA tensor precision layout. We use
 
 ## Reproduce
 
-Use the locked shell at the repository root and an empty output directory. Each command runs without third-party Python dependencies. Ollama serves only on localhost. To import the 27B under the same name, write a Modelfile containing `FROM /path/to/Qwen3.8-27B-RANA-layout-Q4_K_M.gguf`, then run `ollama create footsteps-qwen3.8:27b-rana-layout -f Modelfile`.
+Use the locked shell at the repository root and an empty output directory. The game runner uses the Python standard library. Ollama serves only on localhost. To import the 27B under the same name, write a Modelfile containing `FROM /path/to/Qwen3.8-27B-RANA-layout-Q4_K_M.gguf`, then run `ollama create footsteps-qwen3.8:27b-rana-layout -f Modelfile`.
 
 ```sh
 python -m experiments.model_solitaire --model footsteps-qwen3.8:27b-rana-layout --detours --seeds 100 101 102 103 --out /tmp/footsteps-27b-dev
