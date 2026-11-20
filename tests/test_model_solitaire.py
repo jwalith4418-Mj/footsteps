@@ -32,6 +32,25 @@ class ModelSolitaire(unittest.TestCase):
         self.assertIn(0, context["options"]["rotation"])
         self.assertIn(163, context["options"]["tile"])
 
+    def test_chart_keeps_the_same_literal_menu_and_displays_matching_ports(self):
+        table = detour_table(1, 1, 5)
+        state = table.game.view(0)
+        choices = table.choices(0, 0)
+        direct = payload(state, choices, "test")
+        charted = payload(state, choices, "test", chart=True)
+        self.assertEqual(direct["messages"][0], charted["messages"][0])
+        self.assertEqual(direct["format"], charted["format"])
+        original, chart = charted["messages"][1]["content"].split("\n\n", 1)
+        fields = json.loads(direct["messages"][1]["content"])
+        del fields["board"], fields["hand"]
+        self.assertEqual(json.loads(original), fields)
+        self.assertIn("  1 36  .  .", chart)
+        self.assertIn("  0 @S  8  X", chart)
+        self.assertIn("8=W>-", chart)
+        self.assertIn("36=S>E", chart)
+        self.assertIn("Hand: 255 255", chart)
+        self.assertEqual(chart.count("255=NESW>NESW"), 1)
+
     def test_move_aid_distinguishes_sealed_landing_and_open_edge(self):
         state = {
             "board": [((0, 0), 255), ((1, 0), 8), ((0, 1), 36), ((2, 0), 255)],

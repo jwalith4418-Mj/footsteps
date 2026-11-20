@@ -8,6 +8,7 @@ from http.client import HTTPException
 from pathlib import Path
 from random import Random
 
+from experiments.seat_chart import seat_chart
 from footsteps.board import connects, distance, neighbors, rotate
 from footsteps.fallback import timeout
 from footsteps.ollama import request, tile
@@ -77,7 +78,7 @@ def geometry(state, choices):
     return {"placements_next_to_marker": entries}
 
 
-def payload(state, choices, model, aided=False):
+def payload(state, choices, model, aided=False, chart=False):
     options = {
         k: [label(p) for p in values] if k in ("at", "to") else values
         for k, values in choices.items()
@@ -99,6 +100,11 @@ def payload(state, choices, model, aided=False):
             " Unbuilt needs a future placement. All original legal choices remain available."
             " At a move, inspect permanent traps and the distance remaining."
         )
+    if chart:
+        del context["board"], context["hand"]
+    content = json.dumps(context, separators=(",", ":"))
+    if chart:
+        content += "\n\n" + seat_chart(state)
     schema = {
         k: {"type": "string" if k in ("at", "to") else "integer", "enum": v}
         for k, v in options.items()
@@ -115,18 +121,24 @@ def payload(state, choices, model, aided=False):
         },
         "messages": [
             {"role": "system", "content": system},
-            {"role": "user", "content": json.dumps(context, separators=(",", ":"))},
+            {"role": "user", "content": content},
         ],
         "options": {"temperature": 0, "seed": 1, "num_ctx": 8192, "num_predict": 96},
     }
 
 
-def decide(state, choices, model, aided=False, think=False):
-    body = payload(state, choices, model, aided)
+def decide(state, choices, model, aided=False, think=False, metrics=None, *, chart=False):
+    body = payload(state, choices, model, aided, chart)
     if think:
         body["think"] = True
         body["options"]["num_predict"] = 1024
     answer = request(11434, "/api/chat", body, 60 if think else 30)
+    if metrics is not None:
+        metrics.update(
+            tokens=answer.get("eval_count"),
+            thinking_returned=bool(answer["message"].get("thinking")),
+            stop_reason=answer.get("done_reason"),
+        )
     if answer.get("done_reason") == "length":
         raise ValueError("generation reached its token limit")
     reply = json.loads(answer["message"]["content"])
@@ -141,7 +153,7 @@ def decide(state, choices, model, aided=False, think=False):
     return decoded
 
 
-def run_game(seed, model, out, aided=False, think=False):
+def run_game(seed, model, out, aided=False, think=False, chart=False):
     initial = setup(seed, (4, 2), 2, 10, 0.55)
     table = Table(initial, Random(f"draw/{seed}"), discussion=0)
     rng = Random(f"fallback/{seed}")
@@ -155,8 +167,17 @@ def run_game(seed, model, out, aided=False, think=False):
         else:
             start = time.monotonic()
             error = ""
+            metrics = dict.fromkeys(("tokens", "thinking_returned", "stop_reason")) if think else {}
             try:
-                choice = decide(state, table.choices(0, 0), model, aided, think)
+                choice = decide(
+                    state,
+                    table.choices(0, 0),
+                    model,
+                    aided,
+                    think,
+                    metrics if think else None,
+                    chart=chart,
+                )
                 event = {"kind": stage, **choice}
             except (OSError, HTTPException, ValueError, KeyError) as exc:
                 error = f"{type(exc).__name__}: {exc}"
@@ -167,6 +188,7 @@ def run_game(seed, model, out, aided=False, think=False):
                     "stage": stage,
                     "ms": round(1000 * (time.monotonic() - start)),
                     "error": error,
+                    **metrics,
                 }
             )
             table.commit(event)
@@ -212,7 +234,7 @@ def detour_table(sx, sy, store):
     return table
 
 
-def detours(model, aided=False, think=False, tight=False):
+def detours(model, aided=False, think=False, tight=False, chart=False):
     for sx in (1, -1):
         for sy in (1, -1):
             table = detour_table(sx, sy, 5 if tight else 10)
@@ -226,7 +248,9 @@ def detours(model, aided=False, think=False, tight=False):
                 if reverse:
                     steps.reverse()
                 try:
-                    move = decide(state, {"to": [None, *steps]}, model, aided, think)["to"]
+                    move = decide(state, {"to": [None, *steps]}, model, aided, think, chart=chart)[
+                        "to"
+                    ]
                     yield [sx, sy, reverse, label(move), move == (0, sy)]
                 except (OSError, HTTPException, ValueError, KeyError) as exc:
                     yield [sx, sy, reverse, f"{type(exc).__name__}: {exc}", False]
@@ -239,6 +263,7 @@ if __name__ == "__main__":
     cli.add_argument("--out", type=Path, required=True)
     cli.add_argument("--detours", action="store_true")
     cli.add_argument("--tight-detours", action="store_true")
+    cli.add_argument("--ascii", action="store_true", help="append a north-up board and hand chart")
     cli.add_argument("--aided", action="store_true")
     cli.add_argument(
         "--think", action="store_true", help="use a 60-second clock and up to 1024 generated tokens"
@@ -260,12 +285,12 @@ if __name__ == "__main__":
             with (args.out / filename).open("w") as f:
                 w = csv.writer(f, lineterminator="\n")
                 w.writerow(["sx", "sy", "reversed", "move", "correct"])
-                w.writerows(detours(args.model, args.aided, args.think, tight))
+                w.writerows(detours(args.model, args.aided, args.think, tight, args.ascii))
     with (args.out / "results.csv").open("w") as f:
         w = csv.writer(f, lineterminator="\n")
         w.writerow(["seed", "player", "win", "turns", "end_distance", "sealed", "fallback"])
         for seed in args.seeds:
-            rows = run_game(seed, args.model, args.out, args.aided, args.think)
+            rows = run_game(seed, args.model, args.out, args.aided, args.think, args.ascii)
             w.writerows(rows)
             f.flush()
             print(rows[0], flush=True)
