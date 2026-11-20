@@ -23,10 +23,12 @@ def approach(state):
     return distance(state["pending"], state["goal"]) < distance(state["marker"], state["goal"])
 
 
-def social_deal(seed, roles, kit):
-    """Seat five gets two supplemental copies; the original four hands and clock stay paired."""
-    setup = paper_setup(Random(seed), min(4, len(roles)), kit=kit)
-    if len(roles) == 5:
+def social_deal(seed, roles, kit, *, paired_fifth_hand=False):
+    """An optional supplemental hand preserves the original four hands and their clock."""
+    if paired_fifth_hand and len(roles) != 5:
+        raise ValueError("a supplemental fifth hand requires five seats")
+    setup = paper_setup(Random(seed), 4 if paired_fifth_hand else len(roles), kit=kit)
+    if paired_fifth_hand:
         setup["hands"].append(Random(f"fifth-hand/{seed}").sample(kit, 2))
     setup["roles"] = roles
     return setup
@@ -46,6 +48,7 @@ def social_game(
     outcome_policy=False,
     kit=PAPER_KIT,
     color_teams=False,
+    paired_fifth_hand=False,
     audience=False,
 ):
     def elimination(snap, sink):
@@ -69,7 +72,7 @@ def social_game(
 
     seats = range(len(roles))
     bad = "+".join(str(s) for s in seats if roles[s] == "bad")
-    setup = social_deal(seed, roles, kit)
+    setup = social_deal(seed, roles, kit, paired_fifth_hand=paired_fifth_hand)
     table = Table(setup, Random(f"draw/{seed}"), discussion=1, color_teams=color_teams)
     table.record["table_id"] = secrets.token_hex(16)
     for s in seats:
@@ -217,6 +220,11 @@ def main():
         "--audience", action="store_true", help="ask speakers to consider other-team listeners"
     )
     parser.add_argument("--roles", help="one explicit role layout for full model play, e.g. GBGB")
+    parser.add_argument(
+        "--paired-fifth-hand",
+        action="store_true",
+        help="give the fifth seat two extra copies to preserve the four-seat hands and eight-turn clock",
+    )
     parser.add_argument("--kit-counts", type=int, nargs=2, metavar=("IN", "OUT"))
     parser.add_argument("--kit-seed", type=int, help="fixed-count mix seed (default: 0)")
     parser.add_argument("--seeds", type=int, nargs="+", required=True)
@@ -243,6 +251,8 @@ def main():
         ):
             parser.error("--roles requires full model play and 3 to 5 seats with both G and B")
         layouts = (["good" if c == "G" else "bad" for c in args.roles],)
+    if args.paired_fifth_hand and (args.roles is None or len(args.roles) != 5):
+        parser.error("--paired-fifth-hand requires a five-seat layout")
     if args.kit_seed is not None and args.kit_counts is None:
         parser.error("--kit-seed requires --kit-counts")
     kit = PAPER_KIT
@@ -279,6 +289,7 @@ def main():
                     args.outcome_policy,
                     kit=kit,
                     color_teams=args.color_teams,
+                    paired_fifth_hand=args.paired_fifth_hand,
                     audience=args.audience,
                 )
             )

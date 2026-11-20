@@ -10,4 +10,4 @@ The [design review after the social trials](design-review.md) ranks the open que
 | Timeouts are visible. | Silence counts as no on a ballot. Staying and passing are ordinary actions; required construction has a legal fallback. Visibility preserves public evidence about reliability. | Repeated missed deadlines dominate an otherwise playable agent game. |
 | Store realized randomness and versions. | An old example should survive a changed generator and be usable from the perspective of a specific seat. | New tile effects, hidden information, or replay migrations. |
 
-Footsteps is the provisional title. The floor and exit suggest an indoor setting. Team names remain good and bad during rules development.
+Footsteps is the provisional title. The floor and exit suggest an indoor setting. Blue and Red are alternate names for the same teams. The [minority-team trials](../experiments/minority/README.md) compare them with Good and Bad.

@@ -28,7 +28,7 @@ def fixed_kit(rng, size, entrances, exits):
 
 
 def paper_setup(rng, seats=4, *, kit=PAPER_KIT):
-    require(seats in (3, 4), "use three or four paper-kit seats")
+    require(seats in (3, 4, 5), "use three to five seats with this tile supply")
     require(len(kit) == len(PAPER_KIT), "use a sixteen-tile kit")
     tiles = list(kit)
     rng.shuffle(tiles)

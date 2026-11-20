@@ -20,7 +20,12 @@ def opening(layout, colors, floor="printed"):
     roles = ["bad" if side == "R" else "good" for side in layout]
 
     kit = PAPER_KIT if floor == "printed" else fixed_kit(Random(8700), 16, 29, 29)
-    table = Table(social_deal(8602, roles, kit), Random(0), discussion=1, color_teams=colors)
+    table = Table(
+        social_deal(8602, roles, kit, paired_fifth_hand=len(roles) == 5),
+        Random(0),
+        discussion=1,
+        color_teams=colors,
+    )
     table.started = True
     for event in record["events"][:6]:
         if event["kind"] == "move_vote":

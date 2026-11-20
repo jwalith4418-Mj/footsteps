@@ -17,7 +17,11 @@ EXAMPLE = Path(__file__).resolve().parents[1] / "examples/crossing.json"
 class TeamNames(unittest.TestCase):
     def test_supplemental_seat_preserves_seat_hands_deal_and_clock(self):
         four = social_deal(31, ["good", "bad", "good", "good"], PAPER_KIT)
-        five = social_deal(31, ["good", "bad", "good", "bad", "good"], PAPER_KIT)
+        roles = ["good", "bad", "good", "bad", "good"]
+        five = social_deal(31, roles, PAPER_KIT, paired_fifth_hand=True)
+        standard = social_deal(31, roles, PAPER_KIT)
+        self.assertCountEqual(sum(standard["hands"], standard["store"].copy()), PAPER_KIT)
+        self.assertEqual(len(standard["store"]), 6)
         self.assertEqual(four["hands"], five["hands"][:4])
         self.assertEqual(len(five["hands"][4]), 2)
         self.assertEqual(four["store"], five["store"])
