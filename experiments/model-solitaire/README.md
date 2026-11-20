@@ -28,6 +28,10 @@ Qwen3.5 9B with edge information stayed seven times and entered the dead end onc
 
 The [ASCII trial and tokenizer measurements](ascii.md) test whether a spatial representation changes the same model's decisions.
 
+The 27B thinking arm used 1,024 total generated tokens and 60 seconds per decision. All eight detour calls reached the token ceiling. All 29 decisions in the seed-100 game returned a thinking field and stopped at exactly 1,024 tokens. The benchmark took its recorded fallback in all 29 cases. This measures the runner at that budget. It provides no evidence that the model chose those fallback moves. The original decoder treated any length stop as invalid before checking the answer. The current decoder accepts a complete legal action at the boundary. The original final content was not retained, so the effect of that distinction on these calls is unknown. [Thinking-run telemetry](27b-reason/calls-100.csv)
+
+The [offline decision analysis](traces.md) separates forced and discretionary stays and identifies which placements made the marker's component permanently closed.
+
 ## Workstation and evidence
 
 The RTX 4090 has 24 GiB of VRAM. Each run uses one model for every move. Tags were local, and each folder contains a residency sample, referee records, model decision latencies and errors, and per-seed model and baseline scores. Direct answers use temperature zero, seed 1, an 8192-token context, a 96-token generation limit and a 30-second decision clock. A missed or malformed response takes the referee's seeded timeout action. The first cold 32B load exceeded the clock before making a decision. All scored runs preload the model separately.

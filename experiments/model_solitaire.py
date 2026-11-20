@@ -127,21 +127,37 @@ def payload(state, choices, model, aided=False, chart=False):
     }
 
 
-def decide(state, choices, model, aided=False, think=False, metrics=None, *, chart=False):
+def decide(
+    state,
+    choices,
+    model,
+    aided=False,
+    think=False,
+    metrics=None,
+    *,
+    chart=False,
+):
     body = payload(state, choices, model, aided, chart)
     if think:
         body["think"] = True
         body["options"]["num_predict"] = 1024
-    answer = request(11434, "/api/chat", body, 60 if think else 30)
+    deadline_seconds = 60 if think else 30
+    started = time.monotonic()
+    answer = request(11434, "/api/chat", body, deadline_seconds)
     if metrics is not None:
         metrics.update(
             tokens=answer.get("eval_count"),
             thinking_returned=bool(answer["message"].get("thinking")),
             stop_reason=answer.get("done_reason"),
         )
-    if answer.get("done_reason") == "length":
-        raise ValueError("generation reached its token limit")
-    reply = json.loads(answer["message"]["content"])
+    if time.monotonic() - started > deadline_seconds:
+        raise TimeoutError("decision arrived after the deadline")
+    try:
+        reply = json.loads(answer["message"]["content"])
+    except json.JSONDecodeError as exc:
+        if answer.get("done_reason") == "length":
+            raise ValueError("token limit reached without a complete action") from exc
+        raise
     if not isinstance(reply, dict) or reply.keys() != choices.keys():
         raise ValueError("invalid decision fields")
     decoded = {}

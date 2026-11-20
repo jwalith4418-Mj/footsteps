@@ -1,0 +1,6 @@
+seed,player,win,turns,end_distance,sealed,fallback
+100,footsteps-qwen3.8:27b-rana-layout,0,10,6,0,29
+100,random,0,10,7,0,0
+100,greedy,0,10,5,0,0
+100,exits,1,6,0,0,0
+100,route,1,6,0,0,0

@@ -92,7 +92,10 @@ class ModelSolitaire(unittest.TestCase):
     def test_literal_face_zero_and_boolean_are_distinct(self, mock):
         state = self.table.game.view(0)
         for value in (True, 0):
-            mock.return_value = {"message": {"content": json.dumps({"tile": value})}}
+            mock.return_value = {
+                "message": {"content": json.dumps({"tile": value})},
+                "done_reason": "length",
+            }
             if value is True:
                 with self.assertRaises(ValueError):
                     decide(state, {"tile": [0, 1]}, "test")
