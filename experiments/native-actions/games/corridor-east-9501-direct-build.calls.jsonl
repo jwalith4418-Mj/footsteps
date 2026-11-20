@@ -1,0 +1,5 @@
+{"turn":1,"seat":0,"revision":1,"stage":"place","interface":"direct","status":"accepted","seconds":14.108,"calls":[{"name":"selection","status":"truncated","call_count":0},{"name":"place_tile","arguments":{"piece":"H1","rotation":0,"x":-3,"y":0},"status":"commit"}]}
+{"turn":1,"seat":0,"revision":2,"stage":"discard","interface":"menu","status":"accepted","seconds":3.098,"calls":[]}
+{"turn":1,"seat":0,"revision":3,"stage":"propose","interface":"menu","status":"accepted","seconds":3.198,"calls":[]}
+{"turn":2,"seat":0,"revision":5,"stage":"place","interface":"direct","status":"accepted","seconds":11.173,"calls":[{"name":"selection","status":"truncated","call_count":0},{"name":"place_tile","arguments":{"piece":"H4","rotation":0,"x":-2,"y":1},"status":"commit"}]}
+{"turn":2,"seat":0,"revision":6,"stage":"propose","interface":"menu","status":"accepted","seconds":3.138,"calls":[]}

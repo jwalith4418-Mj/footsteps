@@ -54,6 +54,25 @@ Every table starts with deal 9501, three Blue seats and P1 Red, with EXIT two ea
 
 The build-only comparison changes the builder's interface and retains the shared structured client for all other decisions. A fourth table uses the hand for construction and native actions for every other mandatory choice. The ordinary client requests a private explanation and native commits accept an optional one. After the first divergent discard or public fallback the same chance seed may draw different faces. The saved records permit exact referee replay.
 
+| Social interface | Marker steps | Closest distance to EXIT | Ending square | Builds with an available step |
+|---|---:|---:|---|---:|
+| Menu | 1 | 3 | (−1, −2) | 1/8 |
+| Native direct for building | 2 | 4 | START | 2/8 |
+| Private hand for building | 8 | 3 | START | 8/8 |
+| Private hand and all native decisions | 7 | 3 | (−1, −2) | 8/8 |
+
+Red won all four tables on the eighth turn with every seat alive. The menu table was permanently confined after turn four. The direct table’s only nonzero placement rotation came from the host after a turn-four timeout. The private-hand tables produced a walkable step on every turn and spent their time retracing floor. One deal cannot estimate how often either team wins.
+
+**Turn 2, event 16, all-native table.** P1 Red proposes walking from (−1, −2) back to START (−2, −2), one square farther from EXIT. All three Blue seats vote yes. P1 votes no on its own proposal. All three Blue private notes describe the return as progress. All seven movement ballots in the game have those identical seat votes, even as the direction alternates. The marker takes seven steps and finishes one square from START. All 115 mandatory native decisions arrived, across every stage. This provides a public paired edge for the existing ballot-tool and role-sensitive construction issues. [Referee record](games/9501-hand-all.json) · [Call receipts](games/9501-hand-all.calls.jsonl) · [Ballot follow-up](https://github.com/othercriteria/footsteps/issues/55#issuecomment-7051120778) · [Construction follow-up](https://github.com/othercriteria/footsteps/issues/76#issuecomment-7051027660)
+
+### Two-turn solitaire control
+
+We also gave each builder interface the same solvable complete game on two headings. EXIT is two steps away, every available piece is face 65 (printed entrance north, exit south), and there are exactly two movement opportunities. The solution is to build the midpoint on turn one, walk there, then enter EXIT on turn two. The east version requires turn 3, and the north version turn 2. The referee accepts both lines. All six model games lost, every placement was timely, and all twelve placements used printed orientation. In the north hand replay the player built two legal southbound steps and took both, increasing its distance from two to four. There was no opposing player and no choice of face to distract it. These deliberately simple deals test whether a player applies rotation spontaneously to a stated game objective.
+
+To separate reading the objective from pursuing it, we returned to both initial snapshots. In a fresh query Qwen correctly calculated that the wrong-way step increases Manhattan distance from two to three, then answered on **both** boards that this line could still win with only one step left. Asked to plan backward from winning, it proposed START itself as the necessary first landing in both cases, with turn zero. It located EXIT correctly in the north version and misplaced it by one square in the east version. Giving those plans back to the native builder produced neither winning placement. The prediction, planning and placement queries used separate contexts. Only the builder received the model's own proposed plan. [Private-view probe and actual calls](games/corridor-goals.jsonl)
+
+Giving the same builder a verified first square and rotation yielded 2/2 winning openings. Both headings show the same sequence of operations. They each preview the unturned piece, orient it, preview again, and commit the correct piece at the midpoint. This makes a goal-to-first-action failure observable independently of the ability to work the controls. In the separate full-game intervention we supplied only the opening placement. The player won both games, independently proposing and approving the two correct steps and handling the intervening return and build. [Verified plans and actual calls](games/corridor-verified.jsonl) · [Goal-pursuit follow-up](https://github.com/othercriteria/footsteps/issues/88)
+
 ## Reproduce
 
 The commands create new files and take time on a local Ollama server. Use a new output directory per run. To inspect the saved evidence without a model, run `python -m experiments.native_summary` at the repository root. Every JSONL decision records the actual commitment or failure and each private operation the native model attempted. Complete game records contain referee chance results. Decision notes are separate, private while the table is live and optional on export.
@@ -74,6 +93,10 @@ python -m experiments.native_games "$out/games" "$out/private" --seeds 9501
 python -m experiments.native_games "$out/games" "$out/private" --seeds 9501 --arms hand --scope all
 python -m experiments.native_games "$out/games" "$out/private" --corridor east
 python -m experiments.native_games "$out/games" "$out/private" --corridor north
+python -m experiments.native_games "$out/games" "$out/private" --corridor east --arms hand --give-opening
+python -m experiments.native_games "$out/games" "$out/private" --corridor north --arms hand --give-opening
+python -m experiments.corridor_goal "$out/games/corridor-goals.jsonl"
+python -m experiments.corridor_goal "$out/games/corridor-verified.jsonl" --verified
 python -m experiments.native_summary "$out"
 python -m footsteps view "$out/games/9501-hand-all.json" --omniscient \
   --notes "$out/private/9501-hand-all.jsonl" -o "$out/9501-hand-all.html"

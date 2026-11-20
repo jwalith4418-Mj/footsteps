@@ -257,6 +257,10 @@ def action_request(snapshot, model, tools, *, guided=False, task=None, cue=False
             context["required_check"] = (
                 "Name an adjacent non-EXIT origin and say whether its outgoing edge and the rotated entrance permit a step from it to the new tile."
             )
+            if "marker_on_origin" in choices:
+                context["required_check"] += (
+                    " Also say whether the actual marker currently occupies that origin."
+                )
     else:
         context["legal_values"] = choices
     if task:

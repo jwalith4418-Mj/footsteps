@@ -1,0 +1,7 @@
+{"turn":1,"seat":0,"revision":1,"stage":"place","interface":"hand","status":"accepted","seconds":12.259,"calls":[{"name":"selection","status":"truncated","call_count":0},{"name":"orient_tile","arguments":{"piece":"H1","rotation":3},"status":"ok","result":{"piece":"H1","face":65,"rotation":3,"entrances":"W","exits":"E"}},{"name":"place_tile","arguments":{"piece":"H1","x":-1,"y":0},"status":"commit"}]}
+{"turn":1,"seat":0,"revision":2,"stage":"discard","interface":"menu","status":"accepted","seconds":2.225,"calls":[]}
+{"turn":1,"seat":0,"revision":3,"stage":"propose","interface":"menu","status":"accepted","seconds":1.958,"calls":[]}
+{"turn":1,"seat":0,"revision":4,"stage":"move_vote","interface":"menu","status":"accepted","seconds":1.934,"calls":[]}
+{"turn":2,"seat":0,"revision":6,"stage":"place","interface":"hand","status":"accepted","seconds":10.201,"calls":[{"name":"selection","status":"truncated","call_count":0},{"name":"place_tile","arguments":{"piece":"H4","x":-2,"y":0},"status":"rejected","result":{"error":"choose an empty build square listed in your view"}},{"name":"place_tile","arguments":{"piece":"H4","x":-2,"y":1},"status":"commit"}]}
+{"turn":2,"seat":0,"revision":7,"stage":"propose","interface":"menu","status":"accepted","seconds":1.149,"calls":[]}
+{"turn":2,"seat":0,"revision":8,"stage":"move_vote","interface":"menu","status":"accepted","seconds":0.866,"calls":[]}

@@ -1,0 +1,6 @@
+{"turn":1,"seat":0,"revision":1,"stage":"place","interface":"menu","status":"accepted","seconds":2.755,"calls":[]}
+{"turn":1,"seat":0,"revision":2,"stage":"discard","interface":"menu","status":"accepted","seconds":6.674,"calls":[]}
+{"turn":1,"seat":0,"revision":3,"stage":"propose","interface":"menu","status":"accepted","seconds":3.124,"calls":[]}
+{"turn":1,"seat":0,"revision":4,"stage":"move_vote","interface":"menu","status":"accepted","seconds":2.894,"calls":[]}
+{"turn":2,"seat":0,"revision":6,"stage":"place","interface":"menu","status":"accepted","seconds":3.729,"calls":[]}
+{"turn":2,"seat":0,"revision":7,"stage":"propose","interface":"menu","status":"accepted","seconds":6.575,"calls":[]}

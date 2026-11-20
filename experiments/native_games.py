@@ -19,10 +19,12 @@ from footsteps.record import replay
 from footsteps.table import Table, fixed_kit
 
 
-def game(root, private, seed, model, arm, scope, *, corridor=None):
+def game(root, private, seed, model, arm, scope, *, corridor=None, give_opening=False):
     key = f"{seed}-{arm}-{scope}"
     if corridor:
         key = f"corridor-{corridor}-{key}"
+        if give_opening:
+            key = f"guided-{key}"
         roles = ["good"]
         goal = {"east": [2, 0], "north": [0, 2]}[corridor]
         setup = {"roles": roles, "goal": goal, "hands": [[65]], "store": [65, 65]}
@@ -69,8 +71,19 @@ def game(root, private, seed, model, arm, scope, *, corridor=None):
                         def orient(handle, turns, seat=seat, revision=revision, now=now):
                             t.orient(seat, revision, handle, turns, now)
 
+                        task = None
+                        if give_opening and t.game.turn == 1 and stage == "place":
+                            rotation, square = (3, [-1, 0]) if corridor == "east" else (2, [0, -1])
+                            task = f"A winning plan starts by placing the straight at {square} with absolute rotation {rotation}. Choose your actual placement."
                         choice = native_decision(
-                            snap, model, 30, mode=arm, orient=orient, trace=log, note_file=notes
+                            snap,
+                            model,
+                            30,
+                            mode=arm,
+                            orient=orient,
+                            trace=log,
+                            note_file=notes,
+                            task=task,
                         )
                     else:
                         choice = infer(
@@ -133,9 +146,25 @@ if __name__ == "__main__":
         choices=("east", "north"),
         help="two-turn solitaire corridor with a directed straight in hand",
     )
+    cli.add_argument(
+        "--give-opening",
+        action="store_true",
+        help="supply the winning first placement in the solitaire hand control",
+    )
     args = cli.parse_args()
+    if args.give_opening and (not args.corridor or args.arms != ["hand"]):
+        cli.error("--give-opening requires a corridor and --arms hand")
     args.root.mkdir(exist_ok=True, parents=True)
     args.private.mkdir(exist_ok=True, parents=True)
     for seed in args.seeds:
         for arm in args.arms:
-            game(args.root, args.private, seed, args.model, arm, args.scope, corridor=args.corridor)
+            game(
+                args.root,
+                args.private,
+                seed,
+                args.model,
+                arm,
+                args.scope,
+                corridor=args.corridor,
+                give_opening=args.give_opening,
+            )
