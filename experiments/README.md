@@ -38,3 +38,5 @@ python -m footsteps solo --policy route --seed 59 --goal 6 0 --hand 2 --store 10
 The last command reconstructs an eight-turn win on a straight-line goal. To test a mechanic change, hold the seed panel fixed during development, then repeat the selected comparison on fresh seeds. Preserve full records of representative failures when investigating a policy.
 
 For multiplayer trials with model seats, see the [matched self-play games, mixed lineups and timing measurements](model-panel/README.md).
+
+The [ballot experiment](ballots/README.md) tests order sensitivity on frozen votes and compares model voters with scripted voters on matched live deals.

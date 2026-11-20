@@ -10,13 +10,31 @@ from http.client import HTTPException
 from pathlib import Path
 from random import Random
 
+from footsteps.board import distance
 from footsteps.ollama import Seat, infer, play_seat, request
 from footsteps.record import read, replay
 from footsteps.table import Table, paper_setup
 from footsteps.table_server import TableServer
 
 
-def run(models, guided, seed, output, named_moves=False, no_think=False, seats=4):
+def reference_vote(state):
+    if state["stage"] == "eliminate_vote":
+        return False
+    closer = distance(state["pending"], state["goal"]) < distance(state["marker"], state["goal"])
+    return closer == (state["role"] == "good")
+
+
+def run(
+    models,
+    guided,
+    seed,
+    output,
+    named_moves=False,
+    no_think=False,
+    seats=4,
+    named_ballots=False,
+    reference_ballots=False,
+):
     if len(models) == 1:
         models = models * seats
     if len(models) != seats:
@@ -49,14 +67,19 @@ def run(models, guided, seed, output, named_moves=False, no_think=False, seats=4
                     "start_ms": round(1000 * (start - epoch)),
                 }
                 try:
-                    choice = infer(
-                        snapshot,
-                        name,
-                        seconds,
-                        guided=guided,
-                        named_moves=named_moves,
-                        no_think=no_think,
-                    )
+                    if reference_ballots and row["stage"] in ("move_vote", "eliminate_vote"):
+                        row["model"] = "reference-voter"
+                        choice = {"vote": reference_vote(snapshot["state"])}
+                    else:
+                        choice = infer(
+                            snapshot,
+                            name,
+                            seconds,
+                            guided=guided,
+                            named_moves=named_moves,
+                            no_think=no_think,
+                            named_ballots=named_ballots,
+                        )
                     row["choice"] = json.dumps(choice, separators=(",", ":"))
                     return choice
                 except (OSError, HTTPException, ValueError, TypeError, KeyError) as exc:
@@ -133,5 +156,19 @@ if __name__ == "__main__":
     parser.add_argument("--named-moves", action="store_true")
     parser.add_argument("--no-think", action="store_true")
     parser.add_argument("--seats", type=int, choices=(3, 4), default=4)
+    parser.add_argument("--named-ballots", action="store_true")
+    parser.add_argument(
+        "--reference-ballots", action="store_true", help="use scripted voters on both ballot stages"
+    )
     args = parser.parse_args()
-    run(args.model, args.guided, args.seed, args.out, args.named_moves, args.no_think, args.seats)
+    run(
+        args.model,
+        args.guided,
+        args.seed,
+        args.out,
+        args.named_moves,
+        args.no_think,
+        args.seats,
+        args.named_ballots,
+        args.reference_ballots,
+    )

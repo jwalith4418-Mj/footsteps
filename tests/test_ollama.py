@@ -71,6 +71,31 @@ class ModelSeat(unittest.TestCase):
         )
 
     @patch("footsteps.ollama.request")
+    def test_named_ballots_decode_the_literal_in_either_order(self, request):
+        for stage in ("move_vote", "eliminate_vote"):
+            for votes in ([True, False], [False, True]):
+                snap = {
+                    **self.ballot,
+                    "state": {**self.ballot["state"], "stage": stage},
+                    "choices": {"vote": votes},
+                }
+                for name, vote in (("approve", True), ("reject", False)):
+                    request.return_value = {"message": {"content": json.dumps({"vote": name})}}
+                    self.assertEqual(infer(snap, "test", 1, named_ballots=True), {"vote": vote})
+                    payload = request.call_args.args[2]
+                    names = ["approve" if v else "reject" for v in votes]
+                    self.assertEqual(payload["format"]["properties"]["vote"]["enum"], names)
+                    self.assertEqual(
+                        json.loads(payload["messages"][1]["content"])["options"], {"vote": names}
+                    )
+        request.return_value = {"message": {"content": '{"vote":"pass"}'}}
+        with self.assertRaises(ValueError):
+            infer(self.ballot, "test", 1, named_ballots=True)
+        self.assertEqual(
+            model_request(self.build, "test", named_ballots=True), model_request(self.build, "test")
+        )
+
+    @patch("footsteps.ollama.request")
     def test_boolean_vote_and_multi_field_indices(self, request):
         request.return_value = {"message": {"content": '{"vote":1}'}}
         self.assertEqual(infer(self.ballot, "test", 1), {"vote": False})

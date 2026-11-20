@@ -107,7 +107,7 @@ useful progress. Passing on nomination is sensible without evidence. Bad: look f
 dead ends or opportunities to eliminate good seats. A good forward build may hurt your team."""
 
 
-def model_request(snapshot, model, *, guided=False, named_moves=False):
+def model_request(snapshot, model, *, guided=False, named_moves=False, named_ballots=False):
     state = snapshot["state"]
     fields = (
         "turn",
@@ -151,6 +151,11 @@ def model_request(snapshot, model, *, guided=False, named_moves=False):
         context["options"] = {"to": names}
         schema["properties"]["to"] = {"type": "string", "enum": names}
         instructions = "Choose one named action in options.to and return its name as the to field."
+    if named_ballots and state["stage"] in ("move_vote", "eliminate_vote"):
+        names = ["approve" if vote else "reject" for vote in choices["vote"]]
+        context["options"] = {"vote": names}
+        schema["properties"]["vote"] = {"type": "string", "enum": names}
+        instructions = "Choose approve to carry out the proposal or reject to decline it. Return its name as the vote field."
     return {
         "model": model,
         "stream": False,
@@ -166,21 +171,30 @@ def model_request(snapshot, model, *, guided=False, named_moves=False):
     }
 
 
-def infer(snapshot, model, seconds, *, guided=False, named_moves=False, no_think=False):
-    body = model_request(snapshot, model, guided=guided, named_moves=named_moves)
+def infer(
+    snapshot,
+    model,
+    seconds,
+    *,
+    guided=False,
+    named_moves=False,
+    no_think=False,
+    named_ballots=False,
+):
+    body = model_request(
+        snapshot, model, guided=guided, named_moves=named_moves, named_ballots=named_ballots
+    )
     if no_think:
         body["think"] = False
     answer = request(11434, "/api/chat", body, seconds)
-    indices = json.loads(answer["message"]["content"])
+    reply = json.loads(answer["message"]["content"])
     options = snapshot["choices"]
-    if not isinstance(indices, dict) or indices.keys() != options.keys():
+    if not isinstance(reply, dict) or reply.keys() != options.keys():
         raise ValueError("model returned unexpected fields")
-    if named_moves and snapshot["state"]["stage"] == "propose":
-        names = body["format"]["properties"]["to"]["enum"]
-        return {"to": options["to"][names.index(indices["to"])]}
     choice = {}
     for key, values in options.items():
-        i = indices[key]
+        field = body["format"]["properties"][key]
+        i = field["enum"].index(reply[key]) if field["type"] == "string" else reply[key]
         if type(i) is not int or not 0 <= i < len(values):
             raise ValueError("model returned an invalid option index")
         choice[key] = values[i]
