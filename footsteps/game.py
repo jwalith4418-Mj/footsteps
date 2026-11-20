@@ -69,6 +69,15 @@ def checked_placement(board, goal, marker, hand, choice):
     return {"tile": tile, "rotation": rotation, "at": list(dest)}
 
 
+def movement_winner(marker, goal, store_count):
+    """The public result once the shared marker's landing is known."""
+    if marker == goal:
+        return "good"
+    if store_count == 0:
+        return "bad"
+    return None
+
+
 class Game:
     def __init__(self, setup):
         setup = deepcopy(setup)
@@ -207,10 +216,9 @@ class Game:
                 self.stage = "eliminate_vote"
 
     def after_movement(self):
-        if self.marker == self.goal:
-            self.finish("good")
-        elif not self.store:
-            self.finish("bad")
+        winner = movement_winner(self.marker, self.goal, len(self.store))
+        if winner is not None:
+            self.finish(winner)
         else:
             self.queue = [i for i in self.alive if i > self.actor]
             self.queue += [i for i in self.alive if i <= self.actor]

@@ -12,7 +12,7 @@ from footsteps.board import rotate
 from footsteps.table import Table
 
 
-def position(sx, sy):
+def detour_table(sx, sy):
     trap = 8 if sx == 1 else 2
     detour = (4 if sy == 1 else 1) | (32 if sx == 1 else 128)
     table = Table(
@@ -31,6 +31,12 @@ def position(sx, sy):
         table.commit({"kind": "propose", "to": None})
     table.commit({"kind": "draw", "tiles": [0, 0]})
     table.started = True
+    table.deadline = 60
+    return table
+
+
+def position(sx, sy):
+    table = detour_table(sx, sy)
     state = table.game.view(0)
     state["draw_count"] = 2
     return state, table.choices(0, 0)

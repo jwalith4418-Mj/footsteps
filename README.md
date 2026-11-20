@@ -77,4 +77,4 @@ Code and technical materials use MIT. The original rulebook, worked game prose a
 
 Model seats can consult board tools and attach optional private explanations to an omniscient replay. [Seat tool catalog and roadmap](docs/seat-tools.md) · [Recording and viewing decision notes](docs/table.md#join-with-ollama)
 
-For a model seat that places tiles by native function call, use `--action-tools direct` or `--action-tools hand`. In hand mode, each physical copy can be turned privately and a placement commits its current orientation. Add `--all-decisions` to exercise native calls beyond construction. [Private hand and action protocol](docs/table.md#native-action-calls-and-private-hand-pieces)
+For a model seat that places tiles by native function call, use `--action-tools direct` or `--action-tools hand`. In hand mode, each physical copy can be turned privately and a placement commits its current orientation. Add `--all-decisions` to exercise native calls beyond construction. The host can capture held-copy turns with `--private-rotations FILE` for an omniscient replay. [Private hand and action protocol](docs/table.md#native-action-calls-and-private-hand-pieces)
