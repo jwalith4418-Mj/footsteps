@@ -90,6 +90,10 @@ class PrivateHand(unittest.TestCase):
         )
 
         def ask(port, path, body, left):
+            self.assertNotIn("zero-based", body["messages"][0]["content"].lower())
+            context = json.loads(body["messages"][1]["content"])
+            self.assertIn([0, 0], context["origins"])
+            self.assertNotIn("origin_indices_by_at_index", context)
             self.assertNotIn("format", body)
             self.assertGreater(left, 0)
             name, args = next(calls)
@@ -129,3 +133,95 @@ class PrivateHand(unittest.TestCase):
         t.submit(0, 3, {"to": None}, 0)
         pieces = t.view(0, 0)["pieces"]
         self.assertEqual(pieces, {"H2": (33, 3), "H4": (33, 0), "H5": (33, 0), "H6": (33, 0)})
+
+    def test_confirm_needs_matching_preview_and_can_revise_before_placing(self):
+        t = self.table()
+        snap = t.view(0, 0)
+        responses = iter(
+            [
+                ("commit_preview", {}),
+                ("preview_placement", {"piece": "H1", "x": -1, "y": 0}),
+                ("orient_tile", {"piece": "H1", "rotation": 1}),
+                ("commit_preview", {}),
+                ("preview_placement", {"piece": "H1", "x": -1, "y": 0}),
+                ("commit_preview", {}),
+            ]
+        )
+
+        def ask(port, path, body, seconds):
+            name, args = next(responses)
+            return {"message": {"tool_calls": [{"function": {"name": name, "arguments": args}}]}}
+
+        log = []
+        choice = native_decision(
+            snap,
+            "stub",
+            5,
+            mode="draft",
+            trace=log,
+            prospects=True,
+            orient=lambda h, r: t.orient(0, 1, h, r, 0),
+            request_fn=ask,
+        )
+        self.assertEqual(
+            [x["status"] for x in log], ["rejected", "ok", "ok", "rejected", "ok", "commit"]
+        )
+        self.assertFalse(log[1]["result"]["can_step_here"])
+        self.assertTrue(log[4]["result"]["can_step_here"])
+        self.assertIn("permanent_trap", log[4]["result"])
+        self.assertEqual(choice, {"piece": "H1", "at": [-1, 0], "expected_orientation": 1})
+        t.submit(0, 1, choice, 0)
+        self.assertEqual(t.game.marker, (0, 0))
+
+    def test_rotation_inspection_preserves_piece_and_board(self):
+        t = self.table()
+        snap = t.view(0, 0)
+        log = []
+        calls = iter(
+            [
+                ("inspect_rotations_at", {"piece": "H2", "x": -1, "y": 0}),
+                ("place_tile", {"piece": "H2", "x": -1, "y": 0}),
+            ]
+        )
+
+        def ask(port, path, body, left):
+            name, args = next(calls)
+            return {"message": {"tool_calls": [{"function": {"name": name, "arguments": args}}]}}
+
+        choice = native_decision(snap, "stub", 5, mode="fit", trace=log, request_fn=ask)
+        rows = log[0]["result"]["orientations"]
+        self.assertEqual([r["rotation"] for r in rows if r["can_step_here"]], [1])
+        self.assertEqual(choice["expected_orientation"], 0)
+        self.assertEqual(snap, t.view(0, 0))
+
+    def test_social_tools_reach_referee_with_literal_values(self):
+        t = self.table()
+        actions = [
+            ("place_tile", {"piece": "H2", "x": 0, "y": -1}),
+            ("return_tile", {"piece": "H1"}),
+            ("propose_step", {"x": 0, "y": -1}),
+            ("vote_move", {"approve": True}),
+            ("vote_move", {"approve": False}),
+            ("nominate", {"seat": 0}),
+            ("vote_removal", {"approve": True}),
+            ("vote_removal", {"approve": False}),
+            ("pass_nomination", {}),
+        ]
+        for seat, (name, args) in zip((0, 0, 0, 0, 1, 1, 0, 1, 0), actions, strict=True):
+            with self.subTest(name=name):
+
+                def ask(port, path, body, left, name=name, args=args):
+                    self.assertIn(name, [t["function"]["name"] for t in body["tools"]])
+                    return {
+                        "message": {"tool_calls": [{"function": {"name": name, "arguments": args}}]}
+                    }
+
+                t.submit(
+                    seat,
+                    t.revision,
+                    native_decision(t.view(seat, t.opens), "stub", 5, mode="hand", request_fn=ask),
+                    t.opens,
+                )
+        self.assertEqual(t.game.marker, (0, -1))
+        self.assertEqual(t.game.alive, [0, 1])
+        self.assertEqual(t.game.turn, 2)

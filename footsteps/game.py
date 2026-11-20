@@ -249,6 +249,8 @@ class Game:
             "board": sorted(self.board.items()),
             "placements": sorted(self.placements.items()),
         }
+        if self.stage == "place":
+            v["draw_count"] = self.last_draw
         if self.winner:
             v["roles"] = self.roles.copy()
         if seat is not None:
