@@ -14,4 +14,6 @@ Footsteps is the provisional title. The floor and exit suggest an indoor setting
 
 The [seat rating design](ratings.md) specifies matched substitutions on both teams and the evidence needed before publishing skill estimates.
 
-Tables may anchor coordinates at EXIT. The [matched origin trial](../experiments/exit-origin/README.md) checks the distance calculation and route choice separately. Public speech, actions and referee records share the origin chosen at setup.
+New games anchor coordinates at EXIT by default. The [matched origin trial](../experiments/exit-origin/README.md) checks the distance calculation and route choice separately. Public speech, actions and referee records share the origin chosen at setup.
+
+An optional live-table placement check asks the builder to read a specific edge. A second question asks whether the marker is on the chosen origin. Keep both available for model trials. Track first answers, corrections and random fallbacks separately from whether the move helped the team. [Placement trials](../experiments/placement-check/README.md)

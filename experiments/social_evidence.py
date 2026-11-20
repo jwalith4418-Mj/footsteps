@@ -56,6 +56,7 @@ def social_game(
     explicit_actions=False,
     social_tools=False,
     exit_origin=False,
+    placement_check=None,
 ):
     def elimination(snap, sink):
         if outcome_policy:
@@ -84,7 +85,13 @@ def social_game(
     setup["goal"] = list(goal)
     if exit_origin:
         setup = with_exit_origin(setup)
-    table = Table(setup, Random(f"draw/{seed}"), discussion=1, color_teams=color_teams)
+    table = Table(
+        setup,
+        Random(f"draw/{seed}"),
+        discussion=1,
+        color_teams=color_teams,
+        placement_check=placement_check,
+    )
     table.record["table_id"] = secrets.token_hex(16)
     for s in seats:
         table.join(s, 0)
@@ -96,6 +103,8 @@ def social_game(
     nominator = None
     with ExitStack() as files:
         sink = files.enter_context(open_private(notes))
+        if placement_check:
+            checks = files.enter_context(open_private(notes.with_suffix(".checks.jsonl")))
         if debate:
             muted_notes = files.enter_context(open_private(notes.with_suffix(".muted.jsonl")))
         while not table.game.winner:
@@ -146,19 +155,37 @@ def social_game(
                 elif is_guest:
                     choice = guest.choose(snap, sink)
                 elif model_floor:
-                    choice = infer(
-                        snap,
-                        model,
-                        30,
-                        guided=True,
-                        explicit_actions=explicit_actions,
-                        social_guidance=social_guidance,
-                        outcome_policy=outcome_policy,
-                        named_moves=True,
-                        named_ballots=True,
-                        no_think=True,
-                        note_file=sink,
-                    )
+                    attempts = []
+                    try:
+                        choice = infer(
+                            snap,
+                            model,
+                            30,
+                            guided=True,
+                            explicit_actions=explicit_actions,
+                            social_guidance=social_guidance,
+                            outcome_policy=outcome_policy,
+                            named_moves=True,
+                            named_ballots=True,
+                            no_think=True,
+                            note_file=sink,
+                            placement_attempts=attempts,
+                        )
+                    except (ValueError, TimeoutError) as exc:
+                        if not placement_check or stage != "place":
+                            raise
+                        checks.write(
+                            json.dumps(
+                                {"turn": state["turn"], "attempts": attempts, "fallback": str(exc)}
+                            )
+                            + "\n"
+                        )
+                        table.tick(table.deadline)
+                        continue
+                    if placement_check and stage == "place":
+                        checks.write(
+                            json.dumps({"turn": state["turn"], "attempts": attempts}) + "\n"
+                        )
                 elif stage == "place":
                     # The drawing seat knows whether it must return a tile. Read its draw receipt.
                     state["draw_count"] = int(snap["history"][-1]["text"].split()[2])
@@ -264,10 +291,18 @@ def main():
         action="store_true",
         help="offer a public floor-history lookup on nominations and removal ballots",
     )
-    parser.add_argument(
-        "--exit-origin", action="store_true", help="put EXIT at (0,0) at this table"
+    origins = parser.add_mutually_exclusive_group()
+    origins.add_argument("--exit-origin", dest="exit_origin", action="store_true", default=True)
+    origins.add_argument(
+        "--start-origin",
+        dest="exit_origin",
+        action="store_false",
+        help="reproduce historical START-centered panels",
     )
+    parser.add_argument("--placement-check", choices=("edge", "edge-and-marker"))
     args = parser.parse_args()
+    if args.placement_check and not args.model_floor:
+        parser.error("--placement-check requires --model-floor")
     if (args.action_brief or args.social_tools) and not (
         args.model_floor and args.outcome_policy and args.debate
     ):
@@ -332,6 +367,7 @@ def main():
                     args.outcome_policy,
                     goal=args.goal,
                     exit_origin=args.exit_origin,
+                    placement_check=args.placement_check,
                     explicit_actions=args.action_brief,
                     social_tools=args.social_tools,
                     kit=kit,

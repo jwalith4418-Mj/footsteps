@@ -44,7 +44,7 @@ game() {
   panel=$1
   layout=$2
   shift 2
-  python -m experiments.social_evidence --roles "$layout" --arm receipt --debate --model-floor \
+  python -m experiments.social_evidence --start-origin --roles "$layout" --arm receipt --debate --model-floor \
     --outcome-policy --kit-counts 29 29 --kit-seed 8700 --seeds 8602 \
     --out "$out/$panel" --private-notes "$notes/$panel" "$@"
 }

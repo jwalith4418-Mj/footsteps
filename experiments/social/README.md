@@ -65,7 +65,7 @@ notes=$(mktemp -d)
 game() {
   panel=$1
   shift
-  python -m experiments.social_evidence --out "$out/$panel" --private-notes "$notes/$panel" "$@"
+  python -m experiments.social_evidence --start-origin --out "$out/$panel" --private-notes "$notes/$panel" "$@"
 }
 game pilot --arm base --seeds 8001 8002
 game fresh-base --arm base --seeds 8101 8102

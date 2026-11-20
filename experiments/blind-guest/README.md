@@ -16,7 +16,7 @@ Four guest decision notes originally lacked the record identifier. The local vie
 
 ## Run another blind seat
 
-Start a host with a fresh empty exchange directory and separate destinations for the postgame record and private notes. Provide the guest only the copied rulebook and the terminal in the exchange directory. A new game chooses a fresh seed; add `--seed 1244867160` to reconstruct this deal. Decisions still depend on the participants. The virtual clock advances through referee phases when a decision is submitted. This playtest does not measure workstation timeouts.
+Start a host with a fresh empty exchange directory and separate destinations for the postgame record and private notes. Provide the guest only the copied rulebook and the terminal in the exchange directory. A new game chooses a fresh seed; add `--seed 1244867160 --start-origin` to reconstruct this deal. Decisions still depend on the participants. The virtual clock advances through referee phases when a decision is submitted. This playtest does not measure workstation timeouts.
 
 ```sh
 work=$(mktemp -d)

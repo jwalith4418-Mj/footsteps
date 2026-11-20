@@ -70,7 +70,7 @@ class Commands(unittest.TestCase):
         self.assertEqual(output.count("Return to store"), 1)
         r = read(path)
         self.assertEqual(
-            r["events"][1], {"kind": "place", "tile": 255, "rotation": 1, "at": [1, 0]}
+            r["events"][1], {"kind": "place", "tile": 255, "rotation": 1, "at": [-1, 0]}
         )
         self.assertEqual([e["votes"] for e in r["events"] if "votes" in e], [[True], [True]])
         self.assertEqual(replay(r).winner, "good")
@@ -189,7 +189,7 @@ class Commands(unittest.TestCase):
 
     def test_host_checkpoints_both_deals_at_launch_and_shutdown(self):
         for flags, seats in [
-            (("--exit-origin", "--crossing"), 4),
+            (("--start-origin", "--crossing"), 4),
             (("--crossing",), 4),
             (("--seats", "3", "--color-teams"), 3),
             (("--kit-counts", "29", "29", "--kit-seed", "8700"), 4),
@@ -213,7 +213,7 @@ class Commands(unittest.TestCase):
                     tiles = sum(record["setup"]["hands"], record["setup"]["store"].copy())
                     self.assertEqual(sum((t & 15).bit_count() for t in tiles), 29)
                     self.assertEqual(sum((t >> 4).bit_count() for t in tiles), 29)
-                if "--exit-origin" in flags:
+                if "--crossing" in flags and "--start-origin" not in flags:
                     self.assertEqual((record["format"], replay(record).marker), (2, (-2, 0)))
                     self.assertEqual(replay(record).goal, (0, 0))
                 elif "--crossing" in flags:

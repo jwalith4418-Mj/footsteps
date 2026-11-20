@@ -16,7 +16,7 @@ notes=$(mktemp -d)
 run() {
   panel=$1
   shift
-  python -m experiments.social_evidence --roles GBGB --arm receipt --debate --model-floor \
+  python -m experiments.social_evidence --start-origin --roles GBGB --arm receipt --debate --model-floor \
     --outcome-policy --seeds 8602 --out "$out/$panel" --private-notes "$notes/$panel" "$@"
 }
 run printed

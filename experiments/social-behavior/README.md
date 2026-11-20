@@ -77,7 +77,7 @@ done
 table() {
   panel=$1
   shift
-  python -m experiments.social_evidence --debate --arm receipt --bad-brief --model-floor --seeds 8501 \
+  python -m experiments.social_evidence --start-origin --debate --arm receipt --bad-brief --model-floor --seeds 8501 \
     --out "$out/$panel" --private-notes "$notes/$panel" "$@"
 }
 table table-base

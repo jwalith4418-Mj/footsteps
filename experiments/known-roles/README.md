@@ -34,7 +34,7 @@ python -m experiments.behavior_crossplay --strategy assisted --seeds 8411 --stor
 To play a four-seat model game with actual bad teammates, use an explicit seat layout. The deal, ballots and role disclosure follow base-1. The chosen lineup belongs to the postgame record. During play each agent receives only its own seat view.
 
 ```sh
-python -m experiments.social_evidence --roles GBGB --arm receipt --debate --model-floor \
+python -m experiments.social_evidence --start-origin --roles GBGB --arm receipt --debate --model-floor \
   --outcome-policy --seeds 8602 --out "$out/two-bad" --private-notes "$notes/two-bad"
 python -m footsteps view "$out/two-bad/8602-bad1+3.json" --omniscient \
   --notes "$notes/two-bad/8602-bad1+3.jsonl" -o "$notes/two-bad.html"

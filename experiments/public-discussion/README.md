@@ -19,7 +19,7 @@ out=$(mktemp -d)
 notes=$(mktemp -d)
 python -m experiments.minority_probe "$out/listener.csv"
 python -m experiments.minority_probe --speakers "$out/speakers.csv"
-python -m experiments.social_evidence --roles GBGBG --paired-fifth-hand --color-teams \
+python -m experiments.social_evidence --start-origin --roles GBGBG --paired-fifth-hand --color-teams \
   --arm receipt --debate --model-floor --outcome-policy --kit-counts 29 29 --kit-seed 8700 \
   --seeds 8602 --out "$out/five-colors" --private-notes "$notes/five-colors"
 python -m experiments.social_summary "$out"
