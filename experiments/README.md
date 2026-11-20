@@ -56,3 +56,5 @@ The [tile-density comparison](tile-density/README.md) tests uniform supplies of 
 The [minority-team games](minority/README.md) compare a lone obstructing player with a pair of obstructing players on a five-seat floor, and Good/Bad names with Blue/Red. They include the exact printed-kit listener position and a cooperative continuation after the lone Red is eliminated.
 
 The [public discussion comparison](public-discussion/README.md) follows a checkable accusation through three speakers after both teams were explicitly told they could bluff.
+
+In the [blinded guest-seat trial](blind-guest/README.md), an independent agent called a trap before voting to enter it, then used a true public correction to deflect suspicion after closing the floor.
