@@ -262,11 +262,11 @@ class Table:
                 if "expected_orientation" in choice:
                     expected = choice.pop("expected_orientation")
                     require(
-                        type(expected) is int
-                        and expected == orientation
-                        and "rotation" not in choice,
-                        "held orientation changed; refresh the hand",
+                        type(expected) is int and "rotation" not in choice,
+                        "choose an expected hand orientation or a direct rotation",
                     )
+                    if expected != orientation:
+                        raise DecisionConflict("held orientation changed; refresh the hand")
                 choice.setdefault("rotation", orientation)
         require(
             isinstance(choice, dict) and choice.keys() == fields.keys(), "invalid choice fields"
