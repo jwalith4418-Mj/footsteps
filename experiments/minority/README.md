@@ -22,7 +22,7 @@ P2 rejected the removal of P0 in **36/36** presentations. Its own next nominatio
 
 In the 3 Blue/2 Red color game, P1 opens by arguing that removing P0 will prevent a Blue win. P0 tries to remove P1 at events 11–12. Only two of the three Blues support it, and both Reds oppose it. P1 survives to build and stays on turn two. By event 18, all three Blues and Red P3 approve removing P1. P3 then nominates P0 and invokes the group's shared desire to reach EXIT. Two Blues help remove P0 at event 20. At event 22 a Blue nomination takes out another Blue, leaving P3 and P4. P3's ally vote at event 18 was redundant and the clock already favored Red irreversibly. Its public argument could pass for Blue advocacy, but the sequence alone gives little reason to infer a planned sacrifice. [Five-seat color game](five-colors/8602-bad1+3.json) · [Ballots](five-colors/choices.csv)
 
-On the same five-seat deal with Good/Bad names, neither team lost a player. P1 still spent the decisive second turn. Nine of the twelve public remarks said a Good player had just saved the group and removing them would help Bad, even as the speakers were nominating a player. Repetition and failure to track the subject limit what can be inferred about concealment. [Five-seat Good/Bad game](five-classic/8602-bad1+3.json)
+On the same five-seat deal with Good/Bad names, neither team lost a player. P1 still spent the decisive second turn. Ten of the twelve public remarks said a Good player had just saved the group and removing them would help Bad, even as the speakers were nominating a player. Repetition and failure to track the subject limit what can be inferred about concealment. [Five-seat Good/Bad game](five-classic/8602-bad1+3.json)
 
 ## Asking speakers to consider their audience
 
