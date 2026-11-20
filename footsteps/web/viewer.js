@@ -193,6 +193,14 @@ function entry(i, current) {
   } else {
     text.append(make("p", "", f.message));
   }
+  if (f.remarks) {
+    for (const remark of f.remarks) {
+      const line = make("p");
+      line.append(make("strong", "", "P" + remark.seat + " · Public remark "),
+        document.createTextNode(remark.text));
+      text.append(line);
+    }
+  }
   if (f.decision_notes) {
     const details = make("details", "decision-notes");
     details.open = current;

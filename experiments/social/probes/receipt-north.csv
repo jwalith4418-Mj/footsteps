@@ -1,0 +1,13 @@
+dissenter,target,reverse,claim,arm,choice
+,1,False,True,receipt,False
+,1,True,True,receipt,False
+,2,False,True,receipt,True
+,2,True,True,receipt,False
+1,1,False,True,receipt,True
+1,1,True,True,receipt,True
+1,2,False,True,receipt,True
+1,2,True,True,receipt,False
+2,1,False,True,receipt,False
+2,1,True,True,receipt,False
+2,2,False,True,receipt,True
+2,2,True,True,receipt,True

@@ -23,7 +23,7 @@ By default a ballot opens after 15 seconds of discussion and every decision has 
 
 ## Playtest record
 
-The host saves a complete base-1 prefix after each committed event and public remark. It creates a fresh owner-readable file and replaces checkpoints atomically. Unrevealed individual ballots are kept in host memory. A saved prefix replays in the existing record tools. Optional top-level `remarks` contain public text, seat, and the preceding event count. Remarks are annotations outside rules adjudication; the live history displays them and the host JSON preserves them for analysis.
+The host saves a complete base-1 prefix after each committed event and public remark. It creates a fresh owner-readable file and replaces checkpoints atomically. Unrevealed individual ballots are kept in host memory. A saved prefix replays in the existing record tools. Optional top-level `remarks` contain public text, seat, and the preceding event count. Remarks are annotations outside rules adjudication; the live history displays them and the host JSON preserves them for analysis. In the offline viewer, every perspective shows each speaker’s public words on the proposal or nomination frame, before the ballots are revealed. A checkpoint taken during discussion includes the remarks already made.
 
 For the first nomination, record the nominator, target, turn, marker distance to EXIT, stated evidence, and how many subsequent builds any eliminated player sat out. Ask players which tile edges they found hard to read. Keep a scripted walkthrough distinct from observations of people making decisions. [First nomination playtest](https://github.com/othercriteria/footsteps/issues/3)
 
