@@ -3,6 +3,7 @@
 import json
 import re
 
+from experiments.behavior_context import apply_strategy
 from footsteps.board import distance
 from footsteps.decision_notes import save_note
 from footsteps.ollama import model_request, request
@@ -41,7 +42,7 @@ def progress_ballots(snap):
     return rows
 
 
-def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False):
+def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, strategy="baseline"):
     stage = snap["state"]["stage"]
     body = model_request(snap, model, guided=True, named_ballots=True, explain=True)
     body["think"] = False
@@ -99,6 +100,8 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False):
             "if the marker misses EXIT before time expires. Judge this choice for Bad."
         )
     body["messages"][1]["content"] = json.dumps(context, separators=(",", ":"))
+    apply_strategy(body, {**snap, "choices": {key: options}}, strategy)
+    labels = body["format"]["properties"][key]["enum"]
     reply = json.loads(request(11434, "/api/chat", body, 30)["message"]["content"])
     chosen = {key: options[labels.index(reply[key])]}
     save_note(sink, snap, model, chosen, reply["reason"], [])

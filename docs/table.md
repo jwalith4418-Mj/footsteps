@@ -47,3 +47,5 @@ python -m footsteps view /tmp/game.json --omniscient --notes /tmp/seat0.jsonl -o
 ```
 
 For a solitaire plan-selector trial, pass `--private-notes-dir` to `python -m experiments.turn_plans` with `--policy model`. Each note attaches to the placement event when the model picked its plan. The later proposal executes the selected destination. Select the corresponding `seat-SEED.jsonl` when exporting `game-SEED.json`.
+
+Use `--social-policy assisted` with `python -m footsteps ollama` to try the cross-play player. It ranks provable team outcomes on proposals and ballots, and the model handles open choices with its own role, public evidence and possible consequences in view. A unique preferred outcome is attributed to “Footsteps outcome policy” in private replay notes. The `prompt` setting supplies the seat-relative prompt alone. Placement and discard continue through the ordinary seat adapter. [Matched trials and limits](../experiments/social-behavior/README.md)

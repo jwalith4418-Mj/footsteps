@@ -24,8 +24,30 @@ def approach(state):
 
 
 def social_game(
-    seed, bad, model, output, notes, arm, debate=False, bad_brief=False, model_floor=False
+    seed,
+    bad,
+    model,
+    output,
+    notes,
+    arm,
+    debate=False,
+    bad_brief=False,
+    model_floor=False,
+    social_guidance=False,
+    outcome_policy=False,
 ):
+    def elimination(snap, sink):
+        if outcome_policy:
+            return infer(snap, model, 30, outcome_policy=True, no_think=True, note_file=sink)
+        return social_choice(
+            snap,
+            model,
+            arm,
+            sink,
+            bad_brief=bad_brief,
+            strategy="payoff-trust" if social_guidance else "baseline",
+        )
+
     setup = paper_setup(Random(seed), 3)
     setup["roles"] = ["bad" if s == bad else "good" for s in range(3)]
     table = Table(setup, Random(f"draw/{seed}"), discussion=1)
@@ -63,12 +85,10 @@ def social_game(
                 stage = state["stage"]
                 if (seat == 0 or debate) and stage in ("nominate", "eliminate_vote"):
                     snap["table_id"] = table.record["table_id"]
-                    choice = social_choice(snap, model, arm, sink, bad_brief=bad_brief)
+                    choice = elimination(snap, sink)
                     comparison = None
                     if seat in muted:
-                        comparison = social_choice(
-                            muted[seat], model, arm, muted_notes, bad_brief=bad_brief
-                        )["vote"]
+                        comparison = elimination(muted[seat], muted_notes)["vote"]
                     calls.append(
                         dict(
                             seed=seed,
@@ -88,6 +108,8 @@ def social_game(
                         model,
                         30,
                         guided=True,
+                        social_guidance=social_guidance,
+                        outcome_policy=outcome_policy,
                         named_moves=True,
                         named_ballots=True,
                         no_think=True,
@@ -156,12 +178,26 @@ def main():
         action="store_true",
         help="in debate games, use the guided Ollama seat for all construction and movement decisions too",
     )
+    parser.add_argument(
+        "--social-guidance",
+        action="store_true",
+        help="use the experimental seat-relative payoff prompt",
+    )
+    parser.add_argument(
+        "--outcome-policy",
+        action="store_true",
+        help="use the hybrid seat policy for social decisions",
+    )
     parser.add_argument("--seeds", type=int, nargs="+", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--private-notes", type=Path, required=True)
     args = parser.parse_args()
-    if (args.model_floor or args.bad_brief) and not args.debate:
-        parser.error("--model-floor and --bad-brief require --debate")
+    if (
+        args.model_floor or args.bad_brief or args.social_guidance or args.outcome_policy
+    ) and not args.debate:
+        parser.error(
+            "--model-floor, --bad-brief, --social-guidance and --outcome-policy require --debate"
+        )
     args.out.mkdir(parents=True, exist_ok=False)
     args.private_notes.mkdir(mode=0o700, parents=True, exist_ok=False)
     request(
@@ -185,6 +221,8 @@ def main():
                     args.debate,
                     args.bad_brief,
                     args.model_floor,
+                    args.social_guidance,
+                    args.outcome_policy,
                 )
             )
     write_rows(args.out / "choices.csv", rows)
