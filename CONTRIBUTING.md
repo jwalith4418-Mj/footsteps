@@ -7,7 +7,7 @@ Check the issue and its linked pull requests before starting. Leave a short comm
 Start a topic branch from current `origin/main`. Include the issue number and a short description in its name. If workers share a checkout, use a separate worktree for each branch. For example, from the repository root:
 
 ```sh
-git fetch origin
+git fetch --prune origin
 git worktree add -b 4-tile-mix ../footsteps-4-tile-mix origin/main
 ```
 
@@ -34,6 +34,6 @@ Use the missing-line and branch report to pick a behavior and assert an observab
 
 ## Land against current main
 
-GitHub requires a PR with resolved review threads, a branch up to date with `main`, and a passing `rules` check from GitHub Actions. If another PR lands first, update the working branch, resolve conflicts there, and let CI rerun. Merge through GitHub after the gate clears. Force pushes and deletion of `main` are blocked, including for admins. Topic branches remain available for parallel work.
+GitHub requires a PR with resolved review threads, a branch up to date with `main`, and a passing `rules` check from GitHub Actions. If another PR lands first, update the working branch, resolve conflicts there, and let CI rerun. Merge through GitHub after the gate clears. Force pushes and deletion of `main` are blocked, including for admins. GitHub automatically deletes the remote head branch after merge. Use the PR link for the review and its merged commits. A local worktree or branch remains usable until its owner retires it. To keep this clone’s remote-tracking refs current on each fetch, run `git config --local remote.origin.prune true` once.
 
 The [ruleset definition](.github/rulesets/main.json) records the GitHub setting. Maintainers changing the gate should keep the live ruleset and this file in sync. Coordinate any rename of the required CI job with the ruleset update.
