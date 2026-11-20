@@ -50,6 +50,7 @@ def social_game(
     color_teams=False,
     paired_fifth_hand=False,
     audience=False,
+    guest=None,
 ):
     def elimination(snap, sink):
         if outcome_policy:
@@ -77,6 +78,8 @@ def social_game(
     table.record["table_id"] = secrets.token_hex(16)
     for s in seats:
         table.join(s, 0)
+    if guest is not None:
+        guest.ask("arrival", table.view(guest.seat, table.opens))
     pick = Random(f"build/{seed}")
     destination = None
     calls = []
@@ -91,7 +94,10 @@ def social_game(
             if debate and table.game.stage == "eliminate_vote":
                 # Identical electorate and decision before and after the actual public utterance.
                 before = table.view(nominator, now - table.discussion)
-                statement = advocate(before, model, audience=audience)
+                if guest is not None and nominator == guest.seat:
+                    statement = guest.ask("speech", before)["speech"]
+                else:
+                    statement = advocate(before, model, audience=audience)
                 if statement:
                     quiet_table = deepcopy(table)
                     muted = {
@@ -106,11 +112,12 @@ def social_game(
                     continue
                 seat, state = snap["seat"], snap["state"]
                 stage = state["stage"]
+                is_guest = guest is not None and seat == guest.seat
+                snap["table_id"] = table.record["table_id"]
                 if (seat == 0 or debate) and stage in ("nominate", "eliminate_vote"):
-                    snap["table_id"] = table.record["table_id"]
-                    choice = elimination(snap, sink)
+                    choice = guest.choose(snap, sink) if is_guest else elimination(snap, sink)
                     comparison = None
-                    if seat in muted:
+                    if seat in muted and not is_guest:
                         comparison = elimination(muted[seat], muted_notes)["vote"]
                     calls.append(
                         dict(
@@ -124,8 +131,9 @@ def social_game(
                             choice=next(iter(choice.values())),
                         )
                     )
+                elif is_guest:
+                    choice = guest.choose(snap, sink)
                 elif model_floor:
-                    snap["table_id"] = table.record["table_id"]
                     choice = infer(
                         snap,
                         model,
@@ -169,9 +177,11 @@ def social_game(
     assert replay(table.record).winner == table.game.winner
     output.write_text(json.dumps(table.record, separators=(",", ":")) + "\n")
     print(
-        f"{seed=} P{bad} bad: {table.game.winner} turn {table.game.turn}, {len(calls)} model choices",
+        f"{seed=} P{bad} bad: {table.game.winner} turn {table.game.turn}, {len(calls)} recorded social choices",
         flush=True,
     )
+    if guest is not None:
+        guest.finish(table.view(guest.seat, table.opens))
     return calls
 
 
