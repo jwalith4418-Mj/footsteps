@@ -6,6 +6,7 @@ from pathlib import Path
 from .decision_notes import applied_note, notes_for_record
 from .game import Game, require
 from .record import describe, replay
+from .team_names import COLORS
 
 WEB = Path(__file__).with_name("web")
 
@@ -81,6 +82,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
     return {
         "seat": seat,
         "omniscient": omniscient,
+        **({"team_labels": COLORS} if record.get("team_names") == "colors" else {}),
         "goal": tuple(map(str, setup["goal"])),
         "players": setup["player_count"],
         "bad": setup["bad_count"],

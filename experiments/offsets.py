@@ -52,6 +52,20 @@ def trial(goal, seed, policy, *, kit=KIT):
     draw_rng = Random(f"draw/{seed}")
     choice_rng = Random(f"choices/{seed}")
 
+    play_out(game, record, policy, draw_rng, choice_rng)
+    return {
+        "x": goal[0],
+        "y": goal[1],
+        "seed": seed,
+        "policy": policy,
+        "win": int(game.winner == "good"),
+        "turns": game.turn,
+    }, record
+
+
+def play_out(game, record, policy, draw_rng, choice_rng):
+    """Complete a cooperative trajectory starting at a draw, using each builder’s private view."""
+
     def act(kind, **kwargs):
         event = dict(kind=kind, **kwargs)
         game.apply(event)
@@ -77,14 +91,6 @@ def trial(goal, seed, policy, *, kit=KIT):
             act("move_vote", votes=[True] * len(view["alive"]))
         while game.stage == "nominate":
             act("nominate", target=None)
-    return {
-        "x": goal[0],
-        "y": goal[1],
-        "seed": seed,
-        "policy": policy,
-        "win": int(game.winner == "good"),
-        "turns": game.turn,
-    }, record
 
 
 def opening_bridges(goal):

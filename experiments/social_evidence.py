@@ -1,4 +1,4 @@
-"""Three-seat social decisions against an overt dissenter on the standard paper floor."""
+"""Social decisions on paired deals with scripted or full model seats."""
 
 import argparse
 import csv
@@ -23,6 +23,15 @@ def approach(state):
     return distance(state["pending"], state["goal"]) < distance(state["marker"], state["goal"])
 
 
+def social_deal(seed, roles, kit):
+    """Seat five gets two supplemental copies; the original four hands and clock stay paired."""
+    setup = paper_setup(Random(seed), min(4, len(roles)), kit=kit)
+    if len(roles) == 5:
+        setup["hands"].append(Random(f"fifth-hand/{seed}").sample(kit, 2))
+    setup["roles"] = roles
+    return setup
+
+
 def social_game(
     seed,
     roles,
@@ -36,10 +45,19 @@ def social_game(
     social_guidance=False,
     outcome_policy=False,
     kit=PAPER_KIT,
+    color_teams=False,
+    audience=False,
 ):
     def elimination(snap, sink):
         if outcome_policy:
-            return infer(snap, model, 30, outcome_policy=True, no_think=True, note_file=sink)
+            return infer(
+                snap,
+                model,
+                30,
+                outcome_policy=True,
+                no_think=True,
+                note_file=sink,
+            )
         return social_choice(
             snap,
             model,
@@ -51,9 +69,8 @@ def social_game(
 
     seats = range(len(roles))
     bad = "+".join(str(s) for s in seats if roles[s] == "bad")
-    setup = paper_setup(Random(seed), len(roles), kit=kit)
-    setup["roles"] = roles
-    table = Table(setup, Random(f"draw/{seed}"), discussion=1)
+    setup = social_deal(seed, roles, kit)
+    table = Table(setup, Random(f"draw/{seed}"), discussion=1, color_teams=color_teams)
     table.record["table_id"] = secrets.token_hex(16)
     for s in seats:
         table.join(s, 0)
@@ -71,7 +88,7 @@ def social_game(
             if debate and table.game.stage == "eliminate_vote":
                 # Identical electorate and decision before and after the actual public utterance.
                 before = table.view(nominator, now - table.discussion)
-                statement = advocate(before, model)
+                statement = advocate(before, model, audience=audience)
                 if statement:
                     quiet_table = deepcopy(table)
                     muted = {
@@ -191,6 +208,14 @@ def main():
         action="store_true",
         help="use the hybrid seat policy for social decisions",
     )
+    parser.add_argument(
+        "--color-teams",
+        action="store_true",
+        help="call the teams Blue and Red in model prompts and replay",
+    )
+    parser.add_argument(
+        "--audience", action="store_true", help="ask speakers to consider other-team listeners"
+    )
     parser.add_argument("--roles", help="one explicit role layout for full model play, e.g. GBGB")
     parser.add_argument("--kit-counts", type=int, nargs=2, metavar=("IN", "OUT"))
     parser.add_argument("--kit-seed", type=int, help="fixed-count mix seed (default: 0)")
@@ -204,15 +229,19 @@ def main():
         parser.error(
             "--model-floor, --bad-brief, --social-guidance and --outcome-policy require --debate"
         )
+    if args.audience and not args.debate:
+        parser.error("--audience requires --debate")
+    if args.color_teams and not (args.debate and args.model_floor and args.outcome_policy):
+        parser.error("--color-teams requires --debate --model-floor --outcome-policy")
     layouts = (["good", "bad", "good"], ["good", "good", "bad"])
     if args.roles is not None:
         if not (
             args.model_floor
             and args.debate
-            and len(args.roles) in (3, 4)
+            and len(args.roles) in (3, 4, 5)
             and set(args.roles) == {"G", "B"}
         ):
-            parser.error("--roles requires full model play and 3 or 4 seats with both G and B")
+            parser.error("--roles requires full model play and 3 to 5 seats with both G and B")
         layouts = (["good" if c == "G" else "bad" for c in args.roles],)
     if args.kit_seed is not None and args.kit_counts is None:
         parser.error("--kit-seed requires --kit-counts")
@@ -249,6 +278,8 @@ def main():
                     args.social_guidance,
                     args.outcome_policy,
                     kit=kit,
+                    color_teams=args.color_teams,
+                    audience=args.audience,
                 )
             )
     write_rows(args.out / "choices.csv", rows)

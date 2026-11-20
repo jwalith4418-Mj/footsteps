@@ -1,6 +1,6 @@
 # Footsteps · base rules 1
 
-A group explores a tiled floor. The good team wants the marker to reach the exit. The bad team wants to exhaust the tile store first.
+A group explores a tiled floor. The good team wants the marker to reach the exit. The bad team wants to exhaust the tile store first. Tables can call the exit team **Blue** and the team obstructing it **Red**. Everyone knows both objectives and the starting team sizes under either naming convention.
 
 ## Setup
 

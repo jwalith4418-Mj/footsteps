@@ -55,6 +55,7 @@ def main():
     table.add_argument(
         "--discussion", default=15, type=float, help="discussion seconds before each ballot"
     )
+    table.add_argument("--color-teams", action="store_true", help="use Blue and Red team names")
     supply = table.add_mutually_exclusive_group()
     supply.add_argument(
         "--kit-counts",
@@ -100,7 +101,7 @@ def main():
         if args.command == "ollama":
             seat = Seat(getpass("Private seat link: ").strip())
             with open_private(args.private_notes) if args.private_notes else nullcontext() as notes:
-                winner = play_seat(
+                play_seat(
                     seat,
                     args.model,
                     args.budget,
@@ -117,7 +118,6 @@ def main():
                         note_file=notes,
                     ),
                 )
-            print(f"{winner.capitalize()} team wins.")
         elif args.command == "table":
             if not 0 <= args.port <= 65535:
                 parser.error("--port must be between 0 and 65535")

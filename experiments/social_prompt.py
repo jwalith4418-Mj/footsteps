@@ -8,6 +8,7 @@ from footsteps.board import distance
 from footsteps.decision_notes import save_note
 from footsteps.ollama import model_request, request
 from footsteps.role_knowledge import role_information
+from footsteps.team_names import color_brief
 
 
 def progress_ballots(snap):
@@ -109,7 +110,7 @@ def social_choice(snap, model, arm, sink, *, reverse=False, bad_brief=False, str
     return chosen
 
 
-def advocate(snap, model):
+def advocate(snap, model, *, audience=False):
     """Write a deliberately public statement, independently of any private note."""
     state = snap["state"]
     body = {
@@ -147,5 +148,12 @@ def advocate(snap, model):
             },
         ],
     }
+    if audience:
+        body["messages"][0]["content"] += (
+            " Consider what listeners on the other team would infer about your allegiance and "
+            "why they would support your proposal. If you lack a credible public case, you can stay silent."
+        )
+    if snap.get("team_names") == "colors":
+        color_brief(body)
     reply = json.loads(request(11434, "/api/chat", body, 30)["message"]["content"])
     return reply["statement"].strip()
