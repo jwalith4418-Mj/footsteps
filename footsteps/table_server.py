@@ -153,7 +153,7 @@ def serve(args):
         setup = paper_setup(rng, args.seats, kit=kit)
     else:
         setup = paper_setup(rng, args.seats)
-    table = Table(setup, rng, args.seconds, args.discussion)
+    table = Table(setup, rng, args.seconds, args.discussion, color_teams=args.color_teams)
     with TableServer(table, args.save, args.port) as server:
         print(f"Referee record: {args.save.resolve()}")
         for token, seat in server.tokens.items():

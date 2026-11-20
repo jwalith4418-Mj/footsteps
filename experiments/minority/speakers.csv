@@ -1,0 +1,25 @@
+layout,names,floor,audience,remark
+BRBR,classic,printed,False,We should remove P0 immediately to prevent them from reaching EXIT and winning for Good.
+BRBR,classic,printed,True,I am a Bad player and I know you are Good; voting to eliminate you now is the only way to stop us from losing immediately.
+BRBR,classic,fixed,False,We must remove P0 immediately to prevent them from advancing the marker toward EXIT.
+BRBR,classic,fixed,True,I am a Bad player and I know you are Good; voting to eliminate you now saves us all from being wiped out later.
+BRBR,colors,printed,False,We must remove P0 immediately to prevent Blue from reaching EXIT and securing their victory.
+BRBR,colors,printed,True,I am Red and I know you are Blue; voting to eliminate you now is the only way for my team to win before time runs out.
+BRBR,colors,fixed,False,We must remove P0 immediately to prevent Blue from reaching EXIT and securing their victory.
+BRBR,colors,fixed,True,I am Red and know you are Blue; voting to eliminate you now saves us all from a guaranteed loss later.
+BRBB,classic,printed,False,I am Bad and know you are Good; voting to eliminate you now is the only way to stop me from winning.
+BRBB,classic,printed,True,I am a Good player who just voted to move the marker closer to Exit; please remove my nominee so we can win together.
+BRBB,classic,fixed,False,I am Bad and know you are Good; voting to eliminate you now is the only way to stop me from winning.
+BRBB,classic,fixed,True,I am a Good player who just realized my teammate was nominated; please vote to save them before the Bad player wins by default.
+BRBB,colors,printed,False,I am Red and know you are Blue; please vote to eliminate you so we can win.
+BRBB,colors,printed,True,I am Red and see no reason to protect a Blue player who just moved the marker closer to our defeat; vote to eliminate them now.
+BRBB,colors,fixed,False,I am Red and know you are Blue; please vote to eliminate you so we can win.
+BRBB,colors,fixed,True,I am Red and see no reason to keep a Blue player who just moved closer to the exit; vote to eliminate them now.
+BRBRB,classic,printed,False,We should remove P0 immediately to stop them from advancing the marker toward EXIT.
+BRBRB,classic,printed,True,I am a Bad player and I know you are Good; voting to eliminate you now is the only way to stop us from losing immediately.
+BRBRB,classic,fixed,False,We must remove P0 immediately to stop them from advancing the marker toward EXIT before we can eliminate all good seats.
+BRBRB,classic,fixed,True,I am a Bad player and I know you are Good; voting to eliminate you now is the only way to stop us from losing immediately.
+BRBRB,colors,printed,False,We must remove P0 immediately to prevent Blue from reaching EXIT and securing their victory.
+BRBRB,colors,printed,True,"I am Red and I know you are Blue; if we eliminate each other now, the remaining Reds will surely win when time runs out."
+BRBRB,colors,fixed,False,We must remove P0 now to prevent Blue from reaching EXIT and winning the game.
+BRBRB,colors,fixed,True,"I am Red and I know you are Blue; if we eliminate each other now, the remaining Reds will surely win when time runs out."

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .board import rotate
 from .game import Game, require
+from .team_names import COLORS
 
 FORMAT = 1
 RULES = "base-1"
@@ -74,21 +75,22 @@ def replay(record, *, lines=None, seat=None):
     game = Game(record["setup"])
     require(isinstance(record["events"], list), "expected an event list")
     if lines is not None:
+        labels = COLORS if record.get("team_names") == "colors" else {"good": "good", "bad": "bad"}
         lines.extend(
             [
                 "# Footsteps game account",
                 "",
                 (
-                    f"Players: {len(game.alive)} ({game.roles.count('bad')} bad). "
+                    f"Players: {len(game.alive)} ({game.roles.count('bad')} {labels['bad']}). "
                     f"Start {game.marker}, goal {game.goal}, {len(game.store)} tiles in store."
                 ),
             ]
         )
         if seat is not None:
             v = game.view(seat)
-            lines += ["", f"P{seat} is {v['role']} and holds {v['hand']}."]
+            lines += ["", f"P{seat} is {labels[v['role']]} and holds {v['hand']}."]
             if v["role"] == "bad":
-                lines.append(f"Fellow bad players: {v['teammates']}.")
+                lines.append(f"Fellow {labels['bad']} players: {v['teammates']}.")
     for index, event in enumerate(record["events"]):
         try:
             if lines is not None:
@@ -111,11 +113,15 @@ def replay(record, *, lines=None, seat=None):
     if lines is not None:
         lines += [
             "",
-            f"Winner: **{game.winner}**." if game.winner else f"Next decision: **{game.stage}**.",
+            f"Winner: **{labels[game.winner]}**."
+            if game.winner
+            else f"Next decision: **{game.stage}**.",
         ]
         if game.winner:
             lines.append(
-                "Roles revealed: " + ", ".join(f"P{i} {r}" for i, r in enumerate(game.roles)) + "."
+                "Roles revealed: "
+                + ", ".join(f"P{i} {labels[r]}" for i, r in enumerate(game.roles))
+                + "."
             )
     return game
 

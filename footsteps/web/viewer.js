@@ -2,6 +2,7 @@
 
 const data = JSON.parse(document.getElementById("transcript").textContent);
 const frames = data.frames;
+const teamName = (role) => data.team_labels?.[role] || role;
 const el = (id) => document.getElementById(id);
 const coordinate = (p) => "(" + p.join(", ") + ")";
 const same = (a, b) => a && b && a[0] === b[0] && a[1] === b[1];
@@ -116,7 +117,7 @@ function drawFloor(f) {
 }
 
 function decision(f) {
-  if (f.winner) return (f.winner === "good" ? "Good" : "Bad") + " team wins";
+  if (f.winner) return (data.team_labels?.[f.winner] || (f.winner === "good" ? "Good" : "Bad")) + " team wins";
   if (f.stage === "move_vote") return "Vote on moving to " + coordinate(f.pending);
   if (f.stage === "eliminate_vote") return "Vote on eliminating P" + f.pending;
   if (f.stage === "nominate") return "P" + f.nominator + " may nominate";
@@ -162,8 +163,8 @@ function showState(f) {
     if (!f.alive.includes(i)) tags.push("Eliminated");
     else if (!f.winner && i === f.actor) tags.push("Builder");
     else tags.push("Active");
-    if (f.roles) tags.push(f.roles[i]);
-    else if (i === data.seat) tags.push(f.role);
+    if (f.roles) tags.push(teamName(f.roles[i]));
+    else if (i === data.seat) tags.push(teamName(f.role));
     row.append(make("strong", "", "P" + i), make("small", "", tags.join(" · ")));
     el("roster").append(row);
   }
@@ -177,7 +178,7 @@ function showState(f) {
   }
   if (f.teammates) {
     el("allies").hidden = false;
-    el("allies").textContent = "Bad teammates: " + (f.teammates.map((i) => "P" + i).join(", ") || "none");
+    el("allies").textContent = (data.team_labels?.bad || "Bad") + " teammates: " + (f.teammates.map((i) => "P" + i).join(", ") || "none");
   }
 }
 
@@ -282,7 +283,7 @@ document.addEventListener("keydown", (event) => {
 
 document.title = data.title + " · Footsteps";
 el("title").textContent = data.title;
-el("summary").textContent = data.players + (data.players === 1 ? " player" : " players") + " · " + data.bad + " bad · Goal " + coordinate(data.goal);
+el("summary").textContent = data.players + (data.players === 1 ? " player" : " players") + " · " + data.bad + " " + teamName("bad") + " · Goal " + coordinate(data.goal);
 el("perspective").textContent = data.omniscient ? "Omniscient · All hands and roles" : data.seat === null ? "Public view" : "P" + data.seat + " · Private view";
 const turns = new Map();
 frames.forEach((f, i) => { if (!turns.has(f.turn)) turns.set(f.turn, i); });

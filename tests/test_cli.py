@@ -190,7 +190,7 @@ class Commands(unittest.TestCase):
     def test_host_checkpoints_both_deals_at_launch_and_shutdown(self):
         for flags, seats in [
             (("--crossing",), 4),
-            (("--seats", "3"), 3),
+            (("--seats", "3", "--color-teams"), 3),
             (("--kit-counts", "29", "29", "--kit-seed", "8700"), 4),
         ]:
             path = self.tmp / f"host-{flags[0]}.json"
@@ -206,6 +206,8 @@ class Commands(unittest.TestCase):
                 record = read(path)
                 self.assertEqual(len(record["setup"]["roles"]), seats)
                 self.assertEqual(replay(record).stage, "draw")
+                if "--color-teams" in flags:
+                    self.assertEqual(record["team_names"], "colors")
                 if "--kit-counts" in flags:
                     tiles = sum(record["setup"]["hands"], record["setup"]["store"].copy())
                     self.assertEqual(sum((t & 15).bit_count() for t in tiles), 29)

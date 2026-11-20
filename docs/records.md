@@ -2,6 +2,8 @@
 
 The full JSON has a numeric `format` (currently 1), a `rules` identifier (`base-1`), a realized `setup`, and an ordered `events` array. Seat indices start at zero. Setup contains the goal coordinate, roles and starting hands in seat order, and the bag as an array of face numbers with multiplicity. Seat 0 builds first. Face IDs preserve true orientation. The referee rotates a face only when applying the placement.
 
+An optional top-level `"team_names": "colors"` displays the `good` team as Blue and the `bad` team as Red. Both names describe the same base-1 objectives. Stored role IDs and legal actions are identical. Replays show player remarks and private notes verbatim.
+
 | Phase / kind | Required fields | Interpretation |
 |---|---|---|
 | draw | tiles | Realized faces in draw order, with multiplicity |

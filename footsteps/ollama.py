@@ -13,6 +13,7 @@ from .role_knowledge import role_information
 from .seat_tools import query, spec_for
 from .social import SOCIAL_STAGES, shortlist, social_request
 from .solo import exits
+from .team_names import COLORS, color_brief
 
 RULES = """You play one seat at a Footsteps table. Good wants the shared marker to reach
 the exit. Bad wants time to run out or all good seats eliminated. The builder places a tile
@@ -268,6 +269,8 @@ def infer(
     )
     if social:
         social_request(body, snapshot, explain=note_file is not None, human=outcome_policy)
+    if snapshot.get("team_names") == "colors":
+        color_brief(body)
     if no_think:
         body["think"] = False
     used = []
@@ -327,4 +330,7 @@ def play_seat(seat, model, budget, *, decide=infer, report=print, request_note_i
                     continue
         time.sleep(0.15)
         snapshot = seat.call("/state")
-    return snapshot["state"]["winner"]
+    winner = snapshot["state"]["winner"]
+    label = COLORS[winner] if snapshot.get("team_names") == "colors" else winner.capitalize()
+    report(f"{label} team wins.")
+    return winner

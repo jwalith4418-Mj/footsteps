@@ -28,7 +28,7 @@ def fixed_kit(rng, size, entrances, exits):
 
 
 def paper_setup(rng, seats=4, *, kit=PAPER_KIT):
-    require(seats in (3, 4), "use three or four paper-kit seats")
+    require(seats in (3, 4, 5), "use three to five seats with this tile supply")
     require(len(kit) == len(PAPER_KIT), "use a sixteen-tile kit")
     tiles = list(kit)
     rng.shuffle(tiles)
@@ -47,7 +47,7 @@ class DecisionConflict(ValueError):
 
 
 class Table:
-    def __init__(self, setup, rng, seconds=60, discussion=15):
+    def __init__(self, setup, rng, seconds=60, discussion=15, *, color_teams=False):
         require(isfinite(seconds) and seconds > 0, "decision time must be positive")
         require(isfinite(discussion) and discussion >= 0, "discussion time must be nonnegative")
         self.game = Game(setup)
@@ -55,6 +55,8 @@ class Table:
         self.seconds = seconds
         self.discussion = discussion
         self.record = new_record(setup)
+        if color_teams:
+            self.record["team_names"] = "colors"
         self.history = [[] for _ in self.game.roles]
         self.ready = set()
         self.started = False
@@ -158,6 +160,7 @@ class Table:
         )
         end = self.opens if phase == "discussion" else self.deadline
         return {
+            **({"team_names": "colors"} if self.record.get("team_names") == "colors" else {}),
             "seat": seat,
             "phase": phase,
             "revision": self.revision,
