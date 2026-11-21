@@ -212,6 +212,12 @@ function entry(i, current) {
     }
     text.append(details);
   }
+  for (const trace of f.thinking_traces || []) {
+    const details = make("details", "decision-notes");
+    details.append(make("summary", "", "P" + trace.seat + " · " + trace.model + " · " + trace.label));
+    details.append(make("pre", "thinking-trace", trace.thinking || "No thinking text returned."));
+    text.append(details);
+  }
   if (f.decision_notes) {
     const details = make("details", "decision-notes");
     details.open = current;
@@ -313,4 +319,5 @@ el("scrub").disabled = frames.length === 1;
 el("scrub").oninput = () => go(Number(el("scrub").value));
 el("prev").onclick = () => go(index - 1);
 el("next").onclick = () => go(index + 1);
-go(0);
+const linkedEvent = /^#event=([0-9]+)$/.exec(location.hash);
+go(linkedEvent ? Number(linkedEvent[1]) : 0);
