@@ -47,8 +47,45 @@ def digest(note):
     return hashlib.sha256(note.encode()).hexdigest()
 
 
+def draft_reply(model, messages, options, *, thinking, limit, timeout):
+    return request(
+        11434,
+        "/api/chat",
+        {
+            "model": model,
+            "stream": False,
+            "think": thinking,
+            "messages": messages,
+            "options": options | {"num_predict": limit},
+        },
+        timeout,
+    )
+
+
+def finish_draft(model, messages, options, draft):
+    return draft_reply(
+        model,
+        [
+            *messages,
+            {"role": "assistant", "content": draft},
+            {
+                "role": "user",
+                "content": "Finish your private pregame note now. Give only the 100–200 word note you want restored during play.",
+            },
+        ],
+        options,
+        thinking=False,
+        limit=1024,
+        timeout=180,
+    )
+
+
 def write_note(model, cue, seed, owner, log):
-    extended_context = {"deliberate-16k": 16384, "deliberate-32k": 32768}.get(cue)
+    extended_context = {
+        "deliberate-16k": 16384,
+        "deliberate-32k": 32768,
+        "finish-draft": 16384,
+    }.get(cue)
     thinking = cue == "deliberate" or extended_context is not None
     hint = CUES["invariants" if thinking or cue == "clarified-invariants" else cue]
     messages = [
@@ -60,24 +97,22 @@ def write_note(model, cue, seed, owner, log):
     ]
     options = {"num_ctx": extended_context or CONTEXT, "temperature": 0.7, "seed": seed}
     limits = (512, 1024)
-    if extended_context:
+    if cue == "finish-draft":
+        limits = (3072,)
+    elif extended_context:
         limits = (extended_context - 2048,)
     elif thinking:
         limits = (3072, 6144) if seed == 1 else (3072,)
     attempts = []
     usage = {}
     for limit in limits:
-        response = request(
-            11434,
-            "/api/chat",
-            {
-                "model": model,
-                "stream": False,
-                "think": thinking,
-                "messages": messages,
-                "options": options | {"num_predict": limit},
-            },
-            2400 if extended_context else (480 if thinking else 120),
+        response = draft_reply(
+            model,
+            messages,
+            options,
+            thinking=thinking,
+            limit=limit,
+            timeout=2400 if extended_context else (480 if thinking else 120),
         )
         if extended_context:
             usage = {
@@ -88,6 +123,20 @@ def write_note(model, cue, seed, owner, log):
                 "done_reason": response.get("done_reason"),
             }
         attempts.append(limit)
+        if cue == "finish-draft" and response.get("done_reason") == "length":
+            # The model's intermediate work stays in memory until its own writing pass ends.
+            # No raw draft enters the owner's memo file, referee data or playing context.
+            draft = "\n".join(
+                part
+                for field in ("thinking", "content")
+                if (part := response["message"].get(field))
+            )
+            if draft:
+                response = finish_draft(model, messages, options, draft)
+                usage["writing_tokens"] = response.get("eval_count")
+                usage["writing_seconds"] = round(response.get("total_duration", 0) / 1e9, 2)
+                usage["writing_done_reason"] = response.get("done_reason")
+                attempts.append(1024)
         note = response["message"]["content"].strip()
         if note and response.get("done_reason") != "length":
             break
@@ -221,9 +270,20 @@ def main(argv=None):
         choices=(16384, 32768),
         help="retry invariant preparation with thinking on, seed 1, reserving 2048 tokens for input. Ballots still use 8192",
     )
+    arms.add_argument(
+        "--finish-draft",
+        action="store_true",
+        help="use a 16k context and ask the same writer to finish a capped 3072-token thinking pass",
+    )
     args = cli.parse_args(argv)
     if args.phase == "teach":
-        if args.private or args.clarified or args.deliberate or args.preparation_context:
+        if (
+            args.private
+            or args.clarified
+            or args.deliberate
+            or args.preparation_context
+            or args.finish_draft
+        ):
             cli.error("teach takes just the model and a new ballot output path")
         with args.output.open("x") as log:
             transfer(MODELS[args.model], [], log, control_cue="taught-none")
@@ -237,6 +297,8 @@ def main(argv=None):
         cues, seeds = ("clarified-invariants",), (1,)
     if args.preparation_context:
         cues, seeds = (f"deliberate-{args.preparation_context // 1024}k",), (1,)
+    if args.finish_draft:
+        cues, seeds = ("finish-draft",), (1,)
     if args.phase == "transfer":
         expected = {(cue, seed) for seed in seeds for cue in cues}
         notes = read_notes(model, args.private, expected)
@@ -249,7 +311,9 @@ def main(argv=None):
                 model,
                 notes,
                 log,
-                include_control=not (args.deliberate or args.preparation_context),
+                include_control=not (
+                    args.deliberate or args.preparation_context or args.finish_draft
+                ),
                 control_cue="clarified-none" if args.clarified else "none",
             )
     print(json.dumps(resident_model(model)))

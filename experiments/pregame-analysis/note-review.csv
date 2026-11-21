@@ -13,3 +13,4 @@ model,cue,seed,net_one_per_turn,bound,observation
 27b,invariants,3,no,partial,Calls for comparing minimum tiles needed with the store. Also favors distance-reducing votes but does not derive a lower bound on remaining moves from the marker position.
 27b,clarified-invariants,1,no,partial,Recognizes a necessary construction budget by comparing new tiles needed to connect START and EXIT with the store. Does not compare remaining marker steps from its current position.
 9b,clarified-invariants,1,no,incorrect,Correctly says that staying spends a move. Compares store size to the number of living Blue seats and incorrectly assigns the exhaustion outcome by seat count.
+27b,finish-draft,1,no,incorrect,Recognizes directed reachability and the final one-tile deadline. Claims drawing two and returning one keeps the store constant until the final draw. Gives no sound distance threshold.

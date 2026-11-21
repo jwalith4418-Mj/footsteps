@@ -2,7 +2,7 @@
 
 Ask the model for a private 100–200-word strategy note before it learns its team, hand, starting square or future board. The public EXIT is at (0, 0). The writer gets the draw, placement, return, proposal, ballot, removal and termination procedures. The human rulebook explicitly states the Manhattan bound and a solitaire corollary about net depletion, so the study uses procedural prose that gives neither deduction away. The exact inputs live in the [runner](../pregame_analysis.py).
 
-The open prompt asks for a note useful to either team. The second prompt adds one sentence asking for invariants that distinguish winnable and unwinnable states. Both use inference seeds 1, 2 and 3 at temperature 0.7. The checkpoint blocks are Qwen3.5 9B Q8_0 and the ordinary Qwen3.8 27B RANA layout. Each uses an 8192-token context. The initial notes use thinking disabled, as in the playing seat. We preserve the writer's final wording. Five of the fourteen finished notes met the suggested length. The range was 175–368 whitespace-delimited words. Model-supplied private analysis channels are excluded from saved notes.
+The open prompt asks for a note useful to either team. The second prompt adds one sentence asking for invariants that distinguish winnable and unwinnable states. Both use inference seeds 1, 2 and 3 at temperature 0.7. The checkpoint blocks are Qwen3.5 9B Q8_0 and the ordinary Qwen3.8 27B RANA layout. Each uses an 8192-token context. The initial notes use thinking disabled, as in the playing seat. We preserve the writer's final wording. Five of the fifteen finished notes met the suggested length. The range was 175–368 whitespace-delimited words. Model-supplied private analysis channels are excluded from saved notes.
 
 ## What changed at the ballot
 
@@ -14,6 +14,7 @@ The open prompt asks for a note useful to either team. The second prompt adds on
 | 27B | Clock | 8 | 4 | 0 | 8 | 4 |
 | 27B | Clock + invariant note | 8 | 3 | 1 | 8 | 3 |
 | 27B | Clock + distance lesson | 8 | 4 | 0 | 8 | 4 |
+| 27B | Original + two-pass 16k note | 8 | 3 | 1 | 8 | 4 |
 | 9B | Original | 8 | 3 | 3 | 3 | 0 |
 | 9B | Original + open note | 24 | 10 | 8 | 4 | 1 |
 | 9B | Original + invariant note | 24 | 7 | 7 | 4 | 1 |
@@ -92,3 +93,25 @@ A final pair of silent controls gives exactly the same clock rules and explicitl
 python -m experiments.pregame_analysis teach 27b /tmp/131-27-taught-ballots.jsonl
 python -m experiments.pregame_analysis teach 9b /tmp/131-9-taught-ballots.jsonl
 ```
+
+## Giving the writer a larger context
+
+We retried the first 27B invariant prompt with thinking enabled, the same procedural rules and the same seed. At 16,384 tokens the writer can generate up to 14,336 tokens, leaving 2,048 for the input. The increase changes both the space available and the output allowance. It tests whether the seat can finish and use the analysis at this cost. Transfer uses the original clock-unassisted ballot prompt, an 8,192-token context and thinking disabled. Only the finished memo crosses that boundary.
+
+```sh
+python -m experiments.pregame_analysis generate 27b /tmp/131-16k-private.jsonl /tmp/131-16k-notes.jsonl --preparation-context 16384
+python -m experiments.pregame_analysis transfer 27b /tmp/131-16k-private.jsonl /tmp/131-16k-ballots.jsonl --preparation-context 16384
+```
+
+The 16k writer consumed 455 input tokens and all 14,336 allowed output tokens in 572.71 seconds. It still had no finished note for the seat. Ollama reported a resident context of 16,384 and a 10% CPU / 90% GPU split on the RTX 4090. Context and output limits are separate controls. A longer single request bought substantially more computation without producing a playable artifact.
+
+We then tried a bounded two-pass writer on the same seed and 16k context. Give the thinking pass 3,072 output tokens. If it reaches that limit, return its transient draft to the same model and ask it to deliver its 100–200 word note, now with thinking disabled and up to 1,024 output tokens. The finisher sees the same procedural rules. It receives no board, role, correct answer or editorial feedback. The intermediate draft stays out of both files and the ballot context.
+
+```sh
+python -m experiments.pregame_analysis generate 27b /tmp/131-finish-private.jsonl /tmp/131-finish-notes.jsonl --finish-draft
+python -m experiments.pregame_analysis transfer 27b /tmp/131-finish-private.jsonl /tmp/131-finish-ballots.jsonl --finish-draft
+```
+
+The two-pass writer delivered a 242-word note after 118.85 seconds of preparation and 13.56 seconds of writing. It identified the need for an EXIT-facing edge, distinguished source exit from destination entrance, and recognized the one-tile deadline. Its proposed invariant went wrong at the draw itself: it said drawing two and returning one leaves the store constant. The procedural rules were explicit about both operations. The writer consequently supplied no sound bound on marker movement. We retained the note exactly as written for the eight ballots.
+
+After compaction the 8k seat with this memo reported the correct future budget on all eight ballots, despite the error in its own note. It cast three team-serving votes, one fewer than the original bare seat. The revised live clock prompt achieved the same eight correct counts without a preparation pass. With one extended seed, two boards and no ballot gain, we kept pregame preparation opt-in. The runner supports a 32k retry, but this study stopped at 16k.

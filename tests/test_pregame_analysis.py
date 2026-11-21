@@ -165,3 +165,41 @@ class PregameAnalysis(unittest.TestCase):
             self.assertEqual(key["sha256"], digest(memo["note"]))
             self.assertEqual(key["cue"], "clarified-invariants")
             self.assertNotIn("note", key)
+
+    def test_extended_preparation_records_realized_usage_and_retains_only_the_note(self):
+        owner, receipt = io.StringIO(), io.StringIO()
+        reply = {
+            "done_reason": "stop",
+            "total_duration": 1000000000,
+            "eval_count": 7100,
+            "prompt_eval_count": 350,
+            "message": {"content": "finished", "thinking": "unsaved draft"},
+        }
+        with patch("experiments.pregame_analysis.request", return_value=reply) as infer:
+            write_note(MODELS["27b"], "deliberate-16k", 1, owner, receipt)
+        settings = infer.call_args.args[2]["options"]
+        self.assertEqual(settings["num_ctx"], 16384)
+        self.assertGreater(settings["num_predict"], 6144)
+        self.assertEqual(json.loads(owner.getvalue())["note"], "finished")
+        record = json.loads(receipt.getvalue())
+        self.assertEqual(
+            (record["generated_tokens"], record["seconds"], record["done_reason"]),
+            (7100, 1, "stop"),
+        )
+        self.assertNotIn("unsaved draft", owner.getvalue() + receipt.getvalue())
+
+    def test_two_pass_writer_keeps_intermediate_text_out_of_both_artifacts(self):
+        owner, receipt = io.StringIO(), io.StringIO()
+        replies = [
+            {"done_reason": "length", "message": {"thinking": "draft-only text", "content": ""}},
+            {"done_reason": "stop", "message": {"content": "my finished strategy"}},
+        ]
+        with patch("experiments.pregame_analysis.request", side_effect=replies) as infer:
+            write_note(MODELS["27b"], "finish-draft", 1, owner, receipt)
+        first, second = (call.args[2] for call in infer.call_args_list)
+        self.assertTrue(first["think"])
+        self.assertFalse(second["think"])
+        self.assertIn("draft-only text", second["messages"][-2]["content"])
+        self.assertNotIn("draft-only text", owner.getvalue() + receipt.getvalue())
+        self.assertEqual(json.loads(owner.getvalue())["note"], "my finished strategy")
+        self.assertEqual(json.loads(receipt.getvalue())["attempt_limits"], [3072, 1024])

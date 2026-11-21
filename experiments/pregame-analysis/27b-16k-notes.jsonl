@@ -1,0 +1,1 @@
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "deliberate-16k", "seed": 1, "sha256": null, "status": "unfinished", "attempt_limits": [14336], "preparation_context": 16384, "prompt_tokens": 455, "generated_tokens": 14336, "seconds": 572.71, "done_reason": "length"}
