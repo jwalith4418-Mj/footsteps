@@ -92,3 +92,5 @@ The [ballot polling study](ballot-polling/README.md) compares reveal guidance an
 The [four-seat move-budget probes](move-budget/README.md) pair a losing outward step with the only viable retreat and replay silent, scripted and model-generated discussion into matched voters.
 
 The [private pregame analysis study](pregame-analysis/README.md) asks two local models to discover useful principles before the deal, restores their own notes after compaction, and tests transfer to movement ballots on both teams.
+
+The [open social tables](open-tables/README.md) follow two fresh deals with the live movement clock, discussion and independent persistent seats.
