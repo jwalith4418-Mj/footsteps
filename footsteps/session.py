@@ -276,11 +276,12 @@ class Session:
         self.refresh()
         return {"accepted": True, **self.opportunity()}
 
-    def step(self, model, *, infer=request, budget=30, force_compact=False):
+    def step(self, model, *, infer=request, budget=30, force_compact=False, compact_when=None):
         self.refresh()
         if self.snap["phase"] == "over":
             return None
         revision = self.snap["revision"]
+        force_compact = force_compact or bool(compact_when and compact_when(self.snap))
         offered = self.tools()
         notice = self.opportunity()
         recent = self.snap["history"][self.last_read :]
@@ -344,6 +345,7 @@ class Session:
             self.near_capacity = True
         return {
             "revision": revision,
+            "forced_compaction": force_compact,
             "tool": name,
             "arguments": args,
             "result": result,

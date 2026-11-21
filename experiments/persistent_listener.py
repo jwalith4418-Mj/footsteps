@@ -8,10 +8,10 @@ from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from random import Random
-from time import monotonic
+from time import monotonic, sleep
 
 from footsteps.decision_notes import open_private
-from footsteps.ollama import Seat, request
+from footsteps.ollama import Seat, ServiceError, request
 from footsteps.record import read, replay, starting_game
 from footsteps.session import Session
 from footsteps.table import Table
@@ -109,11 +109,15 @@ def play_table(
                     session.refresh()
                     if session.snap["phase"] == "over":
                         break
-                    force = bool(not forced and compact_when and compact_when(session.snap))
-                    row = measured_step(session, model, force_compact=force)
+                    row = measured_step(
+                        session, model, compact_when=None if forced else compact_when
+                    )
                     if row is None:
                         continue
-                    if force and row["result"].get("compacted"):
+                    force = row.get("forced_compaction", False)
+                    if force and (
+                        row["result"].get("compacted") or row["result"].get("context_recovered")
+                    ):
                         forced = True
                     print(json.dumps(row), file=trace, flush=True)
                     public = public_call(row, model, force)
@@ -165,13 +169,17 @@ def measured_step(session, model, **kwargs):
     start = monotonic()
     try:
         return session.step(model, **kwargs)
-    except TimeoutError:
+    except (TimeoutError, ServiceError) as exc:
+        if isinstance(exc, ServiceError) and exc.status < 500:
+            raise
+        error = "request timed out" if isinstance(exc, TimeoutError) else str(exc)
+        sleep(0.15)
         # The table's clock continues. Its eventual record determines whether a choice was missed.
         return {
             "revision": revision,
             "tool": None,
             "arguments": {},
-            "result": {"error": "request timed out"},
+            "result": {"error": error},
             "prompt_tokens": None,
             "reply_tokens": None,
             "inference_seconds": round(monotonic() - start, 3),
@@ -195,8 +203,8 @@ def public_call(row, model, force):
             filters=row["arguments"],
             entry_ids=[e["id"] for e in row["result"].get("entries", [])],
         )
-    if row["result"].get("error") == "request timed out":
-        public["request_timeout"] = True
+    if row["tool"] is None and row["prompt_tokens"] is None:
+        public["request_error"] = row["result"]["error"]
     return public
 
 
