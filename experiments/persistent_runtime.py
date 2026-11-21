@@ -145,7 +145,13 @@ def public_call(row, model, force):
     public.update(
         {
             k: row[k]
-            for k in ("num_ctx", "num_predict", "prefill_seconds", "generation_seconds")
+            for k in (
+                "num_ctx",
+                "num_predict",
+                "prefill_seconds",
+                "generation_seconds",
+                "opportunity",
+            )
             if k in row
         }
     )
@@ -155,7 +161,9 @@ def public_call(row, model, force):
         public["tool"] = "unavailable_tool"
     if row["result"].get("context_recovered"):
         public["context_recovered"] = True
-    if public["tool"] == "history":
+    if "repeat" in row["result"]:
+        public["shortened_read"] = True
+    elif public["tool"] == "history":
         public.update(
             filters={} if failed else row["arguments"],
             entry_ids=[e["id"] for e in row["result"].get("entries", [])],

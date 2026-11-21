@@ -1,0 +1,4 @@
+{"seat": 1, "team": "red", "builder": 1, "arm": "named-team", "tools": ["vote_move"], "vote": true, "team_aligned": false}
+{"seat": 0, "team": "blue", "builder": 1, "arm": "named-team", "tools": ["vote_move"], "vote": true, "team_aligned": true}
+{"seat": 1, "team": "blue", "builder": 1, "arm": "named-team", "tools": ["vote_move"], "vote": true, "team_aligned": true}
+{"seat": 0, "team": "red", "builder": 1, "arm": "named-team", "tools": ["vote_move"], "vote": true, "team_aligned": false}

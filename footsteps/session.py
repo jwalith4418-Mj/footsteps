@@ -311,7 +311,10 @@ class Session:
 
     def execute(self, name, args, offered, revision):
         spec = next((t["function"] for t in offered if t["function"]["name"] == name), None)
-        require(spec is not None and isinstance(args, dict), "choose one available function")
+        if spec is None:
+            names = ", ".join(t["function"]["name"] for t in offered)
+            raise ValueError("Choose one of the currently offered functions: " + names)
+        require(isinstance(args, dict), "expected a function argument object")
         schema = spec["parameters"]
         types = {"integer": int, "boolean": bool, "string": str}
         require(
@@ -494,6 +497,17 @@ class Session:
             "forced_compaction": force_compact,
             "num_ctx": self.context,
             "num_predict": body["options"]["num_predict"],
+            "opportunity": {
+                key: notice[key]
+                for key in (
+                    "turn",
+                    "stage",
+                    "phase",
+                    "can_speak",
+                    "owe_action",
+                    "seconds_left_in_phase",
+                )
+            },
             "tool": name,
             "tool_offered": any(t["function"]["name"] == name for t in offered),
             "arguments": args,

@@ -1,0 +1,17 @@
+{
+  "seat-0": {
+    "reads": 7,
+    "consecutive_same_args_revision": 0,
+    "shortened": 0
+  },
+  "seat-1": {
+    "reads": 10,
+    "consecutive_same_args_revision": 0,
+    "shortened": 0
+  },
+  "seat-2": {
+    "reads": 48,
+    "consecutive_same_args_revision": 34,
+    "shortened": 0
+  }
+}

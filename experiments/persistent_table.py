@@ -24,8 +24,8 @@ def speaking_seconds(seat, revision):
     return 0
 
 
-def play_seat(seat, model, queue, log, trace, context, request_budget):
-    session = Session(seat, inspect_rotations=True, movement_context=True, context=context)
+def play_seat(seat, model, queue, log, trace, context, request_budget, session_class=Session):
+    session = session_class(seat, inspect_rotations=True, movement_context=True, context=context)
     queued = 0
     discussion = None
 
@@ -66,20 +66,23 @@ def play_seat(seat, model, queue, log, trace, context, request_budget):
             print(json.dumps(public), file=log, flush=True)
 
 
-def play(root, private, model, context, seconds, discussion_seconds):
+def play(
+    root, private, model, context, seconds, discussion_seconds, *, table=None, session_class=Session
+):
     private.mkdir(exist_ok=False)
-    table = Table(
-        {
-            "roles": ["blue", "red", "blue"],
-            "start": [-2, 0],
-            "goal": [0, 0],
-            "hands": [[40, 0], [65, 0], [68, 0]],
-            "store": [65, 40, 255],
-        },
-        Random(103),
-        seconds=seconds,
-        discussion=discussion_seconds,
-    )
+    if table is None:
+        table = Table(
+            {
+                "roles": ["blue", "red", "blue"],
+                "start": [-2, 0],
+                "goal": [0, 0],
+                "hands": [[40, 0], [65, 0], [68, 0]],
+                "store": [65, 40, 255],
+            },
+            Random(103),
+            seconds=seconds,
+            discussion=discussion_seconds,
+        )
     with (
         live_table(root, table, model, context=context) as (_, seats),
         ThreadPoolExecutor(1) as queue,
@@ -91,15 +94,15 @@ def play(root, private, model, context, seconds, discussion_seconds):
                 (root / f"seat-{i}.jsonl").open("x") as log,
                 open_private(private / f"seat-{i}.jsonl") as trace,
             ):
-                play_seat(seats[i], model, queue, log, trace, context, seconds)
+                play_seat(seats[i], model, queue, log, trace, context, table.seconds, session_class)
 
-        with ThreadPoolExecutor(3) as clients:
+        with ThreadPoolExecutor(len(seats)) as clients:
             list(clients.map(run, seats))
         timing = {
             "model": model,
             "num_ctx": context,
-            "decision_seconds": seconds,
-            "discussion_seconds": discussion_seconds,
+            "decision_seconds": table.seconds,
+            "discussion_seconds": table.discussion,
             "play_seconds": round(monotonic() - start, 2),
         }
         timing["resident"] = resident_model(model)
@@ -135,7 +138,7 @@ def report(root):
     service_seconds = 0
     compact_seconds = 0
     compactions = 0
-    for i in range(3):
+    for i in range(len(g.roles)):
         calls = list(map(json.loads, (root / f"seat-{i}.jsonl").read_text().splitlines()))
         for c in calls:
             latencies.append(c["inference_seconds"])
