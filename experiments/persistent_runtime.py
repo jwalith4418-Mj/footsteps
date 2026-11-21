@@ -161,6 +161,11 @@ def public_call(row, model, force):
         public["tool"] = "unavailable_tool"
     if row["result"].get("context_recovered"):
         public["context_recovered"] = True
+    if public["tool"] == "wait" and not failed:
+        if row["result"].get("wait_status") == "action_required":
+            public["wait_status"] = "action_required"
+        if row["arguments"].get("force") is True:
+            public["force_wait_requested"] = True
     if "repeat" in row["result"]:
         public["shortened_read"] = True
     elif public["tool"] == "history":

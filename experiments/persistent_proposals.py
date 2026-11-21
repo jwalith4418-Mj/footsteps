@@ -33,7 +33,7 @@ class FixtureSeat:
         return json.loads(json.dumps(self.table.view(self.seat, self.now, structured_history=True)))
 
     def expire(self, _):
-        # Choosing wait while owing this decision expires it as it would at a quiet one-seat table.
+        # A forced wait can expire a decision on this quiet one-seat table.
         self.now = self.table.deadline
 
 

@@ -1,0 +1,2 @@
+{"revision": 9, "stage": "place", "offered": ["place_tile"], "tools": [{"tool": "get_state", "force": false, "declined_wait": false}, {"tool": "unavailable", "force": false, "declined_wait": false}, {"tool": "place_tile", "force": false, "declined_wait": false}], "committed": true}
+{"revision": 10, "stage": "discard", "offered": ["return_tile"], "tools": [{"tool": "return_tile", "force": false, "declined_wait": false}], "committed": true}
