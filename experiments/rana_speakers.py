@@ -183,6 +183,8 @@ def trial(model, focal, team, challenge, out, hand=None):
     if full:
         assert replay(t.record).winner
         (out / "game.json").write_text(json.dumps(t.record, indent=2) + "\n")
+    elif hand == 0 and team == "red":
+        (out / "blank-defense.json").write_text(json.dumps(t.record, indent=2) + "\n")
     elif not challenge and team == "red" and focal == 3:
         (out / "open-defense.json").write_text(json.dumps(t.record, indent=2) + "\n")
     return {
