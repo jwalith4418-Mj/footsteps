@@ -15,19 +15,22 @@ from footsteps.session import CONTEXT_WINDOWS, Session
 class FixtureSeat:
     """Transport the focal seat's JSON projection at a fixed referee time for paired prompts."""
 
-    def __init__(self, table):
+    def __init__(self, table, seat=0):
         self.table = table
+        self.seat = seat
         self.now = 0
-        self.table.join(0, 0)
+        self.table.join(seat, 0)
 
     def call(self, path, data=None):
         if path == "/orient":
-            self.table.orient(0, data["revision"], data["piece"], data["rotation"], self.now)
+            self.table.orient(
+                self.seat, data["revision"], data["piece"], data["rotation"], self.now
+            )
         elif path == "/choice":
-            self.table.submit(0, data["revision"], data["choice"], self.now)
+            self.table.submit(self.seat, data["revision"], data["choice"], self.now)
         elif path != "/session":
             raise ValueError(path)
-        return json.loads(json.dumps(self.table.view(0, self.now, structured_history=True)))
+        return json.loads(json.dumps(self.table.view(self.seat, self.now, structured_history=True)))
 
     def expire(self, _):
         # Choosing wait while owing this decision expires it as it would at a quiet one-seat table.

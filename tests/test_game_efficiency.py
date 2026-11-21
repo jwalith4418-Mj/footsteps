@@ -1,3 +1,4 @@
+import json
 import unittest
 from collections import defaultdict
 from pathlib import Path
@@ -7,6 +8,8 @@ from experiments.efficiency_audit import reserve_audit
 from experiments.game_efficiency import IdleBudgetSession, RepeatAwareSession
 from experiments.persistent_panel import corridor
 from experiments.persistent_proposals import FixtureSeat
+from experiments.return_recovery import prepared
+from experiments.team_objective import ballot
 from footsteps.record import read
 
 
@@ -27,6 +30,27 @@ class EfficiencyStudy(unittest.TestCase):
         call("place_tile", piece="H1", x=-1, y=0)
         self.assertIn("held", call("get_state"))
         self.assertIn("return_tile", call("get_state")["available_commit_tools"])
+
+    def test_frozen_return_comparison_changes_only_the_last_error(self):
+        control = prepared(6, False)
+        named = prepared(6, True)
+        self.assertEqual(control.messages[:-1], named.messages[:-1])
+        a, b = (json.loads(s.messages[-1]["content"]) for s in (control, named))
+        self.assertIn("return_tile", b.pop("error"))
+        self.assertNotIn("return_tile", a.pop("error"))
+        self.assertEqual(a, b)
+
+    def test_objective_arms_keep_sealed_ballots_and_same_seat_projection(self):
+        control, named = (ballot(1, "red", arm, remarks=True) for arm in ("control", "named-team"))
+        self.assertEqual(control.messages[1:], named.messages[1:])
+        self.assertIn("for Red to win", named.messages[0]["content"])
+        self.assertFalse(named.snap["voted"])
+        self.assertEqual(named.snap["choices"], {"vote": [True, False]})
+        self.assertEqual(named.snap["history"][-1]["speaker"], 0)
+        self.assertNotIn("votes", named.snap)
+        other = ballot(0, "blue", "objective")
+        self.assertNotIn("red_teammates", other.role())
+        self.assertEqual(len(control.snap["history"]), len(other.snap["history"]) + 2)
 
     def test_idle_budget_defers_inference_until_a_visible_change(self):
         session = IdleBudgetSession.__new__(IdleBudgetSession)

@@ -14,7 +14,16 @@ MODEL = "qwen3.5:9b-q8_0"
 READ_TOOLS = {"get_state", "get_role", "history", "inspect_rotations_at", "preview_placement"}
 
 
-class RepeatAwareSession(Session):
+class ControlSession(Session):
+    """Keep the original error reply for reproducing the five full games."""
+
+    def execute(self, name, args, offered, revision):
+        if not any(t["function"]["name"] == name for t in offered) or not isinstance(args, dict):
+            raise ValueError("choose one available function")
+        return super().execute(name, args, offered, revision)
+
+
+class RepeatAwareSession(ControlSession):
     """Compare immediate repeated reads on exactly the same private-view cursor."""
 
     def reset(self, *, recovered=False):
@@ -48,7 +57,7 @@ class RepeatAwareSession(Session):
         }
 
 
-class IdleBudgetSession(Session):
+class IdleBudgetSession(ControlSession):
     """One background inference per visible change; ordinary discussion and decisions stay open."""
 
     last_idle_cursor = None
@@ -88,7 +97,7 @@ if __name__ == "__main__":
     args = cli.parse_args()
     seconds = 45
     discussion = 30 if args.mode == "social" else 0
-    session_class = Session
+    session_class = ControlSession
     if args.repeat_aware:
         session_class = RepeatAwareSession
     elif args.idle_budget:

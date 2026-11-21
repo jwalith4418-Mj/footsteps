@@ -90,16 +90,51 @@ def audit(root, base=15, cap=30, refill=3):
             counts["errors"] += row["error"]
             counts["calls"] += 1
             calls[seat, row["revision"]].append(row)
+            if row.get("num_predict") and row.get("reply_tokens") == row["num_predict"]:
+                counts["at_token_cap"] += 1
+                costs["at_token_cap"] += service(row)
     outcomes = list(reserve_audit(record, calls, base, cap, refill))
-    elapsed = json.loads((root / "timing.json").read_text())["play_seconds"]
+    timing = json.loads((root / "timing.json").read_text())
+    elapsed = timing["play_seconds"]
     timely = sum(not o["missed"] for o in outcomes)
+    windows = (
+        {(o["seat"], o["rev"]) for o in outcomes if o["stage"] in ("move_vote", "eliminate_vote")}
+        if timing["discussion_seconds"]
+        else set()
+    )
+    speakers = {(r["seat"], r["after_event"]) for r in record.get("remarks", [])}
+    tail_seconds = {}
+    for rev in sorted({rev for _, rev in windows}):
+        eligible = {seat for seat, r in windows if r == rev}
+        if any((seat, rev) not in speakers for seat in eligible):
+            continue
+        remaining = [
+            r["discussion"]["seconds_after_reply"]
+            for seat in eligible
+            for r in calls[seat, rev]
+            if r["tool"] == "speak" and not r["error"] and r["discussion"]
+        ]
+        if len(remaining) == len(eligible):
+            tail_seconds[rev] = min(remaining)
+    game = starting_game(record)
+    steps = 0
+    for event in record["events"]:
+        before = game.marker
+        game.apply(event)
+        steps += game.marker != before
     return {
         "game": root.name,
+        "winner": game.winner,
+        "turns": game.turn,
+        "steps": steps,
+        "speaking_windows": len(windows),
+        "windows_with_remark": len(windows & speakers),
         "wall": elapsed,
         "timely": timely,
         "owed": len(outcomes),
         "timely_per_minute": round(timely * 60 / elapsed, 2),
         "remarks": len(record.get("remarks", [])),
+        "discussion_left_at_last_reply": tail_seconds,
         "calls": dict(counts),
         "seconds": {k: round(v, 2) for k, v in costs.items()},
         "reserve_draws": sum(o["wall_left_at_first_draw"] is not None for o in outcomes),

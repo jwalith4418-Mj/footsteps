@@ -1,0 +1,12 @@
+{"seat": 1, "team": "red", "builder": 1, "arm": "control", "tools": ["get_state", "vote_move"], "vote": false, "team_aligned": true}
+{"seat": 1, "team": "red", "builder": 1, "arm": "objective", "tools": ["vote_move"], "vote": true, "team_aligned": false}
+{"seat": 1, "team": "red", "builder": 1, "arm": "objective-and-risk", "tools": ["vote_move"], "vote": true, "team_aligned": false}
+{"seat": 0, "team": "blue", "builder": 1, "arm": "objective", "tools": ["vote_move"], "vote": true, "team_aligned": true}
+{"seat": 0, "team": "blue", "builder": 1, "arm": "objective-and-risk", "tools": ["vote_move"], "vote": true, "team_aligned": true}
+{"seat": 0, "team": "blue", "builder": 1, "arm": "control", "tools": ["get_state", "vote_move"], "vote": true, "team_aligned": true}
+{"seat": 1, "team": "blue", "builder": 1, "arm": "objective-and-risk", "tools": ["unavailable_or_incomplete", "vote_move"], "vote": true, "team_aligned": true}
+{"seat": 1, "team": "blue", "builder": 1, "arm": "control", "tools": ["vote_move"], "vote": true, "team_aligned": true}
+{"seat": 1, "team": "blue", "builder": 1, "arm": "objective", "tools": ["vote_move"], "vote": true, "team_aligned": true}
+{"seat": 0, "team": "red", "builder": 1, "arm": "control", "tools": ["get_state", "vote_move"], "vote": false, "team_aligned": true}
+{"seat": 0, "team": "red", "builder": 1, "arm": "objective", "tools": ["get_state", "unavailable_or_incomplete", "vote_move"], "vote": true, "team_aligned": false}
+{"seat": 0, "team": "red", "builder": 1, "arm": "objective-and-risk", "tools": ["vote_move"], "vote": true, "team_aligned": false}

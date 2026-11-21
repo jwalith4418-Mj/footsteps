@@ -78,3 +78,5 @@ The [pivotal removal ballots](pivotal-votes/README.md) measure whether the same 
 The [persistent listener](persistent-listener/README.md) follows one seat through a public accusation, a removal vote, private compaction and the next turn.
 
 The [persistent runner panel](persistent-panel/README.md) compares build inspection and movement updates on solitaire floors, then follows conflicting public ballots across compaction and into a full social table.
+
+The [complete-game timing study](game-efficiency/README.md) separates time spent choosing from time waiting for the GPU, compares two seat policies, and replays an illustrative per-player reserve against the observed deadlines.

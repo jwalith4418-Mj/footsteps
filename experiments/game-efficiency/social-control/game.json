@@ -1,0 +1,150 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        182,
+        188
+      ],
+      [
+        44,
+        153
+      ],
+      [
+        107,
+        91
+      ]
+    ],
+    "store": [
+      234,
+      16,
+      41
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        41,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 41,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 182,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        182
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 16,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 182
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I propose moving the marker from (-2, 0) to (-1, 0). This is a safe first step toward the goal at (0, 0). The tile I placed at (-1, 0) has exits facing East, which allows entry from the West where the marker will be. Please vote on this proposal."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support the move to (-1, 0). This is a safe step toward the goal at (0, 0). The square at (-1, 0) has exits E and entrances NW, so it's valid. Let's proceed with this move."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I support the move to (-1, 0). The tile at (-1, 0) has exits E, so we can enter from W. This is a valid step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 12,
+      "seat": 1,
+      "text": "I support the move to (0, 0). This is the goal! The tile at (-1, 0) has exits E, so we can enter from W. Let's vote yes."
+    },
+    {
+      "after_event": 12,
+      "seat": 0,
+      "text": "I support the move to (0, 0), which is our goal! The tile at (-1, 0) has exits facing East, so we can enter from the West. This should complete the game for Blue. Let's vote yes."
+    }
+  ]
+}
