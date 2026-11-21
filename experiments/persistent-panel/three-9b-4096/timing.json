@@ -1,0 +1,7 @@
+{
+  "model": "qwen3.5:9b-q8_0",
+  "num_ctx": 4096,
+  "decision_seconds": 45,
+  "discussion_seconds": 15,
+  "play_seconds": 300.95
+}

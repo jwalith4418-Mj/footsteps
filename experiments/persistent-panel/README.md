@@ -73,7 +73,13 @@ On ordinary deal 9811 both versions moved twice and finished at (−1, −2), th
 
 Blue P0, Red P1 and Blue P2 each hold their own seat credentials and persistent conversation. The referee gives 45 seconds per decision and 15 seconds for discussion. The three sessions use one FIFO inference worker. Queue time counts against the allowance. START is two steps west of EXIT and the store supports three turns. The same private opening hands and draw seed are used for the smaller-model repeat.
 
-In the 27B game Blue P0 built the direct bridge. All three players approved stepping onto it. Red P1 then built to the side and stayed even though a step to EXIT was available. On the last turn Blue P2 inspected six times across held pieces and squares, built off the route, proposed EXIT and won the ballot 2–1 against Red. Each role cast the winning-move ballot in its team's interest. No one spoke or nominated. All 20 owed decisions arrived on time and all 75 requests returned accepted calls. The sum of per-seat queue times was 305.5 seconds out of 542.5 total request-seconds. These sums overlap in wall time. [Replay record and per-seat receipts](three/)
+In the 27B game Blue P0 built the direct bridge. All three players approved stepping onto it. Red P1 then built to the side and stayed even though a step to EXIT was available. On the last turn Blue P2 inspected six times across held pieces and squares, built off the route, proposed EXIT and won the ballot 2–1 against Red. Each role cast the winning-move ballot in its team's interest. No one spoke or nominated. All 20 owed decisions arrived on time and all 75 requests returned accepted calls. The sum of per-seat queue times was 305.5 seconds out of 542.5 total request-seconds. These sums overlap in wall time. The original private traces span about 241 wall seconds from file creation (Unix second 1795231423) to the final write (1795231664). Later runs store an explicit monotonic measurement in `timing.json`. [Replay record and per-seat receipts](three/)
+
+## Calibrating a shared discussion clock
+
+In the 9B and 4B table runs, each request that began from a discussion update records whether `speak` appeared in its offered tools. The harness polls that same authenticated seat at the front of the GPU queue and when inference returns. A positive `seconds_after_reply` means a reply was ready while this seat could still speak in that ballot. A seat choosing to wait, query, or speak counts once toward the number of seat-windows with a timely reply. A completed `speak` counts as a remark only if it appears in the referee record. Zero offered requests and a reply after closing are distinguishable. These probes do not add anything to the model prompt. The play clock excludes model loading.
+
+In the first 9B/4k full table all nine seat-windows had at least one reply ready while the seat could still speak. Six public remarks landed. Red's opening objection to the bridge coincided with Blue P2 also voting No. On the next turn all three publicly supported the same step and approved it. This sequence does not establish that the speech changed a ballot. The game took 301 seconds and 195 requests, including 44 compactions. Three of 23 required decisions expired. The working memory, frequency of checking state and differing game paths all affect full-table throughput. [9B/4k, 15 seconds](three-9b-4096/)
 
 ## Reproduce
 
@@ -118,6 +124,8 @@ for ctx in 8192 4096; do
 done
 run 9b-4096-east east --inspect-rotations --movement-context --implicit-wait --model qwen3.5:9b-q8_0 --context 4096
 python -m experiments.persistent_table "$out/three-9b-4096" "$out/three-9b-4096-private" --model qwen3.5:9b-q8_0 --context 4096
+python -m experiments.persistent_table "$out/three-9b-30s" "$out/three-9b-30s-private" --model qwen3.5:9b-q8_0 --context 4096 --discussion-seconds 30
+python -m experiments.persistent_table "$out/three-4b-15s" "$out/three-4b-15s-private" --model qwen3.5:4b --context 4096
 ```
 
 To repeat the output-cap diagnostic on a locally retained compact-only request, run `python -m experiments.compaction_budget PRIVATE-REQUEST.json "$out/caps.jsonl"`.

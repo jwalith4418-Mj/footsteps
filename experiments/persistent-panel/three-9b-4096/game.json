@@ -1,0 +1,199 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "start": [
+      -2,
+      0
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        40,
+        0
+      ],
+      [
+        65,
+        0
+      ],
+      [
+        68,
+        0
+      ]
+    ],
+    "store": [
+      65,
+      40,
+      255
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        255,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 255,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 40
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        0
+      ],
+      "tile": 65,
+      "rotation": 3,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 40,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -4,
+        0
+      ],
+      "tile": 68,
+      "rotation": 3,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I vote against the move to (-1, 0). We should stay put or consider a different strategy. The goal is at (0,0), and moving to (-1,0) doesn't seem optimal yet."
+    },
+    {
+      "after_event": 12,
+      "seat": 0,
+      "text": "I vote yes to move to (-1, 0). This brings us closer to the goal at (0, 0)."
+    },
+    {
+      "after_event": 12,
+      "seat": 2,
+      "text": "I support moving to (-1, 0). This brings us closer to the goal at (0, 0)."
+    },
+    {
+      "after_event": 12,
+      "seat": 1,
+      "text": "I support moving to (-1, 0). This brings us closer to the goal at (0, 0)."
+    },
+    {
+      "after_event": 19,
+      "seat": 0,
+      "text": "I support the move to (0, 0). This is the goal and will win for Blue."
+    },
+    {
+      "after_event": 19,
+      "seat": 2,
+      "text": "I vote yes on the move to (0, 0). This is the goal and will win for Blue."
+    }
+  ]
+}
