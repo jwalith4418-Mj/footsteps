@@ -95,7 +95,9 @@ class CountedSession(BudgetSession):
         return notice
 
 
-def seat_session(prefix, seat, listener_team, remark=None, session_class=Session):
+def seat_session(
+    prefix, seat, listener_team, remark=None, session_class=Session, *, context=CONTEXT
+):
     setup = deepcopy(prefix["setup"])
     if listener_team == "red":
         setup["roles"][1], setup["roles"][3] = setup["roles"][3], setup["roles"][1]
@@ -110,11 +112,11 @@ def seat_session(prefix, seat, listener_team, remark=None, session_class=Session
     if seat == 3:
         peer.now = table.opens
     return session_class(
-        peer, sleep=peer.expire, inspect_rotations=True, movement_context=True, context=CONTEXT
+        peer, sleep=peer.expire, inspect_rotations=True, movement_context=True, context=context
     )
 
 
-def question(messages, prompt, fields):
+def question(messages, prompt, fields, *, model=MODEL, context=CONTEXT):
     schema = {
         "type": "object",
         "properties": {name: {"type": kind} for name, kind in fields.items()},
@@ -125,12 +127,12 @@ def question(messages, prompt, fields):
         11434,
         "/api/chat",
         {
-            "model": MODEL,
+            "model": model,
             "stream": False,
             "think": False,
             "messages": [*messages, {"role": "user", "content": prompt}],
             "format": schema,
-            "options": {"temperature": 0, "seed": 1, "num_ctx": CONTEXT, "num_predict": 256},
+            "options": {"temperature": 0, "seed": 1, "num_ctx": context, "num_predict": 256},
         },
         90,
     )
@@ -144,6 +146,21 @@ def question(messages, prompt, fields):
     ):
         return {}
     return {k: answer[k] for k in fields}
+
+
+def ballot_facts(messages, *, model=MODEL, context=CONTEXT):
+    return question(
+        messages,
+        "Assess the proposal just voted on. Give the Manhattan distance from its proposed landing to EXIT and the number of future movement opportunities after this vote. For each ballot outcome, could Blue still reach EXIT with cooperative future play and favorable legal builds?",
+        {
+            "landing_distance": "integer",
+            "future_moves": "integer",
+            "possible_if_approved": "boolean",
+            "possible_if_rejected": "boolean",
+        },
+        model=model,
+        context=context,
+    )
 
 
 def trial(prefix, listener_team, remark, key, owner):
@@ -172,16 +189,7 @@ def trial(prefix, listener_team, remark, key, owner):
         "Privately explain your choice on the proposed step in one short sentence. What public evidence mattered to your team?",
         {"reason": "string"},
     )
-    facts = question(
-        messages,
-        "Assess the proposal just voted on. Give the Manhattan distance from its proposed landing to EXIT and the number of future movement opportunities after this vote. For each ballot outcome, could Blue still reach EXIT with cooperative future play and favorable legal builds?",
-        {
-            "landing_distance": "integer",
-            "future_moves": "integer",
-            "possible_if_approved": "boolean",
-            "possible_if_rejected": "boolean",
-        },
-    )
+    facts = ballot_facts(messages)
     print(json.dumps(key | explanation), file=owner, flush=True)
     return key | {"vote": vote, "public_remark": public, "calls": calls, "facts": facts}
 

@@ -1,0 +1,16 @@
+model,cue,seed,net_one_per_turn,bound,observation
+27b,open,1,no,none,Uses Manhattan distance to favor closer steps and reject retreats. Assumes Blue and treats the store as something the player can keep populated.
+27b,invariants,1,no,none,Identifies the directed source and destination checks and empty-store danger. Gives Red conflicting advice about dead ends.
+27b,open,2,no,none,Contrasts Blue efficiency with Red stalling and voting tactics. Envisions coordination among multiple Reds on a one-Red table.
+27b,invariants,2,no,incorrect,Compares store to Manhattan distance minus progress but concludes that too few tiles guarantee the path if Blue builds.
+27b,open,3,no,none,Links long loops to exhaustion and mentions distance. Suggests voting Yes on an alternative to the actual proposal.
+9b,open,1,no,none,Discusses choke points and social pressure. Says the builder matters less in a tied vote.
+9b,invariants,1,no,incorrect,Compares tiles needed with store plus hand and adds exceptions involving elimination. Hands cannot buy extra movement opportunities.
+9b,open,2,no,none,Recommends Red walls around START and waiting to nominate. Confuses vote timing and what Red knows.
+9b,invariants,2,no,none,Recognizes blocked exits and directed connectivity. Claims Blue must have a nonempty store after reaching EXIT.
+9b,open,3,no,none,Blue plans to follow consensus and Red to propose loops. Treats surviving to exhaustion as potentially saving Blue.
+9b,invariants,3,no,partial,Compares remaining steps with distance in the right direction but adds a false elimination-vote exception and never derives the store clock.
+27b,invariants,3,no,partial,Calls for comparing minimum tiles needed with the store. Also favors distance-reducing votes but does not derive a lower bound on remaining moves from the marker position.
+27b,clarified-invariants,1,no,partial,Recognizes a necessary construction budget by comparing new tiles needed to connect START and EXIT with the store. Does not compare remaining marker steps from its current position.
+9b,clarified-invariants,1,no,incorrect,Correctly says that staying spends a move. Compares store size to the number of living Blue seats and incorrectly assigns the exhaustion outcome by seat count.
+27b,finish-draft,1,no,incorrect,Recognizes directed reachability and the final one-tile deadline. Claims drawing two and returning one keeps the store constant until the final draw. Gives no sound distance threshold.

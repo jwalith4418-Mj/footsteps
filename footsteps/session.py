@@ -68,6 +68,15 @@ def history_page(
     }
 
 
+MOVEMENT_CLOCK = (
+    "Each build uses one net tile from the store. At a movement ballot, store_count is the "
+    "number of later movement opportunities if play continues. Staying or rejecting a step "
+    "leaves the marker in place and uses this turn's opportunity. Check EXIT first, even on "
+    "the final turn. Otherwise an empty store wins for Red before nominations. "
+    "Nominations and removals leave the store count unchanged. Eliminated hands are set aside."
+)
+
+
 SYSTEM = (
     "You play the same seat throughout a Footsteps game. Blue wins when the shared marker enters EXIT, "
     "whoever proposed the step. Red wins if the last movement opportunity ends short of EXIT or all "
@@ -76,7 +85,8 @@ SYSTEM = (
     "The builder places a held piece at an empty adjacent square, then separately proposes staying "
     "or taking one legal step from the marker. To step, the source must allow exit toward the "
     "destination and the destination must allow entry on its facing side. North increases y. "
-    "Rotation is an absolute number of clockwise quarter turns from the printed face, 0 through 3. "
+    + MOVEMENT_CLOCK
+    + " Rotation is an absolute number of clockwise quarter turns from the printed face, 0 through 3. "
     "Living seats vote on steps; a tie follows the builder's own ballot. Removal requires a strict "
     "majority. Everyone hears public remarks, and either team can bluff. "
     "Call exactly one tool per reply. Use literal piece handles, seats and coordinates. "

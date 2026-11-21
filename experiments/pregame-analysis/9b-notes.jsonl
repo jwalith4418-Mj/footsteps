@@ -1,0 +1,6 @@
+{"model": "qwen3.5:9b-q8_0", "cue": "open", "seed": 1, "sha256": "2c8d4a52af02854aaa6a76d8073a99df6f0e0c40f24ddfce25d73258da0fb0e8", "words": 228, "tokens": 277, "attempt_limits": [512]}
+{"model": "qwen3.5:9b-q8_0", "cue": "invariants", "seed": 1, "sha256": "4129b06cfb1a0888e5a7edb9debba10f8ac0ad1a31830f65d3330df662506548", "words": 231, "tokens": 269, "attempt_limits": [512]}
+{"model": "qwen3.5:9b-q8_0", "cue": "open", "seed": 2, "sha256": "86921baa215a25f173dbe1645d048b6d714d8c08430c1dba0dd7fafe47a6b483", "words": 195, "tokens": 233, "attempt_limits": [512]}
+{"model": "qwen3.5:9b-q8_0", "cue": "invariants", "seed": 2, "sha256": "5fe71eb549ffd9a922679bbf9f55b5bbef89fceec12e3ae83576791cd5d930e3", "words": 208, "tokens": 283, "attempt_limits": [512]}
+{"model": "qwen3.5:9b-q8_0", "cue": "open", "seed": 3, "sha256": "e4f34c2425a408dbcd78c237a17f8a6a171605f02d4d697fd74878604610cd9f", "words": 255, "tokens": 300, "attempt_limits": [512]}
+{"model": "qwen3.5:9b-q8_0", "cue": "invariants", "seed": 3, "sha256": "f37005787ad6e4cd87335df991602d58062f2ac018311dffbb690e5be5b21d11", "words": 220, "tokens": 286, "attempt_limits": [512]}
