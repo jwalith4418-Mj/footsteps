@@ -1,0 +1,25 @@
+{"revision": 1, "tool": "get_state", "prompt_tokens": 1329, "reply_tokens": 14, "inference_seconds": 6.709, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 4, "tool": "speak", "prompt_tokens": 2016, "reply_tokens": 55, "inference_seconds": 8.898, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true}
+{"revision": 4, "tool": "vote_move", "prompt_tokens": 2357, "reply_tokens": 27, "inference_seconds": 4.354, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "get_state", "prompt_tokens": 2781, "reply_tokens": 14, "inference_seconds": 2.549, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 7, "tool": "compact", "prompt_tokens": 3046, "reply_tokens": 213, "inference_seconds": 18.334, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": true, "error": false}
+{"revision": 7, "tool": "pass_nomination", "prompt_tokens": 1620, "reply_tokens": 16, "inference_seconds": 2.694, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 8, "tool": "wait", "prompt_tokens": 1833, "reply_tokens": 27, "inference_seconds": 2.507, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true}
+{"revision": 13, "tool": "get_state", "prompt_tokens": 2378, "reply_tokens": 14, "inference_seconds": 2.258, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "speak", "prompt_tokens": 2881, "reply_tokens": 54, "inference_seconds": 2.373, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "wait", "prompt_tokens": 3277, "reply_tokens": 27, "inference_seconds": 3.253, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "vote_move", "prompt_tokens": 3688, "reply_tokens": 27, "inference_seconds": 4.154, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 14, "tool": "wait", "prompt_tokens": 4122, "reply_tokens": 28, "inference_seconds": 2.544, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 15, "tool": "get_state", "prompt_tokens": 4605, "reply_tokens": 14, "inference_seconds": 3.143, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 15, "tool": "speak", "prompt_tokens": 5130, "reply_tokens": 54, "inference_seconds": 2.666, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 15, "tool": "wait", "prompt_tokens": 5545, "reply_tokens": 28, "inference_seconds": 4.246, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 15, "tool": "vote_removal", "prompt_tokens": 5974, "reply_tokens": 29, "inference_seconds": 5.681, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 16, "tool": "get_state", "prompt_tokens": 6500, "reply_tokens": 14, "inference_seconds": 3.872, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 16, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 12.424, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 16, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 8.553, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 16, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 9.943, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 22, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 8.745, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 22, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 8.616, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 22, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 8.992, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 22, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 8.867, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}
+{"revision": 22, "tool": null, "prompt_tokens": null, "reply_tokens": null, "inference_seconds": 8.64, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true, "request_error": "HTTP 500"}

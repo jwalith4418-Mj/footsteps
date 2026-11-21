@@ -1,0 +1,71 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue"
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        65
+      ]
+    ],
+    "store": [
+      65,
+      65
+    ],
+    "start": [
+      0,
+      -2
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        65
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        0,
+        -1
+      ],
+      "tile": 65,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 65
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        -1
+      ],
+      "tile": 65,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": null
+    }
+  ]
+}
