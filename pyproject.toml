@@ -3,9 +3,10 @@ target-version = "py313"
 line-length = 100
 
 [tool.coverage.run]
-source = ["footsteps"]
+source = ["footsteps", "experiments"]
 branch = true
 
 [tool.coverage.report]
+include = ["footsteps/*", "experiments/persistent_runtime.py", "experiments/persistent_table.py"]
 precision = 1
 show_missing = true

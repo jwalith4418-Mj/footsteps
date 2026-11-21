@@ -28,7 +28,16 @@ nix develop -c python -m coverage run -m unittest discover -s tests -v
 nix develop -c python -m coverage report
 ```
 
-The report includes statements and branches throughout `footsteps/`. Tests under `tests/` also exercise selected experiments. Coverage is attributed to the shipped Python package. The offline viewer interaction test runs when Chrome or Chromium is on PATH and reports a skip otherwise. It opens a disposable browser profile. The live API tests bind a loopback port. The model tests use scripted replies.
+The default report covers statements and branches throughout `footsteps/`, plus `experiments/persistent_runtime.py` and `experiments/persistent_table.py`. These modules host authenticated seats, separate private traces from public receipts, schedule shared inference and count actual opportunities and decisions. Report the shipped package and operational study infrastructure separately when comparing runs across scope changes:
+
+```sh
+python -m coverage report --include='footsteps/*'
+python -m coverage report --include='experiments/persistent_runtime.py,experiments/persistent_table.py'
+```
+
+The fixed scenario generators, research policies, prompt variants and frozen comparisons retain their tests and reproduction commands outside the default report. Add a module to the report when other work depends on its operational behavior. All supported client code stays measured through its migration, including shared transport. [Coverage review and known gaps](docs/stocktake.md#coverage-review)
+
+The offline viewer interaction test runs when Chrome or Chromium is on PATH and reports a skip otherwise. It opens a disposable browser profile. The live API tests bind a loopback port. The model tests use scripted replies.
 
 Use the missing-line and branch report to pick a behavior and assert an observable result. For example, play a turn through the CLI, import the saved record, and compare the resulting board. If a test uncovers a bug for another worker, file its smallest reproduction, observed and expected results, and a regression criterion on GitHub.
 

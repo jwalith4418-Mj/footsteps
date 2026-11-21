@@ -7,7 +7,8 @@ from functools import partial
 from pathlib import Path
 from random import Random
 
-from experiments.persistent_listener import opponents, play_table
+from experiments.persistent_listener import opponents
+from experiments.persistent_runtime import play_table
 from footsteps.board import moves
 from footsteps.game import with_exit_origin
 from footsteps.record import read, starting_game

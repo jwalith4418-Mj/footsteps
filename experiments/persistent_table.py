@@ -9,7 +9,7 @@ from pathlib import Path
 from random import Random
 from time import monotonic
 
-from experiments.persistent_listener import live_table, measured_step, public_call, resident_model
+from experiments.persistent_runtime import live_table, measured_step, public_call, resident_model
 from footsteps.decision_notes import open_private
 from footsteps.ollama import request
 from footsteps.record import read, starting_game
@@ -109,6 +109,9 @@ def play(root, private, model, context, seconds, discussion_seconds):
 def report(root):
     r = read(root / "game.json")
     g = starting_game(r)
+    timing_path = root / "timing.json"
+    timing = json.loads(timing_path.read_text()) if timing_path.exists() else {}
+    discussion_enabled = timing.get("discussion_seconds") != 0
     owed = Counter()
     missed = Counter()
     windows = {i: [] for i in range(len(g.roles))}
@@ -116,7 +119,8 @@ def report(root):
         kind = e["kind"]
         if kind in ("eliminate_vote", "move_vote"):
             for seat, vote in zip(g.alive, e["votes"], strict=True):
-                windows[seat].append(revision)
+                if discussion_enabled:
+                    windows[seat].append(revision)
                 owed[seat] += 1
                 missed[seat] += vote is None
         elif kind != "draw":
@@ -189,8 +193,7 @@ def report(root):
         "of all service seconds",
         round(service_seconds, 1),
     )
-    if (root / "timing.json").exists():
-        timing = json.loads((root / "timing.json").read_text())
+    if timing:
         print(
             "wall seconds",
             timing["play_seconds"],

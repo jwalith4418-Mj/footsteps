@@ -1,10 +1,14 @@
+import io
 import json
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from random import Random
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from footsteps.record import read
-from footsteps.session import Session
+from footsteps.session import Session, main
 from footsteps.table import Table
 
 CROSSING = read(Path(__file__).resolve().parents[1] / "examples/crossing.json")
@@ -23,6 +27,54 @@ class ProjectedSeat:
 
 
 class PersistentSeat(unittest.TestCase):
+    def test_cli_refreshes_after_losing_an_accepted_placement_reply(self):
+        table = Table(
+            {"roles": ["blue"], "goal": [2, 0], "hands": [[255]], "store": [0]}, Random(1)
+        )
+
+        class DisconnectAfterBuild(ProjectedSeat):
+            def call(self, path, data=None):
+                if path == "/ready":
+                    self.table.join(self.seat, self.now)
+                view = super().call(path, data)
+                if path == "/choice" and "at" in data["choice"]:
+                    raise ConnectionResetError("lost placement receipt")
+                return view
+
+        def infer(_port, _path, body, _budget):
+            notice = json.loads(body["messages"][-1]["content"])
+            self.assertEqual(body["options"]["num_ctx"], 4096)
+            if notice["stage"] == "place":
+                name, args = "place_tile", {"piece": "H1", "x": 0, "y": 1}
+            else:
+                self.assertEqual(notice["stage"], "propose")
+                name, args = "stay", {}
+            return {"message": {"tool_calls": [{"function": {"name": name, "arguments": args}}]}}
+
+        step = Session.step
+        with TemporaryDirectory() as tmp:
+            trace = Path(tmp) / "owner.jsonl"
+            with (
+                patch(
+                    "sys.argv",
+                    ["session", "--model", "mock", "--context", "4096", "--trace", str(trace)],
+                ),
+                patch("footsteps.session.getpass", return_value="private link"),
+                patch("footsteps.session.Seat", return_value=DisconnectAfterBuild(table, 0)),
+                patch("footsteps.session.time.sleep"),
+                patch.object(
+                    Session, "step", lambda session, model: step(session, model, infer=infer)
+                ),
+                redirect_stdout(output := io.StringIO()),
+            ):
+                main()
+            self.assertEqual(
+                [e["kind"] for e in table.record["events"]], ["draw", "place", "propose"]
+            )
+            self.assertIn("Winner: red", output.getvalue())
+            self.assertEqual(json.loads(trace.read_text())["tool"], "stay")
+            self.assertEqual(trace.stat().st_mode & 0o077, 0)
+
     def test_sealed_wait_and_recovery_across_turns(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
         for i in range(4):
