@@ -1,0 +1,251 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        74,
+        182
+      ],
+      [
+        45,
+        153
+      ],
+      [
+        71,
+        41
+      ],
+      [
+        41,
+        107
+      ]
+    ],
+    "store": [
+      91,
+      188,
+      121,
+      16,
+      12,
+      44
+    ],
+    "start": [
+      -2,
+      -1
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 182,
+      "at": [
+        -2,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 74
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        121,
+        44
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 121,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 44
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        44,
+        91
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        -1
+      ],
+      "tile": 44,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 91
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "table_id": "2986b4f29430a17fbd815fc731df1675",
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "Move north. One tile at (-1,0) with west in and east out completes the path. If you lack that straight connection, leave that square open for the next builder."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support the move to (-2, 0). This is a safe step toward the goal."
+    },
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I support moving to (-2, 0). The proposed path seems viable. Let's proceed with the move."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I support the move to (-2, 0). It's a solid step forward."
+    },
+    {
+      "after_event": 13,
+      "seat": 0,
+      "text": "Yes. P1 completed the route. At (-1,0) any builder can propose EXIT next turn regardless of what they draw."
+    },
+    {
+      "after_event": 13,
+      "seat": 2,
+      "text": "I support the move to (-1, 0). This continues our progress toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 13,
+      "seat": 3,
+      "text": "I support the move to (-1, 0). This is a necessary step toward the goal at (0,0). The tile placed by P1 has exits N/E/S, which allows entry from W. My held piece H2 can connect from (-1,0) to (0,0) since it has entrances NEW and exits ES, matching the orientation needed. Let's proceed with this move."
+    },
+    {
+      "after_event": 13,
+      "seat": 1,
+      "text": "I support the move to (-1, 0). This continues our progress toward the goal at (0, 0). The tile placement allows entry from W and exits N/E/S, making this a valid step forward. Let's proceed."
+    },
+    {
+      "after_event": 22,
+      "seat": 0,
+      "text": "Vote to move. (0,0) is EXIT and Blue wins immediately."
+    },
+    {
+      "after_event": 22,
+      "seat": 2,
+      "text": "I propose moving the marker from (-1,0) to (0,0), which is the goal. This should win for Blue."
+    },
+    {
+      "after_event": 22,
+      "seat": 3,
+      "text": "I support the move to (0, 0). This is the goal! The tile placed by P2 at (-1,-1) has exits E, which allows entry from W into (0,0). Moving here will complete our objective. Let's proceed with this move."
+    },
+    {
+      "after_event": 22,
+      "seat": 1,
+      "text": "I support the move to (0, 0). This is the winning move! The tile at (-1, -1) has exits E, and the goal at (0, 0) has entrances NESW, so entry from W is valid. Let's proceed with this move to win the game."
+    }
+  ]
+}
