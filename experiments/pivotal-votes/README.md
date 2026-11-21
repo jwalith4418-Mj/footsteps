@@ -52,6 +52,15 @@ A full-table transfer uses the initial 3 Blue / 2 Red deal from the original rep
 
 At event 12 the 27B Red builder P1 chose face 29 with rotation 3 at (−1,−1), permanently trapping the marker away from EXIT. The visible-hand audit confirmed that P1 could also have kept a timely route open. P1's private reason identified the seal and its purpose. Blue P2's random fallback build on turn 3 happened after this position was already lost. There were 25 nomination opportunities and one removal ballot. On turn 5 Red P1 nominated Blue P0. P0 identified itself as the nominee and voted No; both other Blues voted No, both Reds Yes. The nomination failed 2–3. This was natural role-aligned voting during a game, but the vote could no longer change the winner. Red won on turn 6 with all seats still alive. [Complete 27B game](rana-game/five-9901-clear-r320.json) · [Seat receipts](rana-game/five-9901-clear-r320.calls.jsonl)
 
+On the identical initial deal the 9B table reached EXIT in four turns. At turn 2 event 17, Red P1 kept the route open with face 22 at (−1,−1) despite a permanent seal being available. On turn 4 Red P3 proposed the winning step for Blue. All five seats voted Yes. Red P1's reason identified Blue as the immediate winner, then described voting No as moving away from victory. During 15 nomination opportunities this table made 14 nominations. Only three of the 70 removal ballots were Yes; three more timed out as No. Nobody was removed. [Complete 9B game](9b-game/five-9901-clear-r320.json) · [Seat receipts](9b-game/five-9901-clear-r320.calls.jsonl)
+
+| Same 9901 deal | Winner | Nominations / opportunities | Timely decisions / requests |
+|---|---|---:|---:|
+| 9B | Blue, EXIT on turn 4 | 14/15 | 114/117 |
+| 27B RANA | Red, depletion on turn 6 | 1/25 | 51/52 |
+
+The first placements already differ. One game per model shows the decisions each table actually made, with no estimate of model win rates. The final 9B vote gives a concrete follow-up: can a seat distinguish which team wins from whether that outcome is desirable for itself, across both possible proposer teams? [Follow-up experiment](https://github.com/othercriteria/footsteps/issues/101)
+
 ## Reproduce
 
 Use fresh output paths. All model comparisons use temperature zero, inference seed one, thinking disabled and the same 4,096-token context. A model decision has 30 seconds; the initial setup loads the model before the 27B block. Reply caps are separate from the context window. A length-capped response is missing even when a partial reply starts with a plausible vote. No hidden ballot, counterfactual winner or full referee record goes to a model seat in ordinary play. Program controls add only the specified public experiment facts. Private reasons are saved separately.
@@ -84,4 +93,4 @@ python -m experiments.pivotal_game "$out/rana-game" "$out/notes/rana-game" --mod
 python -m experiments.pivotal_game "$out/9b-game" "$out/notes/9b-game" --model qwen3.5:9b-q8_0
 ```
 
-For an offline summary, run `python -m experiments.pivotal_votes experiments/pivotal-votes/wrap.jsonl` or substitute any pivotal-ballot receipts file. The summary counts complete correct pairs and timely individual answers independently. For the older factual questionnaire use the `task`, `expected` and `answer` fields in `rana-archived.jsonl`. To inspect the role-swapped paths without model inference, run `python -m footsteps replay experiments/pivotal-votes/worked/pivotal98-rana-north-blue-nominee.json` and the adjacent Red-nominee record.
+For an offline summary, run `python -m experiments.pivotal_votes experiments/pivotal-votes/wrap.jsonl` or substitute any pivotal-ballot receipts file. The summary reconstructs the ballot, plays both continuations through the referee, checks the saved winners and expected vote, and counts complete correct pairs separately from timely individual answers. For the older factual questionnaire use the `task`, `expected` and `answer` fields in `rana-archived.jsonl`. To inspect the role-swapped paths without model inference, run `python -m footsteps replay experiments/pivotal-votes/worked/pivotal98-rana-north-blue-nominee.json` and the adjacent Red-nominee record.

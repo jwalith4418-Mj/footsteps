@@ -219,23 +219,33 @@ def disclose_programs(body, snap, controllers, arm):
     body["messages"][1]["content"] = json.dumps(ctx, separators=(",", ":"))
 
 
+def programs_for(table, controller):
+    if controller is None:
+        return None
+    if controller not in ("nominee-steps", "successor-steps"):
+        raise ValueError("unknown final-builder program")
+    nominee = table.game.pending
+    return {
+        nominee: controller == "nominee-steps",
+        (nominee + 1) % 5: controller == "successor-steps",
+    }
+
+
+def adjudicate(table, seat, controllers):
+    outcomes = {}
+    for vote in (False, True):
+        actor, winner, _ = finish(table, seat, vote, controllers)
+        outcomes["remove" if vote else "keep"] = {"last_builder": actor, "winner": winner}
+    assert outcomes["remove"]["winner"] != outcomes["keep"]["winner"]
+    return outcomes, outcomes["remove"]["winner"] == table.game.roles[seat]
+
+
 def run(panel, arms, model, out, notes, controller=None, max_reply=144):
     for team in ("blue", "red"):
         table, observer = ballot(panel, team)
-        controllers = None
-        if controller:
-            nominee = table.game.pending
-            controllers = {
-                nominee: controller == "nominee-steps",
-                (nominee + 1) % 5: controller == "successor-steps",
-            }
+        controllers = programs_for(table, controller)
         for seat in (observer,) if controllers else (observer, table.game.pending):
-            outcomes = {}
-            for vote in (False, True):
-                actor, winner, _ = finish(table, seat, vote, controllers)
-                outcomes["remove" if vote else "keep"] = {"last_builder": actor, "winner": winner}
-            assert outcomes["remove"]["winner"] != outcomes["keep"]["winner"]
-            expected = outcomes["remove"]["winner"] == table.game.roles[seat]
+            outcomes, expected = adjudicate(table, seat, controllers)
             for arm, reverse in product(arms, (False, True)):
                 snap = table.view(seat, table.opens)
                 if reverse:
@@ -267,6 +277,11 @@ def run(panel, arms, model, out, notes, controller=None, max_reply=144):
                         raise ValueError("reply cap")
                     if arm == "forecast-first":
                         answer = json.loads(reply["message"]["content"])
+                        if not isinstance(answer, dict) or not all(
+                            answer.get("team_building_if_" + k) in ("red", "blue", "undisclosed")
+                            for k in ("removed", "kept")
+                        ):
+                            raise ValueError("incomplete team forecast")
                         forecast = {
                             k: answer.pop("team_building_if_" + k) for k in ("removed", "kept")
                         }
@@ -290,8 +305,22 @@ def run(panel, arms, model, out, notes, controller=None, max_reply=144):
 def summarize(path):
     counts = defaultdict(Counter)
     pairs = defaultdict(dict)
+    adjudicated = {}
+    seen = set()
     for line in path.read_text().splitlines():
         r = json.loads(line)
+        setup = (r["panel"], r["nominee_team"], r["seat"], r.get("controller"))
+        if setup not in adjudicated:
+            table, observer = ballot(r["panel"], r["nominee_team"])
+            assert r["seat"] in (observer, table.game.pending)
+            adjudicated[setup] = adjudicate(
+                table, r["seat"], programs_for(table, r.get("controller"))
+            )
+        assert adjudicated[setup] == (r["outcomes"], r["expected_vote"])
+        measurement = (setup, r["arm"], r["reverse"])
+        assert measurement not in seen
+        seen.add(measurement)
+        assert (type(r.get("vote")) is bool) != ("error" in r)
         k = (r["panel"], r["arm"], "nominee" if r["self"] else "observer")
         c = counts[k]
         c["offered"] += 1
