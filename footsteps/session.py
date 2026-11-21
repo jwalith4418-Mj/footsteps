@@ -11,15 +11,19 @@ from pathlib import Path
 from .action_tools import apply_call, build_tools, function, receipt
 from .decision_notes import open_private
 from .game import require
-from .ollama import RULES, Seat, ServiceError, request
+from .ollama import Seat, ServiceError, request
 from .seat_tools import tile
 
 
-def history_page(history, *, before=None, after=None, kind=None, speaker=None, voter=None, limit=6):
+def history_page(
+    history, *, before=None, after=None, turn=None, kind=None, speaker=None, voter=None, limit=6
+):
     require(1 <= limit <= 20, "limit must be 1–20")
     rows = []
     for index, item in enumerate(history, 1):
         if before is not None and index >= before or after is not None and index <= after:
+            continue
+        if turn is not None and item["turn"] != turn:
             continue
         if kind is not None and item["kind"] != kind:
             continue
@@ -38,22 +42,35 @@ def history_page(history, *, before=None, after=None, kind=None, speaker=None, v
 
 
 SYSTEM = (
-    RULES + " A step onto EXIT wins for Blue whoever proposed it. Everyone knows the starting "
-    "team sizes. Red knows the full Red roster; Blue is told only its own role. Eliminated "
-    "players share the team outcome. All seats hear public remarks and either team may bluff. "
-    "You play this same seat throughout. Call exactly one tool per reply. Use history to "
-    "retrieve evidence and compact to preserve your own observations. Wait suspends you "
-    "until your seat sees a change. Other players and the referee clock continue. "
-    "An accepted action is final. Reads and preparations are private."
+    "You play the same seat throughout a Footsteps game. Blue wins when the shared marker enters EXIT, "
+    "whoever proposed the step. Red wins if the last movement opportunity ends short of EXIT or all "
+    "Blue players are removed. Removed players share the team's result. Everyone knows both goals "
+    "and the starting counts. Red knows the starting Red roster. Blue knows its own team. "
+    "The builder places a held piece at an empty adjacent square, then separately proposes staying "
+    "or taking one legal step from the marker. To step, the source must allow exit toward the "
+    "destination and the destination must allow entry on its facing side. North increases y. "
+    "Rotation is an absolute number of clockwise quarter turns from the printed face, 0 through 3. "
+    "Living seats vote on steps; a tie follows the builder's own ballot. Removal requires a strict "
+    "majority. Everyone hears public remarks, and either team can bluff. "
+    "Call exactly one tool per reply. Use literal piece handles, seats and coordinates. "
+    "Use history to check evidence and compact to retain private notes. The host clock continues "
+    "during all calls. An accepted decision is final. Reading and preparing tiles are private."
 )
+
+
+def xy(point):
+    return {"x": point[0], "y": point[1]}
+
+
 HISTORY = function(
     "history",
     "Page observed events and attributed remarks by stable entry ID. kind may be remark, "
-    "move_vote, eliminate_vote or another referee event. speaker selects remarks; voter "
+    "move_vote, eliminate_vote or another referee event. turn is the numbered game turn. speaker selects remarks; voter "
     "selects revealed ballots (null means timed out). Default is the latest six; after pages forward.",
     {
         "before": "integer",
         "after": "integer",
+        "turn": "integer",
         "kind": "string",
         "speaker": "integer",
         "voter": "integer",
@@ -102,25 +119,33 @@ class Session:
             self.stamp = stamp
         self.snap = snap
 
+    def movement(self):
+        s = self.snap
+        state = s["state"]
+        if state["stage"] == "propose" and s["choices"]:
+            return {
+                "marker": xy(state["marker"]),
+                "goal": xy(state["goal"]),
+                "legal_steps": [xy(p) for p in s["choices"]["to"] if p is not None],
+            }
+        if state["stage"] == "move_vote":
+            return {
+                "marker": xy(state["marker"]),
+                "goal": xy(state["goal"]),
+                "proposed_landing": xy(state["pending"]),
+            }
+        return {}
+
     def opportunity(self):
         s = self.snap
-        movement = {}
-        if self.movement_context:
-            state = s["state"]
-            if state["stage"] == "propose" and s["choices"]:
-                movement = {
-                    "marker_here": state["marker"],
-                    "EXIT": state["goal"],
-                    "legal_one_step_destinations": [p for p in s["choices"]["to"] if p is not None],
-                }
-            elif state["stage"] == "move_vote":
-                movement = {
-                    "marker_here": state["marker"],
-                    "EXIT": state["goal"],
-                    "proposed_landing_if_approved": state["pending"],
-                }
+        movement = self.movement() if self.movement_context else {}
         return {
             **movement,
+            **(
+                {"nominee": s["state"]["pending"]}
+                if s["state"]["stage"] == "eliminate_vote"
+                else {}
+            ),
             "cursor": self.cursor,
             "seat": s["seat"],
             "turn": s["state"]["turn"],
@@ -131,7 +156,7 @@ class Session:
             "can_speak": s["can_speak"],
             "owe_action": s["choices"] is not None,
             "last_history_id": len(s["history"]),
-            "latest": s["history"][-1:],
+            "latest": [{"id": len(s["history"]), **s["history"][-1]}] if s["history"] else [],
         }
 
     def role(self):
@@ -147,29 +172,40 @@ class Session:
     def state(self):
         s = self.snap
         g = s["state"]
+        choices = s["choices"] or {}
+        action_values = self.movement()
+        if "at" in choices:
+            action_values["empty_build_squares"] = [xy(p) for p in choices["at"]]
+            if "origin" in choices:
+                action_values["check_origins"] = [
+                    {"origin_x": x, "origin_y": y} for x, y in choices["origin"]
+                ]
+        if "target" in choices:
+            action_values["nomination_targets"] = [
+                {"seat": v} for v in choices["target"] if v is not None
+            ]
+        board = []
+        for pos, face in g["board"]:
+            _, entrances, exits = tile(face)
+            board.append({**xy(pos), "oriented_face": face, "entrances": entrances, "exits": exits})
         return {
             **self.opportunity(),
             **self.role(),
-            **{
-                k: g[k]
-                for k in (
-                    "start",
-                    "goal",
-                    "marker",
-                    "actor",
-                    "pending",
-                    "nominator",
-                    "alive",
-                    "store_count",
-                    "winner",
-                )
-            },
-            "board_position_and_tile": [[p, tile(f)] for p, f in g["board"]],
+            "start": xy(g["start"]),
+            "goal": xy(g["goal"]),
+            "marker": xy(g["marker"]),
+            "builder": g["actor"],
+            "nominator": g["nominator"],
+            "alive": g["alive"],
+            "store_count": g["store_count"],
+            "winner": g["winner"],
+            "board": board,
             "held": [receipt(h, *v) for h, v in s["pieces"].items()],
-            "legal": s["choices"],
+            **action_values,
         }
 
-    def reset(self):
+    def reset(self, *, recovered=False):
+        self.compact_failures = 0
         self.near_capacity = False
         self.messages = [
             {"role": "system", "content": SYSTEM},
@@ -177,6 +213,13 @@ class Session:
                 "role": "user",
                 "content": json.dumps(
                     {
+                        **(
+                            {
+                                "context_recovery": "Two summary requests failed. Your last saved notes may predate recent events; use history to recover them."
+                            }
+                            if recovered
+                            else {}
+                        ),
                         "your_identity": self.role(),
                         "current": self.state(),
                         "your_private_player_authored_summary": self.summary,
@@ -184,6 +227,14 @@ class Session:
                 ),
             },
         ]
+
+    def failed_compaction(self):
+        self.compact_failures += 1
+        if self.compact_failures < 2:
+            return False
+        self.refresh()
+        self.reset(recovered=True)
+        return True
 
     def tools(self):
         wait_tool = function(
@@ -203,7 +254,7 @@ class Session:
             HISTORY,
             function(
                 "compact",
-                "Start a fresh conversation with your own private summary and current state. Original history stays available.",
+                "Save one or two sentences of private evidence or plans. Your identity, board, hand and original history remain available after compaction.",
                 {"summary": "string"},
             ),
             wait_tool,
@@ -233,7 +284,14 @@ class Session:
         require(
             set(schema["required"]) <= args.keys() <= schema["properties"].keys()
             and all(type(v) is types[schema["properties"][k]["type"]] for k, v in args.items()),
-            "use the listed argument names and literal types",
+            f"{name} expects "
+            + (
+                ", ".join(
+                    f"{k}: {spec['type']}" + ("" if k in schema["required"] else " (optional)")
+                    for k, spec in schema["properties"].items()
+                )
+                or "no arguments"
+            ),
         )
         notice_cursor = self.cursor
         self.refresh()
@@ -271,10 +329,22 @@ class Session:
                 orient,
             )
             if choice is None:
+                if name in ("preview_placement", "inspect_rotations_at"):
+                    result["at"] = xy(result["at"])
+                    result["marker"] = xy(result.pop("marker_stays"))
+                    if "legal_steps_after_build" in result:
+                        result["legal_steps_after_build"] = [
+                            xy(p) for p in result["legal_steps_after_build"]
+                        ]
                 return result
             self.seat.call("/choice", {"revision": revision, "choice": choice})
         self.refresh()
-        return {"accepted": True, **self.opportunity()}
+        return {
+            "accepted": True,
+            "action": name,
+            "acted_at_revision": revision,
+            "current": self.opportunity(),
+        }
 
     def step(self, model, *, infer=request, budget=30, force_compact=False, compact_when=None):
         self.refresh()
@@ -286,12 +356,18 @@ class Session:
         notice = self.opportunity()
         recent = self.snap["history"][self.last_read :]
         if recent:
-            notice["new_observations"] = recent[-4:]
+            notice["new_observations"] = [
+                {"id": i, **r}
+                for i, r in enumerate(
+                    recent[-4:], len(self.snap["history"]) - min(len(recent), 4) + 1
+                )
+            ]
             notice["new_observation_count"] = len(recent)
-        if force_compact or self.near_capacity:
+        compact_required = force_compact or self.near_capacity
+        if compact_required:
             offered = [t for t in offered if t["function"]["name"] == "compact"]
             notice["context_request"] = (
-                "Call compact with the private notes you want to carry forward."
+                "Call compact with a short private note about evidence or a plan. Your current state is restored automatically."
             )
         update = {"role": "user", "content": json.dumps(notice)}
         body = {
@@ -303,7 +379,26 @@ class Session:
             "options": {"num_ctx": 8192, "num_predict": 240, "temperature": 0, "seed": 1},
         }
         started = time.monotonic()
-        reply = infer(11434, "/api/chat", body, budget)
+        try:
+            reply = infer(11434, "/api/chat", body, budget)
+        except (TimeoutError, ServiceError) as exc:
+            if (
+                not compact_required
+                or isinstance(exc, ServiceError)
+                and exc.status < 500
+                or not self.failed_compaction()
+            ):
+                raise
+            return {
+                "revision": revision,
+                "tool": None,
+                "arguments": {},
+                "forced_compaction": force_compact,
+                "result": {"context_recovered": True, "error": str(exc) or "request timed out"},
+                "prompt_tokens": None,
+                "reply_tokens": None,
+                "inference_seconds": round(time.monotonic() - started, 3),
+            }
         elapsed = time.monotonic() - started
         self.messages.append(update)
         self.last_read = len(self.snap["history"])
@@ -341,7 +436,9 @@ class Session:
                     ]
                 )
         tokens = reply.get("prompt_eval_count", 0)
-        if tokens > 6100 and not result.get("compacted"):
+        if compact_required and "error" in result and self.failed_compaction():
+            result["context_recovered"] = True
+        elif tokens > 6100 and not result.get("compacted"):
             self.near_capacity = True
         return {
             "revision": revision,

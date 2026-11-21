@@ -198,6 +198,8 @@ def public_call(row, model, force):
         )
     }
     public.update(model=model, forced_compaction=force, error="error" in row["result"])
+    if row["result"].get("context_recovered"):
+        public["context_recovered"] = True
     if row["tool"] == "history":
         public.update(
             filters=row["arguments"],

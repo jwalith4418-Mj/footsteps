@@ -192,14 +192,14 @@ class PersistentSeat(unittest.TestCase):
             table.submit(0, table.revision, {k: v for k, v in event.items() if k != "kind"}, 0)
         session = Session(ProjectedSeat(table, 0), movement_context=True)
         notice = session.opportunity()
-        self.assertEqual(notice["marker_here"], [0, 0])
-        self.assertEqual(notice["legal_one_step_destinations"], [[1, 0]])
-        self.assertEqual(notice["EXIT"], [2, 0])
+        self.assertEqual(notice["marker"], {"x": 0, "y": 0})
+        self.assertEqual(notice["legal_steps"], [{"x": 1, "y": 0}])
+        self.assertEqual(notice["goal"], {"x": 2, "y": 0})
         table.submit(0, table.revision, {"to": [1, 0]}, 0)
         session.refresh()
-        self.assertEqual(session.opportunity()["proposed_landing_if_approved"], [1, 0])
-        self.assertEqual(session.opportunity()["marker_here"], [0, 0])
-        self.assertNotIn("legal_one_step_destinations", session.opportunity())
+        self.assertEqual(session.opportunity()["proposed_landing"], {"x": 1, "y": 0})
+        self.assertEqual(session.opportunity()["marker"], {"x": 0, "y": 0})
+        self.assertNotIn("legal_steps", session.opportunity())
 
     def test_no_argument_wait_keeps_cursor_from_before_inference(self):
         table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
@@ -220,3 +220,56 @@ class PersistentSeat(unittest.TestCase):
         response = session.step("script", infer=speak_then_wait)
         self.assertGreater(response["result"]["cursor"], first)
         self.assertEqual(response["result"]["latest"][0]["speaker"], 1)
+
+    def test_failed_compactions_restore_last_private_note_and_release_the_decision(self):
+        from footsteps.ollama import ServiceError
+
+        t = Table(CROSSING["setup"], Random(1))
+        for i in range(4):
+            t.join(i, 0)
+        s = Session(ProjectedSeat(t, 0))
+        s.execute("compact", {"summary": "Check P2's ballot."}, s.tools(), t.revision)
+        s.near_capacity = True
+
+        def fail(*_):
+            raise ServiceError(500)
+
+        with self.assertRaises(ServiceError):
+            s.step("script", infer=fail)
+        recovery = s.step("script", infer=fail)
+        self.assertTrue(recovery["result"]["context_recovered"])
+        self.assertFalse(s.near_capacity)
+        context = json.loads(s.messages[-1]["content"])
+        self.assertIn("context_recovery", context)
+        self.assertEqual(context["your_private_player_authored_summary"], "Check P2's ballot.")
+        self.assertIn("place_tile", [f["function"]["name"] for f in s.tools()])
+        self.assertEqual(t.revision, 1)
+
+    def test_state_values_can_be_used_in_native_calls_and_keep_coordinate_meaning(self):
+        t = Table(CROSSING["setup"], Random(1), discussion=0)
+        for i in range(4):
+            t.join(i, 0)
+        s = Session(ProjectedSeat(t, 0))
+
+        def call(name, **args):
+            return s.execute(name, args, s.tools(), s.snap["revision"])
+
+        state = call("get_state")
+        square = next(pos for pos in state["empty_build_squares"] if pos == {"x": 1, "y": 0})
+        piece = next(p["piece"] for p in state["held"] if p["face"] == 40)
+        args = {"piece": piece, **square}
+        preview = call("preview_placement", **args)
+        self.assertEqual(preview["at"], square)
+        self.assertEqual(preview["marker"], state["marker"])
+        with self.assertRaisesRegex(ValueError, "piece: string"):
+            call("place_tile", tile=40, **square)
+        placed = call("place_tile", **args)
+        self.assertEqual((placed["action"], placed["acted_at_revision"]), ("place_tile", 1))
+        self.assertEqual(placed["current"]["stage"], "discard")
+        call("return_tile", piece=call("get_state")["held"][0]["piece"])
+        self.assertEqual(call("get_state")["legal_steps"], [square])
+        call("propose_step", **square)
+        for i in range(4):
+            t.submit(i, t.revision, {"vote": True}, 0)
+        self.assertEqual(call("history", turn=2, voter=0)["entries"], [])
+        self.assertTrue(call("history", turn=1, voter=0)["entries"][0]["requested_ballot"])
