@@ -51,6 +51,7 @@ def play(
     corridor=None,
     give_opening=False,
     floor_policy=None,
+    removal_policy=None,
 ):
     speaker = None
     with (
@@ -81,9 +82,14 @@ def play(
                 log = []
                 started = monotonic()
                 status = "accepted"
+                interface = arm if native else "menu"
                 try:
                     if floor_policy is not None and stage in ("place", "propose", "move_vote"):
+                        interface = arm
                         choice = floor_policy(snap, model, notes, log)
+                    elif removal_policy is not None and stage == "eliminate_vote":
+                        interface = "relative-binary"
+                        choice = removal_policy(snap, model, notes, log)
                     elif native:
 
                         def orient(handle, turns, seat=seat, revision=revision, now=now):
@@ -130,10 +136,7 @@ def play(
                             "seat": seat,
                             "revision": revision,
                             "stage": stage,
-                            "interface": arm
-                            if native
-                            or (floor_policy and stage in ("place", "propose", "move_vote"))
-                            else "menu",
+                            "interface": interface,
                             "status": status,
                             "seconds": round(monotonic() - started, 3),
                             "calls": log,

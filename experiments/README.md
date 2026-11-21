@@ -72,3 +72,5 @@ The [native action comparison](native-actions/README.md) follows each private ro
 The [goal-pursuit gate](goal-pursuit/README.md) tests model-authored first landings, corrections to individual plans, and outcome-assisted decisions on held-out solitaire deals before applying the frozen setup to multiplayer play.
 
 The [removal ballot perspective experiment](voter-perspective/README.md) checks whether a voter recognizes itself and distinguishes other players' claims from their recorded ballots.
+
+The [pivotal removal ballots](pivotal-votes/README.md) measure whether the same voter changes its actual choice when a private roster or two public final-turn policies are exchanged, then revisit the five-seat game with a stronger local model.

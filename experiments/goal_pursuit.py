@@ -329,7 +329,7 @@ def decide(snap, model, notes, log, *, arm, order, max_reply=140, action_prefix=
     return action
 
 
-def run(root, private, case, seed, arm, model, *, max_reply=140):
+def run(root, private, case, seed, arm, model, *, max_reply=140, removal_policy=None):
     key = f"{case}-{seed}-{arm}"
     if max_reply != 140:
         key += f"-r{max_reply}"
@@ -363,6 +363,7 @@ def run(root, private, case, seed, arm, model, *, max_reply=140):
         "hand" if arm == "baseline" else arm,
         "build",
         floor_policy=None if arm == "baseline" else policy,
+        removal_policy=removal_policy,
     )
 
 
