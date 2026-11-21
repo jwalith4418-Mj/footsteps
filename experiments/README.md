@@ -94,3 +94,5 @@ The [four-seat move-budget probes](move-budget/README.md) pair a losing outward 
 The [private pregame analysis study](pregame-analysis/README.md) asks two local models to discover useful principles before the deal, restores their own notes after compaction, and tests transfer to movement ballots on both teams.
 
 The [open social tables](open-tables/README.md) follow two fresh deals with the live movement clock, discussion and independent persistent seats.
+
+The [proposer and voter comparison](exit-interest/README.md) crosses private team assignments on two actual EXIT proposals and a nonterminal step into a permanent dead end.
