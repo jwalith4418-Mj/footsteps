@@ -1,6 +1,6 @@
 # Footsteps · base rules 1
 
-A group explores a tiled floor with one shared marker. **Blue** wants the marker to reach the exit. **Red** wants the tile store to run out first. If the marker enters EXIT, Blue wins regardless of who built the tile, proposed the step or voted for it. Everyone knows both objectives and the starting team sizes at setup.
+A group explores a tiled floor with one shared marker. **Blue wins** when the marker enters EXIT, whoever built the tile, proposed the step or voted for it. **Red wins** if the last movement opportunity ends short of EXIT or all Blue players are eliminated. The win conditions and starting team sizes are public from setup. A player can make a move that helps the other team.
 
 ## Setup
 
