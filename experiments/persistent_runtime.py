@@ -166,6 +166,8 @@ def public_call(row, model, force):
             public["wait_status"] = "action_required"
         if row["arguments"].get("force") is True:
             public["force_wait_requested"] = True
+    if "pending_ballot" in row["result"]:
+        public["pending_ballot_guidance"] = True
     if "repeat" in row["result"]:
         public["shortened_read"] = True
     elif public["tool"] == "history":

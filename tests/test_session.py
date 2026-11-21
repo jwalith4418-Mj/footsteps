@@ -133,6 +133,55 @@ class PersistentSeat(unittest.TestCase):
             call("history", before=statement["id"], kind="move_vote", voter=3)["entries"], [vote]
         )
 
+    def test_pending_ballot_history_and_unavailable_vote_tools(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 2)
+        player = Session(peer)
+
+        def ask(name, **args):
+            fn = {"name": name, "arguments": args}
+            return player.step(
+                "mock", infer=lambda *_: {"message": {"tool_calls": [{"function": fn}]}}
+            )["result"]
+
+        for kind, tool in (("move_vote", "vote_move"), ("eliminate_vote", "vote_removal")):
+            with self.subTest(kind=kind):
+                discussion = ask("history", kind=kind)
+                self.assertEqual(discussion["entries"], [])
+                self.assertIn("Speak now", discussion["pending_ballot"])
+                self.assertIn("not opened", ask(tool, approve=True)["pending_ballot"])
+                for query in (
+                    {"kind": "propose"},
+                    {"kind": kind, "turn": 99},
+                    {"kind": kind, "before": 3},
+                ):
+                    self.assertNotIn("pending_ballot", ask("history", **query))
+                self.assertIn("error", ask("history", kind=kind, speaker=1))
+                table.say(2, table.revision, "I have spoken.", peer.now)
+                self.assertNotIn("Speak now", ask("history", voter=0)["pending_ballot"])
+                peer.now = table.opens
+                due = ask("history", kind=kind, voter=0)
+                self.assertIn(tool, due["pending_ballot"])
+                table.submit(0, table.revision, {"vote": False}, peer.now)
+                self.assertEqual(ask("history", kind=kind, voter=0), due)
+                if kind == "eliminate_vote":
+                    self.assertIn(tool, ask("vote_eliminate", approve=True)["pending_ballot"])
+                self.assertTrue(ask(tool, approve=True)["accepted"])
+                submitted = ask("history", kind=kind)
+                self.assertEqual(submitted["entries"], [])
+                self.assertIn("wait()", submitted["pending_ballot"])
+                for i in (1, 3):
+                    table.submit(i, table.revision, {"vote": True}, peer.now)
+                revealed = ask("history", kind=kind, voter=0)
+                self.assertNotIn("pending_ballot", revealed)
+                self.assertIs(revealed["entries"][-1]["requested_ballot"], False)
+                if kind == "move_vote":
+                    table.submit(1, table.revision, {"target": 3}, peer.now)
+
     def test_removed_seat_observes_result_without_using_inference(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
         for i in range(4):

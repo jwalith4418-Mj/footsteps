@@ -8,7 +8,7 @@ from getpass import getpass
 from http.client import HTTPException
 from pathlib import Path
 
-from .action_tools import PREPARATIONS, apply_call, build_tools, function, receipt
+from .action_tools import BALLOT_TOOLS, PREPARATIONS, apply_call, build_tools, function, receipt
 from .decision_notes import open_private
 from .game import require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
@@ -319,6 +319,16 @@ class Session:
             self.refresh()
         return self.opportunity()
 
+    def ballot_guidance(self):
+        s = self.snap
+        if s["phase"] == "discussion":
+            action = "Speak now or wait() to listen." if s["can_speak"] else "Use wait() to listen."
+            return f"Voting has not opened. {action}"
+        if s["choices"] is not None:
+            tool = BALLOT_TOOLS[s["state"]["stage"]]
+            return f"Your ballot is due now. Cast it with {tool}."
+        return "Use wait() for a visible change."
+
     def execute(self, name, args, offered, revision):
         spec = next((t["function"] for t in offered if t["function"]["name"] == name), None)
         if spec is None:
@@ -342,7 +352,21 @@ class Session:
         notice_cursor = self.cursor
         self.refresh()
         if name == "history":
-            return history_page(self.snap["history"], **args)
+            page = history_page(self.snap["history"], **args)
+            state = self.snap["state"]
+            stage = state["stage"]
+            if (
+                stage in BALLOT_TOOLS
+                and self.snap["phase"] in ("discussion", "decision")
+                and (args.get("kind") == stage or ("kind" not in args and "voter" in args))
+                and args.get("turn", state["turn"]) == state["turn"]
+                and "before" not in args
+            ):
+                page["pending_ballot"] = (
+                    "The current tally enters history only when ballots are revealed. "
+                    + self.ballot_guidance()
+                )
+            return page
         if name == "get_role":
             return self.role()
         if name == "get_state":
@@ -489,6 +513,16 @@ class Session:
                 raise
             self.refresh()
             result = {"error": str(exc), "current": self.opportunity()}
+            stage = self.snap["state"]["stage"]
+            if (
+                isinstance(name, str)
+                and name.startswith("vote_")
+                and stage in BALLOT_TOOLS
+                and self.snap["phase"] in ("discussion", "decision")
+                and not compact_required
+                and not any(t["function"]["name"] == name for t in offered)
+            ):
+                result["pending_ballot"] = self.ballot_guidance()
         if name != "compact" or "error" in result:
             if name is None or not isinstance(args, dict):
                 self.messages.append({"role": "user", "content": json.dumps(result)})
