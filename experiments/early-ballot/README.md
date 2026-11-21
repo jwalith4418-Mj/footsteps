@@ -29,7 +29,7 @@ The worked-clock tests also play the same speech schedule through the fixed and 
 
 ## Reproduce
 
-From the repository root, choose unused directories. Keep the model warm and run the games sequentially on the same device. Only the seat metrics and postgame records belong in the public result. The directory whose name ends in `-private` holds owner-only inference traces.
+For the original seat wait behavior, run at commit `7bf231b`. From the repository root, choose unused directories. Keep the model warm and run the games sequentially on the same device. Only the seat metrics and postgame records belong in the public result. The directory whose name ends in `-private` holds owner-only inference traces.
 
 ```sh
 python -m experiments.early_ballot /tmp/116-early /tmp/116-early-private --early-ballot

@@ -155,6 +155,80 @@ class PersistentSeat(unittest.TestCase):
         self.assertEqual(session.snap["state"]["winner"], t.game.winner)
         self.assertIsNotNone(t.game.winner)
 
+    def test_wait_returns_the_owed_decision_without_spending_time(self):
+        for prefix, names in (
+            (1, ["place_tile"]),
+            (2, ["return_tile"]),
+            (3, ["propose_step", "stay"]),
+            (4, ["vote_move"]),
+            (5, ["nominate", "pass_nomination"]),
+            (6, ["vote_removal"]),
+        ):
+            with self.subTest(prefix=prefix):
+                table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
+                for event in CROSSING["events"][:prefix]:
+                    table.commit(event)
+                for i in range(4):
+                    table.join(i, 0)
+                seat = table.game.queue[0] if table.game.stage == "nominate" else table.game.actor
+                session = Session(
+                    ProjectedSeat(table, seat), sleep=lambda _: self.fail("blocked on own choice")
+                )
+                result = session.execute("wait", {}, session.tools(), table.revision)
+                self.assertEqual(result["wait_status"], "action_required")
+                self.assertEqual(result["decision_tools"], names)
+                self.assertTrue(result["owe_action"])
+                self.assertEqual(result["seconds_left_in_phase"], 30)
+                self.assertEqual(table.revision, prefix)
+
+    def test_forced_wait_expires_current_choice_but_cannot_carry_into_the_next(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 0)
+        session = Session(peer, sleep=lambda _: setattr(peer, "now", table.deadline))
+        original = session.cursor
+        result = session.execute("wait", {"force": True}, session.tools(), table.revision)
+        self.assertTrue(table.record["events"][-1]["timeout"])
+        self.assertEqual(result["stage"], "discard")
+        self.assertTrue(result["owe_action"])
+        session.sleep = lambda _: self.fail("stale force consumed the next choice")
+        result = session.execute(
+            "wait", {"after_cursor": original, "force": True}, session.tools(), table.revision
+        )
+        self.assertEqual(result["stage"], "discard")
+        with self.assertRaises(ValueError):
+            session.execute("wait", {"force": 1}, session.tools(), table.revision)
+        with self.assertRaises(ValueError):
+            session.execute(
+                "wait",
+                {"after_cursor": session.cursor + 1, "force": True},
+                session.tools(),
+                table.revision,
+            )
+
+    def test_force_in_flight_when_a_choice_opens_returns_the_new_opportunity(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 1)
+        session = Session(peer, sleep=lambda _: self.fail("slept through newly opened ballot"))
+
+        def cross_cutoff(*_):
+            peer.now = table.opens
+            return {
+                "message": {
+                    "tool_calls": [{"function": {"name": "wait", "arguments": {"force": True}}}]
+                }
+            }
+
+        result = session.step("script", infer=cross_cutoff)["result"]
+        self.assertTrue(result["owe_action"])
+        self.assertEqual(result["phase"], "decision")
+        self.assertEqual(result["seconds_left_in_phase"], 30)
+
     def test_hidden_ballot_during_wait_only_wakes_at_public_reveal(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
         for i in range(4):
@@ -162,6 +236,7 @@ class PersistentSeat(unittest.TestCase):
         for e in CROSSING["events"][1:4]:
             t.submit(0, t.revision, {k: v for k, v in e.items() if k != "kind"}, 0)
         peer = ProjectedSeat(t, 2)
+        t.submit(2, t.revision, {"vote": True}, 0)
         polls = []
 
         def advance(_):

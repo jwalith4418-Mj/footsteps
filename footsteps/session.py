@@ -8,7 +8,7 @@ from getpass import getpass
 from http.client import HTTPException
 from pathlib import Path
 
-from .action_tools import apply_call, build_tools, function, receipt
+from .action_tools import PREPARATIONS, apply_call, build_tools, function, receipt
 from .decision_notes import open_private
 from .game import require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
@@ -272,15 +272,14 @@ class Session:
     def tools(self):
         wait_tool = function(
             "wait",
-            "Sleep without inference until a visible change after the last cursor you read. Waiting while owing a decision may time out.",
-            {"after_cursor": "integer"},
+            "Sleep until a visible change. Returns immediately when you owe a choice. "
+            "Use force=true to sleep through that choice and risk a timeout. "
+            "An older after_cursor returns immediately.",
+            {"after_cursor": "integer", "force": "boolean"},
         )
-        if self.wait_at_notice:
-            wait_tool["function"]["description"] = (
-                "Call wait() to sleep until your seat sees a change since this update. "
-                "An explicit after_cursor is optional. Waiting while owing a decision may time out."
-            )
-            wait_tool["function"]["parameters"]["required"] = []
+        wait_tool["function"]["parameters"]["required"] = (
+            [] if self.wait_at_notice else ["after_cursor"]
+        )
         specs = [
             function("get_state", "Read your current board, held pieces and legal choices.", {}),
             function("get_role", "Read your authoritative private team assignment.", {}),
@@ -302,8 +301,19 @@ class Session:
             specs.extend(build_tools(self.snap, self.hand_mode))
         return specs
 
-    def wait(self, after):
+    def wait(self, after, *, force=False):
         require(0 <= after <= self.cursor, "use a cursor from this session")
+        if after == self.cursor and self.snap["choices"] is not None and not force:
+            tools = build_tools(self.snap, self.hand_mode)
+            return self.opportunity() | {
+                "wait_status": "action_required",
+                "message": "Your choice is due now. Submit a decision.",
+                "decision_tools": [
+                    t["function"]["name"]
+                    for t in tools
+                    if t["function"]["name"] not in PREPARATIONS
+                ],
+            }
         while self.cursor == after and self.snap["phase"] != "over":
             self.sleep(0.15)
             self.refresh()
@@ -343,7 +353,9 @@ class Session:
             self.reset()
             return {"compacted": True}
         if name == "wait":
-            return self.wait(args.get("after_cursor", notice_cursor))
+            after = args.get("after_cursor", notice_cursor)
+            require(0 <= after <= notice_cursor, "use a cursor from the opportunity you saw")
+            return self.wait(after, force=args.get("force", False))
         require(revision == self.snap["revision"], "the decision changed; read the new opportunity")
         if name == "speak":
             self.seat.call("/say", {"revision": revision, "text": args["text"]})
