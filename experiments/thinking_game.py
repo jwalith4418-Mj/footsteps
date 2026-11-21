@@ -65,8 +65,14 @@ class BallotSession(Session):
             returned = reply["message"]
             tokens = reply["eval_count"]
             self.used += tokens
-            tools = returned.get("tool_calls", [])
-            tool = tools[0]["function"]["name"] if tools else "no tool"
+            calls = returned.get("tool_calls")
+            tool = "no tool"
+            if isinstance(calls, list) and calls and isinstance(calls[0], dict):
+                function = calls[0].get("function")
+                if isinstance(function, dict):
+                    offered = {t["function"]["name"] for t in body["tools"]}
+                    name = function.get("name")
+                    tool = name if isinstance(name, str) and name in offered else "unavailable tool"
             stop = reply.get("done_reason")
             note = {
                 "kind": "thinking",

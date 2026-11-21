@@ -65,3 +65,9 @@ The 178.61 seconds include the changed removal discussions and extra living vote
 ### Directed-route transfer
 
 All four 9B voters rejected the outward step on both budget settings. That serves Blue on the two-move short board and Red on the five-move detour, for 2/4 at each setting. All eight votes were explicit. The fast condition took 6.98 seconds per decision and the 1,536-token condition took 8.67 seconds. A permanent dead end on the proposed landing was tractable with thinking on this panel. Choosing between two future directed routes with opposite consequences remained difficult.
+
+At 3,072 tokens the 27B Blue trap voter rejected the step after 2,524 tokens and 98.38 seconds. Red spent 2,715 tokens to request the board, then exhausted the remaining 357 without voting (121.10 seconds total). We stopped escalating because either call already exceeded a normal 60-second live decision before accounting for shared inference or the other seats.
+
+The fast finish made all eight independent submissions across four positions and two conditions. Restricting the seat to the voting tool with no draft already gave 3/4 team-serving ballots. Returning the exact capped 1,536-token draft gave 4/4. Only the Red trap ballot changed: it approved the dead end after seeing its own draft. Incremental finishing time averaged 2.26 seconds with the draft; preparing it had already cost 59.79 seconds on average. The no-draft finish averaged 2.71 seconds and needed no preparation. A finish with a draft cost about 62 seconds end to end under these conditions. Neither policy was tested on a full 27B social table. [Matched finish receipts](finish/results.jsonl)
+
+For this workstation, a 1,536-token allowance for 9B movement ballots is a useful experimental setting. The real-clock pilot used 768; the four frozen 9B seats all finished at 1,536. The harder route comparison and the small, correlated panel argue for keeping this optional while testing additional decisions.
