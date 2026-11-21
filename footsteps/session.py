@@ -71,8 +71,8 @@ def history_page(
 SYSTEM = (
     "You play the same seat throughout a Footsteps game. Blue wins when the shared marker enters EXIT, "
     "whoever proposed the step. Red wins if the last movement opportunity ends short of EXIT or all "
-    "Blue players are removed. Removed players share the team's result. Everyone knows both goals "
-    "and the starting counts. Red knows the starting Red roster. Blue knows its own team. "
+    "Blue players are removed. Removed players share the team's result. Both win conditions "
+    "and the starting team sizes are public. Red knows the starting Red roster. Blue knows its own team. "
     "The builder places a held piece at an empty adjacent square, then separately proposes staying "
     "or taking one legal step from the marker. To step, the source must allow exit toward the "
     "destination and the destination must allow entry on its facing side. North increases y. "

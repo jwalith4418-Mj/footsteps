@@ -22,7 +22,7 @@ The game order was solitaire control, social control, solitaire repeat, social r
 
 ## Reproduce
 
-From the repository root, start Ollama with the model installed. Choose empty output directories. Each invocation plays one game. Run them serially when sharing one accelerator. Private files contain the seats' private data. Committed seat receipts retain serving times, tool categories and the kind of opportunity at submission.
+The recorded comparisons used commit `22528a2`. Check out that revision to reproduce the original prompt wording. From the repository root, start Ollama with the model installed. Choose empty output directories. Each invocation plays one game. Run them serially when sharing one accelerator. Private files contain the seats' private data. Committed seat receipts retain serving times, tool categories and the kind of opportunity at submission.
 
 ```sh
 mkdir -p /tmp/footsteps-113-games /tmp/footsteps-113-owner
@@ -103,3 +103,9 @@ python -m experiments.team_objective /tmp/113-objective-remarks.jsonl --exit-rem
 python -m experiments.team_objective /tmp/113-named.jsonl --named-only
 python -m experiments.team_objective /tmp/113-named-remarks.jsonl --named-only --exit-remarks
 ```
+
+### Public scoring clarification
+
+After #118 the persistent prompt says both win conditions and the starting team sizes are public. The rulebook describes the results and allows for a player helping the opposing team. These facts require no assumption about another seat's private instructions or intentions.
+
+We repeated the first two objective commands above with the new wording and fresh outputs. All Blue voters approved in every arm. Under silence Red blocked in 1/2 cases with the clarified base prompt, 0/2 with the short addition, and 1/2 with the longer addition. With the two remarks Red blocked in 0/2, 0/2 and 1/2 respectively. Even this small edit changed individual responses. Preserve the original comparison at its recorded revision and evaluate future prompts across more boards. [Silent receipts](public-conditions.jsonl) · [With remarks](public-conditions-remarks.jsonl)
