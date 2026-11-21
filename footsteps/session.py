@@ -64,8 +64,19 @@ HISTORY["function"]["parameters"]["required"] = []
 
 
 class Session:
-    def __init__(self, seat, *, sleep=time.sleep):
+    def __init__(
+        self,
+        seat,
+        *,
+        sleep=time.sleep,
+        inspect_rotations=False,
+        movement_context=False,
+        wait_at_notice=True,
+    ):
         self.seat = seat
+        self.hand_mode = "fit" if inspect_rotations else "hand"
+        self.wait_at_notice = wait_at_notice
+        self.movement_context = movement_context
         self.sleep = sleep
         self.cursor = 0
         self.stamp = None
@@ -93,7 +104,23 @@ class Session:
 
     def opportunity(self):
         s = self.snap
+        movement = {}
+        if self.movement_context:
+            state = s["state"]
+            if state["stage"] == "propose" and s["choices"]:
+                movement = {
+                    "marker_here": state["marker"],
+                    "EXIT": state["goal"],
+                    "legal_one_step_destinations": [p for p in s["choices"]["to"] if p is not None],
+                }
+            elif state["stage"] == "move_vote":
+                movement = {
+                    "marker_here": state["marker"],
+                    "EXIT": state["goal"],
+                    "proposed_landing_if_approved": state["pending"],
+                }
         return {
+            **movement,
             "cursor": self.cursor,
             "seat": s["seat"],
             "turn": s["state"]["turn"],
@@ -159,6 +186,17 @@ class Session:
         ]
 
     def tools(self):
+        wait_tool = function(
+            "wait",
+            "Sleep without inference until a visible change after the last cursor you read. Waiting while owing a decision may time out.",
+            {"after_cursor": "integer"},
+        )
+        if self.wait_at_notice:
+            wait_tool["function"]["description"] = (
+                "Call wait() to sleep until your seat sees a change since this update. "
+                "An explicit after_cursor is optional. Waiting while owing a decision may time out."
+            )
+            wait_tool["function"]["parameters"]["required"] = []
         specs = [
             function("get_state", "Read your current board, held pieces and legal choices.", {}),
             function("get_role", "Read your authoritative private team assignment.", {}),
@@ -168,11 +206,7 @@ class Session:
                 "Start a fresh conversation with your own private summary and current state. Original history stays available.",
                 {"summary": "string"},
             ),
-            function(
-                "wait",
-                "Sleep without inference until a visible change after the last cursor you read. Waiting while owing a decision may time out.",
-                {"after_cursor": "integer"},
-            ),
+            wait_tool,
         ]
         if self.snap["can_speak"]:
             specs.append(
@@ -181,7 +215,7 @@ class Session:
                 )
             )
         if self.snap["choices"]:
-            specs.extend(build_tools(self.snap, "hand"))
+            specs.extend(build_tools(self.snap, self.hand_mode))
         return specs
 
     def wait(self, after):
@@ -201,6 +235,7 @@ class Session:
             and all(type(v) is types[schema["properties"][k]["type"]] for k, v in args.items()),
             "use the listed argument names and literal types",
         )
+        notice_cursor = self.cursor
         self.refresh()
         if name == "history":
             return history_page(self.snap["history"], **args)
@@ -214,7 +249,7 @@ class Session:
             self.reset()
             return {"compacted": True}
         if name == "wait":
-            return self.wait(args["after_cursor"])
+            return self.wait(args.get("after_cursor", notice_cursor))
         require(revision == self.snap["revision"], "the decision changed; read the new opportunity")
         if name == "speak":
             self.seat.call("/say", {"revision": revision, "text": args["text"]})
@@ -232,7 +267,7 @@ class Session:
                 self.snap["state"],
                 self.snap["choices"],
                 self.snap["pieces"].copy(),
-                "hand",
+                self.hand_mode,
                 orient,
             )
             if choice is None:
@@ -321,11 +356,23 @@ class Session:
 def main():
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--model", required=True)
+    cli.add_argument(
+        "--inspect-rotations",
+        action="store_true",
+        help="offer the four-orientation inspection tool when placing a tile",
+    )
+    cli.add_argument(
+        "--movement-context",
+        action="store_true",
+        help="show the marker and available or proposed landing in movement updates",
+    )
     cli.add_argument("--trace", type=Path, help="new private JSONL tool trace")
     args = cli.parse_args()
     seat = Seat(getpass("Private seat link: ").strip())
     seat.call("/ready", {})
-    session = Session(seat)
+    session = Session(
+        seat, inspect_rotations=args.inspect_rotations, movement_context=args.movement_context
+    )
 
     with open_private(args.trace) if args.trace else nullcontext() as trace:
         while session.snap["phase"] != "over":

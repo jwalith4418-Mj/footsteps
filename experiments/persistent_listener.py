@@ -4,8 +4,11 @@ import argparse
 import json
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 from random import Random
+from time import monotonic
 
 from footsteps.decision_notes import open_private
 from footsteps.ollama import Seat, request
@@ -15,9 +18,10 @@ from footsteps.table import Table
 from footsteps.table_server import TableServer
 
 
-def opponents(server, done, p0_yes):
+def opponents(server, done, p0_yes, *, delayed=False):
     """Script non-focal seats using their legal choices and the referee clock."""
     t = server.table
+    accusation_turn = 2 if delayed else 1
     while not done.wait(0.05):
         with server.lock:
             now = server.clock()
@@ -29,6 +33,7 @@ def opponents(server, done, p0_yes):
                 g = s["state"]
                 if (
                     g["stage"] == "eliminate_vote"
+                    and g["turn"] == accusation_turn
                     and g["pending"] == 0
                     and i == 2
                     and t.speaking(i, now)
@@ -44,30 +49,86 @@ def opponents(server, done, p0_yes):
                 c = s["choices"]
                 if g["stage"] == "place":
                     choice = {
-                        "tile": 40 if g["turn"] == 1 else c["tile"][0],
-                        "at": [1, 0] if g["turn"] == 1 else [0, 1],
+                        "tile": (255 if delayed else 40) if g["turn"] == 1 else c["tile"][0],
+                        "at": [[1, 0], [0, 1], [-1, 0]][g["turn"] - 1],
                         "rotation": 0,
                     }
                 elif g["stage"] == "discard":
                     choice = {"tile": c["tile"][0]}
                 elif g["stage"] == "propose":
-                    choice = {"to": [1, 0] if g["turn"] == 1 else [2, 0]}
+                    dest = [1, 0] if g["turn"] == 1 else [2, 0]
+                    if delayed and g["turn"] == 2:
+                        dest = [0, 0]
+                    choice = {"to": dest if tuple(dest) in c["to"] else None}
                 elif g["stage"] == "nominate":
-                    choice = {"target": 0 if i == 1 and g["turn"] == 1 else None}
+                    choice = {
+                        "target": 0
+                        if i == accusation_turn and g["turn"] == accusation_turn
+                        else None
+                    }
                 else:
                     vote = g["stage"] == "move_vote"
                     if vote and g["turn"] == 1 and i == 0:
                         vote = p0_yes
+                    if delayed and vote and g["turn"] == 2:
+                        vote = i == 0 and not p0_yes
                     choice = {"vote": vote}
                 t.submit(i, t.revision, choice, now)
             server.save()
 
 
 def trial(root, private, model, p0_yes=True):
-    root.mkdir(exist_ok=False)
     setup = read(Path(__file__).resolve().parents[1] / "examples/crossing.json")["setup"]
     setup["roles"] = ["blue", "blue", "red", "blue"]
-    table = Table(setup, Random(1), seconds=30, discussion=15)
+    play_table(
+        root,
+        private,
+        model,
+        Table(setup, Random(1), seconds=30, discussion=15),
+        3,
+        opponents=lambda host, done: opponents(host, done, p0_yes),
+        session_class=partial(Session, wait_at_notice=False),
+        compact_when=lambda snap: any(e["kind"] == "eliminate_vote" for e in snap["history"]),
+    )
+
+
+def play_table(
+    root, private, model, table, focal, *, opponents=None, compact_when=None, session_class=Session
+):
+    """Play and record one authenticated persistent seat under a real referee clock."""
+    with open_private(private) as trace, live_table(root, table, model) as (host, seats):
+        done = threading.Event()
+        session = session_class(seats[focal])
+        forced = False
+        with ThreadPoolExecutor(1) as pool, (root / "calls.jsonl").open("x") as log:
+            script = pool.submit(opponents, host, done) if opponents else None
+            try:
+                while True:
+                    if script and script.done():
+                        script.result()
+                    session.refresh()
+                    if session.snap["phase"] == "over":
+                        break
+                    force = bool(not forced and compact_when and compact_when(session.snap))
+                    row = measured_step(session, model, force_compact=force)
+                    if row is None:
+                        continue
+                    if force and row["result"].get("compacted"):
+                        forced = True
+                    print(json.dumps(row), file=trace, flush=True)
+                    public = public_call(row, model, force)
+                    print(json.dumps(public), file=log, flush=True)
+            finally:
+                done.set()
+            if script:
+                script.result()
+    game = replay(read(root / "game.json"))
+    print(game.winner, "won on turn", game.turn)
+
+
+@contextmanager
+def live_table(root, table, model):
+    root.mkdir(exist_ok=False)
     request(
         11434,
         "/api/chat",
@@ -80,68 +141,63 @@ def trial(root, private, model, p0_yes=True):
         },
         120,
     )
-    with open_private(private) as trace, TableServer(table, root / "game.json") as host:
+    with TableServer(table, root / "game.json") as host:
         seats = {
             i: Seat(f"http://127.0.0.1:{host.server_port}/#{token}")
             for token, i in host.tokens.items()
         }
         serving = threading.Thread(target=host.serve_forever, kwargs={"poll_interval": 0.05})
         serving.start()
-        done = threading.Event()
 
         try:
             for seat in seats.values():
                 seat.call("/ready", {})
-            session = Session(seats[3])
-            forced = False
-            with ThreadPoolExecutor(1) as pool, (root / "calls.jsonl").open("x") as log:
-                script = pool.submit(opponents, host, done, p0_yes)
-                try:
-                    while True:
-                        if script.done():
-                            script.result()
-                        session.refresh()
-                        if session.snap["phase"] == "over":
-                            break
-                        force = not forced and any(
-                            e["kind"] == "eliminate_vote" for e in session.snap["history"]
-                        )
-                        row = session.step(model, force_compact=force)
-                        if row is None:
-                            continue
-                        if force and row["result"].get("compacted"):
-                            forced = True
-                        print(json.dumps(row), file=trace, flush=True)
-                        public = {
-                            k: row[k]
-                            for k in (
-                                "revision",
-                                "tool",
-                                "prompt_tokens",
-                                "reply_tokens",
-                                "inference_seconds",
-                            )
-                        }
-                        public.update(
-                            model=model, forced_compaction=force, error="error" in row["result"]
-                        )
-                        if row["tool"] == "history":
-                            public.update(
-                                filters=row["arguments"],
-                                entry_ids=[e["id"] for e in row["result"].get("entries", [])],
-                            )
-                        print(json.dumps(public), file=log, flush=True)
-                finally:
-                    done.set()
-                script.result()
+            yield host, seats
         finally:
-            done.set()
             host.shutdown()
             serving.join()
             with host.lock:
                 host.save()
-    game = replay(read(root / "game.json"))
-    print(game.winner, "won on turn", game.turn)
+
+
+def measured_step(session, model, **kwargs):
+    revision = session.snap["revision"]
+    start = monotonic()
+    try:
+        return session.step(model, **kwargs)
+    except TimeoutError:
+        # The table's clock continues. Its eventual record determines whether a choice was missed.
+        return {
+            "revision": revision,
+            "tool": None,
+            "arguments": {},
+            "result": {"error": "request timed out"},
+            "prompt_tokens": None,
+            "reply_tokens": None,
+            "inference_seconds": round(monotonic() - start, 3),
+        }
+
+
+def public_call(row, model, force):
+    public = {
+        k: row[k]
+        for k in (
+            "revision",
+            "tool",
+            "prompt_tokens",
+            "reply_tokens",
+            "inference_seconds",
+        )
+    }
+    public.update(model=model, forced_compaction=force, error="error" in row["result"])
+    if row["tool"] == "history":
+        public.update(
+            filters=row["arguments"],
+            entry_ids=[e["id"] for e in row["result"].get("entries", [])],
+        )
+    if row["result"].get("error") == "request timed out":
+        public["request_timeout"] = True
+    return public
 
 
 def report(root):
@@ -164,9 +220,9 @@ def report(root):
         "Requests",
         len(calls),
         "prompt tokens",
-        sum(r["prompt_tokens"] for r in calls),
+        sum(r["prompt_tokens"] or 0 for r in calls),
         "generated tokens",
-        sum(r["reply_tokens"] for r in calls),
+        sum(r["reply_tokens"] or 0 for r in calls),
         "inference seconds",
         round(sum(r["inference_seconds"] for r in calls), 1),
     )

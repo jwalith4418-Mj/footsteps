@@ -167,3 +167,56 @@ class PersistentSeat(unittest.TestCase):
         self.assertEqual(session.messages, initial)
         for name in ("get_role", "compact", "get_state"):
             self.assertEqual(session.step("script", infer=answer)["tool"], name)
+
+    def test_rotation_inspection_is_optional_and_leaves_held_piece_unchanged(self):
+        table = Table(
+            {"roles": ["blue"], "goal": [2, 0], "hands": [[65]], "store": [65, 65]}, Random(1)
+        )
+        table.join(0, 0)
+        peer = ProjectedSeat(table, 0)
+        default = Session(peer)
+        self.assertNotIn("inspect_rotations_at", [t["function"]["name"] for t in default.tools()])
+        session = Session(peer, inspect_rotations=True)
+        before = peer.call("/session")
+        answer = session.execute(
+            "inspect_rotations_at", {"piece": "H1", "x": 1, "y": 0}, session.tools(), table.revision
+        )
+        self.assertEqual([r["rotation"] for r in answer["orientations"] if r["can_step_here"]], [3])
+        self.assertEqual(peer.call("/session"), before)
+
+    def test_movement_update_displays_the_actual_marker_and_older_legal_landing(self):
+        table = Table(CROSSING["setup"], Random(1), discussion=0)
+        for seat in range(4):
+            table.join(seat, 0)
+        for event in CROSSING["events"][1:3]:
+            table.submit(0, table.revision, {k: v for k, v in event.items() if k != "kind"}, 0)
+        session = Session(ProjectedSeat(table, 0), movement_context=True)
+        notice = session.opportunity()
+        self.assertEqual(notice["marker_here"], [0, 0])
+        self.assertEqual(notice["legal_one_step_destinations"], [[1, 0]])
+        self.assertEqual(notice["EXIT"], [2, 0])
+        table.submit(0, table.revision, {"to": [1, 0]}, 0)
+        session.refresh()
+        self.assertEqual(session.opportunity()["proposed_landing_if_approved"], [1, 0])
+        self.assertEqual(session.opportunity()["marker_here"], [0, 0])
+        self.assertNotIn("legal_one_step_destinations", session.opportunity())
+
+    def test_no_argument_wait_keeps_cursor_from_before_inference(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for i in range(4):
+            table.join(i, 0)
+        for e in CROSSING["events"][1:4]:
+            table.submit(0, table.revision, {k: v for k, v in e.items() if k != "kind"}, 0)
+        peer = ProjectedSeat(table, 2)
+        session = Session(peer, sleep=lambda _: self.fail("lost the intervening public remark"))
+
+        def speak_then_wait(_port, _path, body, _budget):
+            spec = next(t["function"] for t in body["tools"] if t["function"]["name"] == "wait")
+            self.assertEqual(spec["parameters"]["required"], [])
+            table.say(1, table.revision, "Check the first move.", 0)
+            return {"message": {"tool_calls": [{"function": {"name": "wait", "arguments": {}}}]}}
+
+        first = session.cursor
+        response = session.step("script", infer=speak_then_wait)
+        self.assertGreater(response["result"]["cursor"], first)
+        self.assertEqual(response["result"]["latest"][0]["speaker"], 1)
