@@ -33,3 +33,12 @@ The first three columns count submitted votes serving the focal team's interest.
 The control reverses which team benefits from a step toward EXIT. Every Blue approved the dead end and every Red rejected it. All twelve forecast forks reported that Blue could never reach EXIT after approval, but all twelve also predicted **immediate** Red victory. The referee continues play after entering the cul-de-sac. A team can be certain to lose before its loss is adjudicated. The reported prediction and the team's actual choice diverged on every trap ballot. The sample has one trap and two EXIT positions, with correlated role swaps. These decisions are consistent with a preference for a superficially favorable direction and do not identify an internal policy.
 
 The terminal forecast exposed an ambiguity worth testing. Even after naming Blue as the immediate winner, 9B answered false to the inclusive question about whether Blue could still reach EXIT on all eleven terminal rows. 27B answered true on all six Blue rows and false on all five Red rows. We therefore scored the immediate-winner, own-team, reachability and actual vote fields separately.
+
+We tested that ambiguity on fresh snapshots of the nonbuilder with a Blue proposer, once as Red and once as Blue on each of 13401 and the trap. Two independent requests saw the same private bootstrap. One repeated the original wording. The other asked for a single outcome from four mutually exclusive labels and for the team that benefits from approval. Both models labelled the literal EXIT outcome correctly for both teams. 9B still called Red the beneficiary when it held Red. None of the four trap seats chose the correct label, “play continues, EXIT unreachable”. The terminal wording matters, but rewording alone did not recover the directed trap. This follow-up asks factual questions at the initial snapshot. It adds no instruction to the live voter.
+
+```sh
+python -m experiments.exit_forecasts 9b /tmp/101-9b-wording.jsonl
+python -m experiments.exit_forecasts 27b /tmp/101-27b-wording.jsonl
+```
+
+For the controlled follow-up on how much thinking the local seats get before acting, see [the thinking-budget study](https://github.com/othercriteria/footsteps/issues/135).
