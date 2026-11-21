@@ -64,6 +64,11 @@ def main():
     table.add_argument(
         "--discussion", default=15, type=float, help="discussion seconds before each ballot"
     )
+    table.add_argument(
+        "--early-ballot",
+        action="store_true",
+        help="open voting once no living player can speak again in this discussion",
+    )
     supply = table.add_mutually_exclusive_group()
     supply.add_argument(
         "--kit-counts",

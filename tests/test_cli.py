@@ -190,7 +190,7 @@ class Commands(unittest.TestCase):
     def test_host_checkpoints_both_deals_at_launch_and_shutdown(self):
         for flags, seats in [
             (("--start-origin", "--crossing"), 4),
-            (("--crossing",), 4),
+            (("--crossing", "--early-ballot"), 4),
             (("--seats", "3"), 3),
             (("--kit-counts", "29", "29", "--kit-seed", "8700"), 4),
         ]:
