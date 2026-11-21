@@ -74,3 +74,5 @@ The [goal-pursuit gate](goal-pursuit/README.md) tests model-authored first landi
 The [removal ballot perspective experiment](voter-perspective/README.md) checks whether a voter recognizes itself and distinguishes other players' claims from their recorded ballots.
 
 The [pivotal removal ballots](pivotal-votes/README.md) measure whether the same voter changes its actual choice when a private roster or two public final-turn policies are exchanged, then revisit the five-seat game with a stronger local model.
+
+The [persistent listener](persistent-listener/README.md) follows one seat through a public accusation, a removal vote, private compaction and the next turn.

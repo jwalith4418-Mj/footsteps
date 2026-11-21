@@ -66,6 +66,7 @@ class Table:
         if placement_check:
             self.record["placement_check"] = placement_check
         self.history = [[] for _ in self.game.roles]
+        self.history_labels = []
         self.floor_turns = []
         self.placed_at = None
         self.ready = set()
@@ -153,6 +154,10 @@ class Table:
                     "result": result,
                 }
             )
+        labels = {"kind": kind}
+        if kind in BALLOTS:
+            labels["ballots"] = dict(zip(before.alive, event["votes"], strict=True))
+        self.history_labels.append(labels)
         for seat, log in enumerate(self.history):
             message = describe(before, event, seat)
             if event["kind"] == "eliminate_vote":
@@ -226,7 +231,7 @@ class Table:
             and seat not in self.speakers
         )
 
-    def view(self, seat, now):
+    def view(self, seat, now, *, structured_history=False):
         self.tick(now)
         game = self.game
         phase = (
@@ -249,7 +254,12 @@ class Table:
             "state": game.view(seat),
             "pieces": self.pieces[seat].copy(),
             "choices": self.choices(seat, now),
-            "history": list(self.history[seat]),
+            "history": [
+                row | label
+                for row, label in zip(self.history[seat], self.history_labels, strict=True)
+            ]
+            if structured_history
+            else list(self.history[seat]),
             "floor_turns": [row.copy() for row in self.floor_turns],
         }
 
@@ -315,7 +325,12 @@ class Table:
         self.speakers.add(seat)
         note = {"after_event": revision, "seat": seat, "text": message.strip()}
         self.record.setdefault("remarks", []).append(note)
+        self.history_labels.append({"kind": "remark", "speaker": seat})
         for log in self.history:
             log.append(
-                {"turn": self.game.turn, "event": revision, "text": f"P{seat}: {note['text']}"}
+                {
+                    "turn": self.game.turn,
+                    "event": revision,
+                    "text": f"P{seat}: {note['text']}",
+                }
             )

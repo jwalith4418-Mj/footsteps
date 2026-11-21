@@ -1,0 +1,173 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "start": [
+      0,
+      0
+    ],
+    "goal": [
+      2,
+      0
+    ],
+    "roles": [
+      "blue",
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        40
+      ],
+      [
+        9
+      ],
+      [
+        33
+      ],
+      [
+        0
+      ]
+    ],
+    "store": [
+      18,
+      12
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        18,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 40,
+      "at": [
+        1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 12
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 9,
+      "at": [
+        0,
+        1
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "Moving to (1,0) is the right call \u2014 it connects W to E toward the exit at (2,0). I support the move."
+    },
+    {
+      "after_event": 6,
+      "seat": 2,
+      "text": "P0 voted No on the first marker step. We should remove P0."
+    },
+    {
+      "after_event": 6,
+      "seat": 3,
+      "text": "P0 voted against the move, which is suspicious. I support eliminating P0."
+    },
+    {
+      "after_event": 9,
+      "seat": 2,
+      "text": "P0 voted No on the first marker step. We should remove P0."
+    },
+    {
+      "after_event": 9,
+      "seat": 3,
+      "text": "P0 proposed a move that kept the marker in place, then voted NO on their own move. That's a clear Red tell. I'm nominating P0 for elimination."
+    },
+    {
+      "after_event": 14,
+      "seat": 3,
+      "text": "P1 proposed moving the marker to (2,0) \u2014 that's the exit! If this goes through, Blue wins immediately. I'm voting YES."
+    }
+  ]
+}

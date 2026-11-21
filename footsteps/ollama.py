@@ -29,8 +29,8 @@ Return the ZERO-BASED INDEX of your choice for each field, even for numeric valu
 
 
 class ServiceError(OSError):
-    def __init__(self, status):
-        super().__init__(f"HTTP {status}")
+    def __init__(self, status, detail=None):
+        super().__init__(f"HTTP {status}: {detail}" if detail else f"HTTP {status}")
         self.status = status
 
 
@@ -47,7 +47,13 @@ def request(port, path, body, timeout, token=None):
         )
         response = conn.getresponse()
         if response.status != 200:
-            raise ServiceError(response.status)
+            detail = None
+            if token and response.status in (400, 409):
+                try:
+                    detail = json.loads(response.read(8192)).get("error")
+                except (ValueError, AttributeError):
+                    pass
+            raise ServiceError(response.status, detail)
         return json.load(response)
 
 
