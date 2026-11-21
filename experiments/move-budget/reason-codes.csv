@@ -1,0 +1,49 @@
+case,heading,seat,team,condition,decisive_reason,basis
+short,west,1,red,speaker,no,attributes backward progress to wrong team
+short,west,3,blue,silent,no,calls legal step impossible
+short,west,3,blue,scripted,no,relies on speaker for viable route
+short,west,3,blue,model,no,distance and speaker opposition
+short,west,1,blue,speaker,no,calls outward step progress
+short,west,3,red,silent,no,attributes delay to wrong team
+short,west,3,red,scripted,no,relies on speaker for viable route
+short,west,3,red,model,no,calls outward step progress
+short,north,1,red,speaker,no,attributes delay to wrong team
+short,north,3,blue,silent,no,treats rejection as immediate termination
+short,north,3,blue,scripted,no,infers return path from landing ports
+short,north,3,blue,model,no,distance favors Red
+short,north,1,blue,speaker,no,calls outward step progress
+short,north,3,red,silent,no,confuses team objective
+short,north,3,red,scripted,no,relies on speaker for viable route
+short,north,3,red,model,no,calls outward step progress
+detour,west,1,red,speaker,no,distance favors Red despite No ballot
+detour,west,3,blue,silent,no,distance alone
+detour,west,3,blue,scripted,no,relies on speaker for viable route
+detour,west,3,blue,model,no,distance alone
+detour,west,1,blue,speaker,no,distance alone
+detour,west,3,red,silent,no,confuses team objective
+detour,west,3,red,scripted,no,relies on speaker for viable route
+detour,west,3,red,model,no,confuses termination rule
+detour,north,1,red,speaker,no,confuses removal condition
+detour,north,3,blue,silent,no,asserts clear path without identifying it
+detour,north,3,blue,scripted,no,relies on speaker for viable route
+detour,north,3,blue,model,no,distance alone
+detour,north,1,blue,speaker,no,identifies sole north exit but says a new piece is needed
+detour,north,3,red,silent,no,confuses team objective
+detour,north,3,red,scripted,no,relies on speaker for viable route
+detour,north,3,red,model,no,claims retreat denies immediate win
+short,west,3,blue,budget_rule,no,distance and cost of one turn
+short,west,3,red,budget_rule,no,attributes delay to wrong team
+short,north,3,blue,budget_rule,no,treats rejection as immediate termination
+short,north,3,red,budget_rule,no,confuses team objective
+detour,west,3,blue,budget_rule,no,assumes Blue can win next move
+detour,west,3,red,budget_rule,no,confuses exhaustion result
+detour,north,3,blue,budget_rule,no,prioritizes avoiding own removal
+detour,north,3,red,budget_rule,no,distance alone
+short,west,3,blue,budget_count,no,legality and possible removal
+short,west,3,red,budget_count,no,confuses team objective
+short,north,3,blue,budget_count,no,treats rejection as immediate termination
+short,north,3,red,budget_count,no,confuses team objective
+detour,west,3,blue,budget_count,no,legality and unsupported roster inference
+detour,west,3,red,budget_count,no,attributes delay to wrong team
+detour,north,3,blue,budget_count,no,identifies necessary retreat but uses entry to infer departure
+detour,north,3,red,budget_count,no,distance alone
