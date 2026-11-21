@@ -16,8 +16,8 @@ from footsteps.session import Session
 from footsteps.table import Table
 
 
-def play_seat(seat, model, queue, log, trace):
-    session = Session(seat, inspect_rotations=True, movement_context=True)
+def play_seat(seat, model, queue, log, trace, context):
+    session = Session(seat, inspect_rotations=True, movement_context=True, context=context)
     queued = 0
 
     def infer(port, path, body, budget):
@@ -42,7 +42,7 @@ def play_seat(seat, model, queue, log, trace):
             print(json.dumps(public), file=log, flush=True)
 
 
-def play(root, private, model):
+def play(root, private, model, context):
     private.mkdir(exist_ok=False)
     table = Table(
         {
@@ -56,14 +56,17 @@ def play(root, private, model):
         seconds=45,
         discussion=15,
     )
-    with live_table(root, table, model) as (_, seats), ThreadPoolExecutor(1) as queue:
+    with (
+        live_table(root, table, model, context=context) as (_, seats),
+        ThreadPoolExecutor(1) as queue,
+    ):
 
         def run(i):
             with (
                 (root / f"seat-{i}.jsonl").open("x") as log,
                 open_private(private / f"seat-{i}.jsonl") as trace,
             ):
-                play_seat(seats[i], model, queue, log, trace)
+                play_seat(seats[i], model, queue, log, trace, context)
 
         with ThreadPoolExecutor(3) as clients:
             list(clients.map(run, seats))
@@ -116,7 +119,8 @@ if __name__ == "__main__":
         "private", type=Path, nargs="?", help="new private directory; omit for offline report"
     )
     cli.add_argument("--model", default="footsteps-qwen3.8:27b-rana-layout")
+    cli.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
     args = cli.parse_args()
     if args.private:
-        play(args.root, args.private, args.model)
+        play(args.root, args.private, args.model, args.context)
     report(args.root)
