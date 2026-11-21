@@ -381,6 +381,9 @@ class Session:
         self.refresh()
         if self.snap["phase"] == "over":
             return None
+        if self.snap["seat"] not in self.snap["state"]["alive"]:
+            self.wait(self.cursor)
+            return None
         revision = self.snap["revision"]
         force_compact = force_compact or bool(compact_when and compact_when(self.snap))
         offered = self.tools()

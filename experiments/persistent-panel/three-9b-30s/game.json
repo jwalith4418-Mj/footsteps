@@ -1,0 +1,226 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "start": [
+      -2,
+      0
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        40,
+        0
+      ],
+      [
+        65,
+        0
+      ],
+      [
+        68,
+        0
+      ]
+    ],
+    "store": [
+      65,
+      40,
+      255
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        255,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        -1
+      ],
+      "tile": 255,
+      "rotation": 0,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        -1
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        -2
+      ],
+      "tile": 65,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        -2
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        -1
+      ],
+      "tile": 68,
+      "rotation": 3,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I vote for the move to (-2, -1). This is a safe step toward the goal at (0,0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support the move to (-2, -1). It's a safe step and we're making progress toward the goal."
+    },
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I agree with P1 and P2. The move to (-2, -1) is safe and progresses us toward the goal at (0,0). I vote for it."
+    },
+    {
+      "after_event": 12,
+      "seat": 1,
+      "text": "Proposed move to (-2,-2) places us further from goal (0,0). This might be strategic to reposition or wait for better opportunities. Need votes on this step."
+    },
+    {
+      "after_event": 12,
+      "seat": 0,
+      "text": "P1's proposal to move to (-2,-2) takes us further from the goal at (0,0). As a Blue player, I need to consider if this is a strategic repositioning or a mistake. The board shows (-2,-2) has exits S and entrances N, which might be useful later. However, moving away from the goal seems counterintuitive unless there's a specific reason. I'll vote against this step unless more information emerges."
+    },
+    {
+      "after_event": 12,
+      "seat": 2,
+      "text": "I agree with P0's assessment. Moving to (-2,-2) takes us further from the goal at (0,0). While it might be a strategic repositioning, I don't see an immediate benefit. I'll vote against this step unless there's compelling evidence otherwise."
+    },
+    {
+      "after_event": 15,
+      "seat": 2,
+      "text": "P1 is the builder and placed H1 at (-2,-2). They voted no on moving away from goal. Nominating P1 for elimination to remove a blocker who won't help us reach (0,0)."
+    },
+    {
+      "after_event": 15,
+      "seat": 0,
+      "text": "I nominate P1 for elimination."
+    },
+    {
+      "after_event": 15,
+      "seat": 1,
+      "text": "I support the nomination of P1. Removing a player who won't help us reach the goal is necessary for our survival."
+    },
+    {
+      "after_event": 19,
+      "seat": 2,
+      "text": "I propose we accept the move to (-2, 0). It's a safe step toward the goal at (0, 0). We're still alive and making progress. Let's vote yes."
+    },
+    {
+      "after_event": 19,
+      "seat": 0,
+      "text": "I support the move to (-2, 0). This is a safe step toward the goal at (0,0). Let's proceed."
+    }
+  ]
+}

@@ -81,6 +81,28 @@ class PersistentSeat(unittest.TestCase):
             call("history", before=statement["id"], kind="move_vote", voter=3)["entries"], [vote]
         )
 
+    def test_removed_seat_observes_result_without_using_inference(self):
+        t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
+        for i in range(4):
+            t.join(i, 0)
+        for e in CROSSING["events"][1:4]:
+            t.submit(0, t.revision, {k: v for k, v in e.items() if k != "kind"}, 0)
+        for i in range(4):
+            t.submit(i, t.revision, {"vote": True}, 0)
+        t.submit(1, t.revision, {"target": 3}, 0)
+        for i in range(4):
+            t.submit(i, t.revision, {"vote": True}, 0)
+        peer = ProjectedSeat(t, 3)
+        session = Session(peer, sleep=lambda _: setattr(peer, "now", t.deadline))
+        self.assertNotIn(3, t.game.alive)
+        self.assertIsNone(t.game.winner)
+        while session.snap["phase"] != "over":
+            self.assertIsNone(
+                session.step("script", infer=lambda *_: self.fail("removed seat inferred"))
+            )
+        self.assertEqual(session.snap["state"]["winner"], t.game.winner)
+        self.assertIsNotNone(t.game.winner)
+
     def test_hidden_ballot_during_wait_only_wakes_at_public_reveal(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
         for i in range(4):
