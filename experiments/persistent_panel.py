@@ -16,10 +16,10 @@ from footsteps.solo import setup as solo_setup
 from footsteps.table import Table
 
 
-def corridor(heading):
+def corridor(heading, seconds=30):
     goal = {"north": [0, 2], "east": [2, 0], "south": [0, -2], "west": [-2, 0]}[heading]
     setup = with_exit_origin({"roles": ["blue"], "goal": goal, "hands": [[65]], "store": [65, 65]})
-    return Table(setup, Random(103), seconds=30, discussion=0)
+    return Table(setup, Random(103), seconds=seconds, discussion=0)
 
 
 def report(root):
@@ -93,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("output", type=Path)
     parser.add_argument("private", type=Path, nargs="?")
     parser.add_argument("--seed", type=int, default=9811, help="ordinary solitaire deal")
+    parser.add_argument("--decision-seconds", type=int, default=30)
     parser.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
     parser.add_argument("--model", default="footsteps-qwen3.8:27b-rana-layout")
     args = parser.parse_args()
@@ -114,7 +115,7 @@ if __name__ == "__main__":
             args.output,
             args.private,
             args.model,
-            Table(setup, Random(1), seconds=30, discussion=15),
+            Table(setup, Random(1), seconds=args.decision_seconds, discussion=15),
             3,
             opponents=lambda host, done: opponents(host, done, args.case == "false", delayed=True),
             context=args.context,
@@ -131,11 +132,11 @@ if __name__ == "__main__":
             Table(
                 with_exit_origin(solo_setup(args.seed, (3, 2), 2, 7, 0.55)),
                 Random(f"draw/{args.seed}"),
-                seconds=30,
+                seconds=args.decision_seconds,
                 discussion=0,
             )
             if args.case == "ordinary"
-            else corridor(args.case),
+            else corridor(args.case, args.decision_seconds),
             0,
             context=args.context,
             session_class=partial(

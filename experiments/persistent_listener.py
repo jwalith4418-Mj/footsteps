@@ -122,7 +122,10 @@ def play_table(
                     if session.snap["phase"] == "over":
                         break
                     row = measured_step(
-                        session, model, compact_when=None if forced else compact_when
+                        session,
+                        model,
+                        budget=table.seconds,
+                        compact_when=None if forced else compact_when,
                     )
                     if row is None:
                         continue

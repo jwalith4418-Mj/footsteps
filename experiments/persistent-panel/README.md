@@ -2,6 +2,8 @@
 
 The initial persistent listener could carry a recent ballot through compaction. This panel starts a builder at setup and moves the listener's dispute to the following turn. A single local Qwen3.8 27B RANA instance handles the requests. The starting configuration uses an 8,192-token context, a 240-token output limit, temperature zero, inference seed one and thinking disabled. Later comparisons change model size, context size and the compaction allowance as indicated. Each game with one model-controlled seat uses a real 30-second decision clock. Social discussion gets 15 seconds. Request times include prompt evaluation. Sums of prompt tokens count the repeated context on each call. Missing backend counters stay unknown.
 
+This panel ran on one RTX 4090 (24,564 MiB) with Ollama 0.40.15. The installed model IDs were `05ec8ea1b9a8` for the 27B RANA layout and `a8ee95bc3592` for Qwen3.5 9B Q8_0. Changing the context can reload a model. Live clocks start after warmup.
+
 ## Two chances to move
 
 Start two squares from EXIT. The hand and both tiles in the store are face 65, with a north entrance and south exit in printed orientation. There is exactly one first placement and orientation that can still win. Then the player must propose the intermediate square, approve the movement, build somewhere else and propose and approve EXIT. The live solitaire seat casts its own movement votes. All placements, returns, proposals and votes come from the model unless the referee marks a fallback.
@@ -45,6 +47,10 @@ We reconstructed the old ordinary seat at revision 15 from the referee prefix an
 
 The successful prompts were 5,975 tokens and the saved note was 785 characters, comfortably within the earlier 1,600-character check. The sampled server log reported no input truncation. The output budget cut off the serialized tool call before the server could return it. The historic client retained only the 500 status, so individual historical errors cannot all be attributed with certainty. The dedicated compaction budget now scales with context; regular actions keep their smaller limit. Replaying an owner-held compact request at a range of caps writes counts, timing, status and a request hash while keeping the input and summary local.
 
+## Seven-turn solitaire under a real decision clock
+
+On ordinary deal 9811 both versions moved twice and finished at (−1, −2), three steps from EXIT. The old runner missed eight of 22 decisions and logged 27 failed backend requests. The revised 27B runner completed six private compactions and recorded zero backend failures. It still missed five of 22 decisions, all placements on turns 3–7. For example, on turn three it read the board, inspected different rotations seven times, then used another 13.3 seconds to compact. The 30-second placement period had elapsed. Providing a viable summary allowance addresses the backend failure and leaves a separate question about how much wall time to allow for investigation and action. [Original](landing-ordinary/) · [Revised](revised-ordinary/)
+
 ## All three seats share one local inference queue
 
 Blue P0, Red P1 and Blue P2 each hold their own seat credentials and persistent conversation. The referee gives 45 seconds per decision and 15 seconds for discussion. The three sessions use one FIFO inference worker. Queue time counts against the allowance. START is two steps west of EXIT and the store supports three turns. The same private opening hands and draw seed are used for the smaller-model repeat.
@@ -80,6 +86,7 @@ With the revised interface, run the matched listener games, the three independen
 ```sh
 for claim in false true; do run "revised-$claim" "$claim" --implicit-wait; done
 run revised-ordinary ordinary --inspect-rotations --movement-context --implicit-wait
+run ordinary-60 ordinary --decision-seconds 60 --inspect-rotations --movement-context --implicit-wait
 python -m experiments.persistent_table "$out/three" "$out/three-private"
 python -m experiments.persistent_proposals "$out/proposals.jsonl" --model footsteps-qwen3.8:27b-rana-layout
 ```
