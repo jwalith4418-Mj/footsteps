@@ -48,3 +48,20 @@ We chose two additional checks after the primary panel. For 9B, reuse the short 
 python -m experiments.ballot_thinking 9b /tmp/135-public/9b-route.jsonl /tmp/135-owner/9b-route.jsonl --budgets 0 1536 --cases short detour
 python -m experiments.ballot_thinking 27b /tmp/135-public/27b-3072.jsonl /tmp/135-owner/27b-3072.jsonl --budgets 3072 --cases trap
 ```
+
+### Finishing an interrupted decision
+
+For each 27B attempt that spent the full 1,536-token allowance on its first call without casting a vote, the owner can reuse the exact saved thinking string. Fork the same seat twice. Both forks get a single fast, 240-token vote tool request with an explicit instruction to cast now. Only one receives its own interrupted draft. Record the separately submitted votes and incremental wall time. A forced finish on a saved draft is a distinct policy from a native thinking-enabled submission. It also requires keeping the owner text for reproduction.
+
+```sh
+mkdir -p /tmp/135-public/finish
+python -m experiments.thinking_finish /tmp/135-public/27b-low.jsonl /tmp/135-owner/27b-low.jsonl /tmp/135-public/finish/results.jsonl /tmp/135-owner/finish.jsonl
+```
+
+On the matched timed game all 21 required choices arrived before deadline. Blue won on the second turn with the same opening bridge as 13401. This time neither of the first two removal attempts passed. All three seats were alive at the final vote: both Blues approved and the lone Red rejected. No movement voter needed the fast fallback. One Blue attempted a ballot without its boolean argument and corrected it within the remaining allowance. All seven returned thinking traces attach at the two movement opportunities. The owner's trace was joined to the matching private action receipt by seat, revision, actual output limit, token count and call order, before export. [Referee record](game-768/game.json) · [Thinking-call timings and accepted votes](game-768/movement-thinking.jsonl)
+
+The 178.61 seconds include the changed removal discussions and extra living voter. The fast game used 150.93 seconds for 16 required choices. One game with different subsequent actions cannot establish a general throughput or win-rate effect.
+
+### Directed-route transfer
+
+All four 9B voters rejected the outward step on both budget settings. That serves Blue on the two-move short board and Red on the five-move detour, for 2/4 at each setting. All eight votes were explicit. The fast condition took 6.98 seconds per decision and the 1,536-token condition took 8.67 seconds. A permanent dead end on the proposed landing was tractable with thinking on this panel. Choosing between two future directed routes with opposite consequences remained difficult.

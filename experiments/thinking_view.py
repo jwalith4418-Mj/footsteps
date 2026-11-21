@@ -18,10 +18,30 @@ def key(row):
     return tuple(row[k] for k in ("model", "budget", "case", "seat", "team", "revision"))
 
 
+def finish_results(receipts, owner):
+    path = receipts / "finish/results.jsonl"
+    finishes = defaultdict(list)
+    if path.exists():
+        for public, private in zip(
+            path.read_text().splitlines(),
+            (owner / "finish.jsonl").read_text().splitlines(),
+            strict=True,
+        ):
+            row = json.loads(public)
+            saved = json.loads(private)
+            trace = saved.pop("thinking")
+            digest = hashlib.sha256(trace.encode()).hexdigest() if trace else None
+            if saved != row or digest != row["thinking_sha256"]:
+                raise ValueError("finish trace differs from receipt")
+            finishes[key(row), row["source_sha256"]].append((row, trace))
+    return finishes
+
+
 def build(receipts, owner, output):
     output.mkdir(mode=0o700, exist_ok=True)
     notes = defaultdict(list)
     seen = set()
+    finishes = finish_results(receipts, owner)
     panels = defaultdict(list)
     for path in sorted(receipts.glob("*.jsonl")):
         private = {}
@@ -70,8 +90,20 @@ def build(receipts, owner, output):
                         "thinking": trace,
                     }
                 )
+                for result, extra in finishes.pop((k, digest), []):
+                    which = "with saved draft" if result["with_draft"] else "without draft"
+                    final_vote = {True: "Yes", False: "No", None: "no submission"}[result["vote"]]
+                    notes[floor].append(
+                        notes[floor][-1]
+                        | {
+                            "label": f"Fast finish {which} · {final_vote} · {result['tokens']} tokens · {result['seconds']:.1f}s",
+                            "thinking": extra,
+                        }
+                    )
         if private:
             raise ValueError("private calls have no public receipt")
+    if finishes:
+        raise ValueError("finish result has no matching source call")
     links = []
     for (case, team), traces in sorted(notes.items()):
         record, _ = position(case, team)

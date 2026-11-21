@@ -16,6 +16,18 @@ from footsteps.session import Session
 from footsteps.table import Table, paper_setup
 
 
+def attach_result(note, row):
+    vote = None
+    if row and row["tool"] == "vote_move" and row["result"].get("accepted"):
+        vote = row["arguments"]["approve"]
+    note["submitted_vote"] = vote
+    if vote is not None:
+        note["label"] += " · submitted " + ("Yes" if vote else "No")
+    elif row is None or "error" in row["result"]:
+        note["label"] += " · no accepted action"
+    return note
+
+
 class BallotSession(Session):
     def __init__(self, peer, *, allowance, private, **kwargs):
         self.allowance = allowance
@@ -30,11 +42,12 @@ class BallotSession(Session):
         super().__init__(peer, **kwargs)
 
     def step(self, model, *, infer, **kwargs):
+        note = None
         returned = None
         actual_limit = None
 
         def during_vote(port, path, body, timeout):
-            nonlocal returned, actual_limit
+            nonlocal returned, actual_limit, note
             has_ballot = any(t["function"]["name"] == "vote_move" for t in body["tools"])
             rev = self.snap["revision"]
             if rev != self.ballot_revision:
@@ -72,11 +85,15 @@ class BallotSession(Session):
                 "seconds": round(reply.get("total_duration", 0) / 1e9, 3),
                 "tool": tool,
             }
-            with self.notes.open("a", encoding="utf8") as sink:
-                print(json.dumps(note), file=sink)
             return reply
 
-        row = super().step(model, infer=during_vote, **kwargs)
+        row = None
+        try:
+            row = super().step(model, infer=during_vote, **kwargs)
+        finally:
+            if note is not None:
+                with self.notes.open("a", encoding="utf8") as sink:
+                    print(json.dumps(attach_result(note, row)), file=sink)
         if returned is not None:
             row["num_predict"] = actual_limit
             if len(self.messages) >= 2:
@@ -105,6 +122,7 @@ def share_usage(root, private):
                         "stop",
                         "seconds",
                         "tool",
+                        "submitted_vote",
                     )
                 }
                 trace = row["thinking"]
