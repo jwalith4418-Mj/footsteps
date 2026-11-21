@@ -1,0 +1,14 @@
+{"revision": 1, "tool": "get_state", "prompt_tokens": 1328, "reply_tokens": 14, "inference_seconds": 1.33, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 4, "tool": "wait", "prompt_tokens": 2007, "reply_tokens": 27, "inference_seconds": 2.397, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 4, "tool": "vote_move", "prompt_tokens": 2298, "reply_tokens": 27, "inference_seconds": 2.627, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "wait", "prompt_tokens": 2722, "reply_tokens": 27, "inference_seconds": 2.225, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 6, "tool": "wait", "prompt_tokens": 3194, "reply_tokens": 27, "inference_seconds": 2.468, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 6, "tool": "vote_removal", "prompt_tokens": 3514, "reply_tokens": 29, "inference_seconds": 3.452, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 7, "tool": "compact", "prompt_tokens": 3648, "reply_tokens": 230, "inference_seconds": 9.004, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": true, "error": false}
+{"revision": 8, "tool": "get_state", "prompt_tokens": 1667, "reply_tokens": 14, "inference_seconds": 2.08, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 8, "tool": "pass_nomination", "prompt_tokens": 2142, "reply_tokens": 16, "inference_seconds": 0.965, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 9, "tool": "wait", "prompt_tokens": 2358, "reply_tokens": 27, "inference_seconds": 2.715, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "get_state", "prompt_tokens": 2888, "reply_tokens": 14, "inference_seconds": 2.33, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "speak", "prompt_tokens": 3392, "reply_tokens": 69, "inference_seconds": 2.426, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "wait", "prompt_tokens": 3851, "reply_tokens": 28, "inference_seconds": 2.663, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 13, "tool": "vote_move", "prompt_tokens": 4297, "reply_tokens": 27, "inference_seconds": 3.746, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}

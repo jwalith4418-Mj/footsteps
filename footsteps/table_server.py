@@ -93,7 +93,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.path in ASSETS:
             name, mime = ASSETS[self.path]
             self.send(200, (WEB / name).read_bytes(), mime)
-        elif self.path == "/state":
+        elif self.path in ("/state", "/session"):
             self.api()
         else:
             self.error(404, "Unknown route")
@@ -136,7 +136,7 @@ class Handler(BaseHTTPRequestHandler):
                     table.submit(seat, data["revision"], data["choice"], now)
                 elif self.path == "/say":
                     table.say(seat, data["revision"], data["text"], now)
-                state = table.view(seat, now)
+                state = table.view(seat, now, structured_history=self.path == "/session")
                 if seat in server.note_seats:
                     state["table_id"] = table.record["table_id"]
                 server.save()

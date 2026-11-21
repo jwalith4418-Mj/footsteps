@@ -38,6 +38,8 @@ For rotation assistance, an Ollama seat can use `--rotation-aid table` or `--rot
 
 To put a local model in one seat, run `python -m footsteps ollama --model qwen2.5:3b` and paste its private link. [Recorded model game](experiments/ollama-crossing.md) · [Mixed-strength self-play and workstation timings](experiments/model-panel/README.md)
 
+For a model that keeps a private conversation across turns, run `python -m footsteps.session --model MODEL`. It can listen, check a revealed ballot, save a private summary and wait for its next opportunity. [Persistent seat and tools](docs/table.md#persistent-ollama-seat)
+
 The host checkpoints the secret referee record. Only the selected seat's view and history go to its browser. Use the exported record for postgame review or a public transcript. [Local seat API and timing](docs/table.md)
 
 ## Inspect a transcript
