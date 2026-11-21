@@ -80,3 +80,5 @@ The [persistent listener](persistent-listener/README.md) follows one seat throug
 The [persistent runner panel](persistent-panel/README.md) compares build inspection and movement updates on solitaire floors, then follows conflicting public ballots across compaction and into a full social table.
 
 The [complete-game timing study](game-efficiency/README.md) separates time spent choosing from time waiting for the GPU, compares two seat policies, and replays an illustrative per-player reserve against the observed deadlines.
+
+The [paired RANA speaker trial](rana-speakers/README.md) gives the base and abliterated 27B models identical removal discussions, a separate private role check, and a matched pair of complete games.

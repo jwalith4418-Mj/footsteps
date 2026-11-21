@@ -1,0 +1,144 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "start": [
+      0,
+      0
+    ],
+    "goal": [
+      2,
+      0
+    ],
+    "roles": [
+      "blue",
+      "blue",
+      "blue",
+      "red"
+    ],
+    "hands": [
+      [
+        40
+      ],
+      [
+        9
+      ],
+      [
+        33
+      ],
+      [
+        0
+      ]
+    ],
+    "store": [
+      18,
+      12
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        18,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 40,
+      "at": [
+        1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 18
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 3
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        18
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 9,
+      "at": [
+        -1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        false
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 6,
+      "seat": 1,
+      "text": "I suspect P3 is Red. P3, which team are you on?"
+    },
+    {
+      "after_event": 6,
+      "seat": 3,
+      "text": "I'm Blue. P1, you nominated me right after a unanimous step \u2014 that's a fast guess with no evidence. I'd rather see who else you're watching before you spend a removal vote on me."
+    }
+  ]
+}

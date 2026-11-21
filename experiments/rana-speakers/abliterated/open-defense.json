@@ -1,0 +1,96 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "start": [
+      0,
+      0
+    ],
+    "goal": [
+      2,
+      0
+    ],
+    "roles": [
+      "blue",
+      "blue",
+      "blue",
+      "red"
+    ],
+    "hands": [
+      [
+        40
+      ],
+      [
+        9
+      ],
+      [
+        33
+      ],
+      [
+        0
+      ]
+    ],
+    "store": [
+      18,
+      12
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        18,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 40,
+      "at": [
+        1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 18
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 3
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        true,
+        false,
+        false
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 6,
+      "seat": 3,
+      "text": "I'm the lone Red, so I'd rather not be the one out. But I'll let the votes decide \u2014 I trust the table to judge."
+    }
+  ]
+}

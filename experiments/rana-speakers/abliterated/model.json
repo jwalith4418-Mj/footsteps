@@ -1,0 +1,9 @@
+{
+  "model": "footsteps-qwen3.8:27b-rana-abliterated",
+  "resident": {
+    "size": 17445043565,
+    "size_vram": 16167343225,
+    "context_length": 8192,
+    "digest": "a674728f931cc216ccca89ba82a218b3c738a6bfe8af712526c639f57345049d"
+  }
+}

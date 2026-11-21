@@ -1,0 +1,9 @@
+{
+  "model": "footsteps-qwen3.8:27b-rana-layout",
+  "resident": {
+    "size": 17445043565,
+    "size_vram": 16167343225,
+    "context_length": 8192,
+    "digest": "05ec8ea1b9a869aa5ec15ef650f520fe0a7cfb91eb56b0055f1d0f7849f09ae7"
+  }
+}

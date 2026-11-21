@@ -1,0 +1,101 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "start": [
+      0,
+      0
+    ],
+    "goal": [
+      3,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        40
+      ],
+      [
+        0
+      ],
+      [
+        33
+      ],
+      [
+        0
+      ]
+    ],
+    "store": [
+      18,
+      12,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        18,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 40,
+      "at": [
+        1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 18
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        true,
+        false
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 7,
+      "seat": 2,
+      "text": "P1, if we keep you, you build next. Do you already hold a tile with both an entrance and an exit? We still need to bridge the gap to EXIT."
+    }
+  ]
+}
