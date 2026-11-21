@@ -88,3 +88,5 @@ The [early-ballot timing study](early-ballot/README.md) compares discussion cloc
 The [required-choice wait trial](required-wait/README.md) follows two previously missed choices and a fresh same-deal game after making a plain wait return immediately when the player owes an action.
 
 The [ballot polling study](ballot-polling/README.md) compares reveal guidance and waiting tool names on frozen positions, then follows the same small deal with a fourth seat.
+
+The [four-seat move-budget probes](move-budget/README.md) pair a losing outward step with the only viable retreat and replay silent, scripted and model-generated discussion into matched voters.
