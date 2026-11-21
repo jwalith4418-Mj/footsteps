@@ -109,6 +109,37 @@ class LiveDecisions(unittest.TestCase):
         with self.assertRaises(DecisionConflict):
             table.submit(0, 1, choice, 2)
 
+    def test_committed_placement_owns_the_callers_coordinate_list(self):
+        table = Table(CROSSING["setup"], Random(1))
+        for seat in range(4):
+            table.join(seat, 0)
+        square = [1, 0]
+        table.submit(0, 1, {"tile": 40, "rotation": 0, "at": square}, 0)
+        square[:] = [0, 1]
+        self.assertEqual(table.game.placements, {(1, 0): (40, 0)})
+        self.assertEqual(replay(table.record).placements, {(1, 0): (40, 0)})
+
+    def test_committed_draw_owns_the_drawn_list(self):
+        class CapturingRandom(Random):
+            def __init__(self, seed):
+                super().__init__(seed)
+                self.draws = []
+
+            def sample(self, population, k):
+                draw = super().sample(population, k)
+                self.draws.append(draw)
+                return draw
+
+        rng = CapturingRandom(1)
+        table = Table(CROSSING["setup"], rng)
+        for seat in range(4):
+            table.join(seat, 0)
+        self.assertEqual(table.record["events"][0]["kind"], "draw")
+        recorded = list(table.record["events"][0]["tiles"])
+        rng.draws[0][:] = [0, 0]
+        self.assertEqual(table.record["events"][0]["tiles"], recorded)
+        self.assertEqual(replay(table.record).hands[0], table.game.hands[0])
+
 
 class LoopbackTable(unittest.TestCase):
     def setUp(self):
