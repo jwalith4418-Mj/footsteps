@@ -332,7 +332,7 @@ class PersistentSeat(unittest.TestCase):
     def test_truncated_voluntary_compact_reopens_with_proportional_output_allowance(self):
         from footsteps.ollama import INCOMPLETE_COMPACT, ServiceError
 
-        for context in (4096, 8192):
+        for context in (4096, 8192, 16384, 32768):
             with self.subTest(context=context):
                 s = Session(ProjectedSeat(Table(CROSSING["setup"], Random(1)), 0), context=context)
 

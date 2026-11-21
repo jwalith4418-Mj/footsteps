@@ -9,7 +9,7 @@ from pathlib import Path
 from experiments.persistent_panel import corridor
 from footsteps.ollama import ServiceError, request
 from footsteps.record import replay
-from footsteps.session import Session
+from footsteps.session import CONTEXT_WINDOWS, Session
 
 
 class FixtureSeat:
@@ -135,7 +135,7 @@ def report(path):
 if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("path", type=Path)
-    cli.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
+    cli.add_argument("--context", type=int, choices=CONTEXT_WINDOWS, default=8192)
     cli.add_argument("--model", help="run the panel on a local model; omit for an offline audit")
     args = cli.parse_args()
     if args.model:
