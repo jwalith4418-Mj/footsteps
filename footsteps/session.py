@@ -14,6 +14,8 @@ from .game import require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
 from .seat_tools import tile
 
+CONTEXT_WINDOWS = (4096, 8192, 16384, 32768)
+
 HISTORY_KINDS = (
     "draw",
     "place",
@@ -117,7 +119,7 @@ class Session:
         wait_at_notice=True,
         context=8192,
     ):
-        require(context in (4096, 8192), "use a 4096- or 8192-token context")
+        require(context in CONTEXT_WINDOWS, f"choose a context size from {CONTEXT_WINDOWS}")
         self.context = context
         self.seat = seat
         self.hand_mode = "fit" if inspect_rotations else "hand"
@@ -495,6 +497,14 @@ class Session:
             "tool": name,
             "arguments": args,
             "result": result,
+            **{
+                key: round(reply[field] / 1e9, 4)
+                for key, field in (
+                    ("prefill_seconds", "prompt_eval_duration"),
+                    ("generation_seconds", "eval_duration"),
+                )
+                if isinstance(reply.get(field), int)
+            },
             "prompt_tokens": tokens,
             "reply_tokens": reply.get("eval_count"),
             "inference_seconds": round(elapsed, 3),
@@ -504,7 +514,7 @@ class Session:
 def main():
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--model", required=True)
-    cli.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
+    cli.add_argument("--context", type=int, choices=CONTEXT_WINDOWS, default=8192)
     cli.add_argument(
         "--inspect-rotations",
         action="store_true",

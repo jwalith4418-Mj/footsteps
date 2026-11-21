@@ -145,6 +145,15 @@ def play_table(
     print(game.winner, "won on turn", game.turn)
 
 
+def resident_model(model):
+    for resident in request(11434, "/api/ps", None, 10)["models"]:
+        if resident["name"] == model:
+            return {
+                key: resident.get(key) for key in ("size", "size_vram", "context_length", "digest")
+            }
+    return None
+
+
 @contextmanager
 def live_table(root, table, model, *, context=8192):
     root.mkdir(exist_ok=False)
@@ -212,7 +221,13 @@ def public_call(row, model, force):
             "inference_seconds",
         )
     }
-    public.update({k: row[k] for k in ("num_ctx", "num_predict") if k in row})
+    public.update(
+        {
+            k: row[k]
+            for k in ("num_ctx", "num_predict", "prefill_seconds", "generation_seconds")
+            if k in row
+        }
+    )
     public.update(model=model, forced_compaction=force, error="error" in row["result"])
     if row["result"].get("context_recovered"):
         public["context_recovered"] = True

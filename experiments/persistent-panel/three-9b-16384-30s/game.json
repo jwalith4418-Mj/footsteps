@@ -1,0 +1,166 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "start": [
+      -2,
+      0
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        40,
+        0
+      ],
+      [
+        65,
+        0
+      ],
+      [
+        68,
+        0
+      ]
+    ],
+    "store": [
+      65,
+      40,
+      255
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        255,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        0
+      ],
+      "tile": 40,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "nominate",
+      "target": 2
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 0,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 255
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        255
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 255,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        1
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 5,
+      "seat": 1,
+      "text": "I vote to eliminate seat 2."
+    },
+    {
+      "after_event": 5,
+      "seat": 0,
+      "text": "I vote to eliminate P2."
+    },
+    {
+      "after_event": 7,
+      "seat": 0,
+      "text": "I vote to eliminate P1."
+    },
+    {
+      "after_event": 7,
+      "seat": 1,
+      "text": "I vote to eliminate seat 1."
+    },
+    {
+      "after_event": 15,
+      "seat": 0,
+      "text": "I propose moving the marker from (-2,0) to (-2,1). This is a legal step as the tile I just placed at (-2,1) has entrances on all sides including N (from where the marker is), and exits on all sides. The destination allows entry from the north. This moves us one step closer to the goal at (0,0)."
+    }
+  ]
+}

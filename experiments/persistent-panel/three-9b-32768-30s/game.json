@@ -1,0 +1,224 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "start": [
+      -2,
+      0
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        40,
+        0
+      ],
+      [
+        65,
+        0
+      ],
+      [
+        68,
+        0
+      ]
+    ],
+    "store": [
+      65,
+      40,
+      255
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        255,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 255,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        0
+      ],
+      "tile": 65,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I've placed a tile at (-1,0) and proposed stepping there. The marker is now one step closer to the goal at (0,0). Let's see how the vote goes."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I vote against the move to (-1, 0). The marker is at (-2, 0) and we need to get to (0, 0). Moving to (-1, 0) doesn't seem optimal. Let's consider other options."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support moving to (-1, 0). This is a safe step toward the goal at (0, 0). The tile placed at (-1, 0) has full entrances/exits (NESW), so entry from (-2, 0) is valid. Marker movement is legal. Vote yes."
+    },
+    {
+      "after_event": 6,
+      "seat": 1,
+      "text": "I oppose the nomination of P0. We need to keep all players alive to maximize our chances of reaching the goal at (0, 0). Let's consider other options or wait for a better proposal."
+    },
+    {
+      "after_event": 6,
+      "seat": 2,
+      "text": "I oppose eliminating P0. P0 is the builder and has been cooperative. We need all players to work together to reach the goal at (0, 0). Vote no on elimination."
+    },
+    {
+      "after_event": 6,
+      "seat": 0,
+      "text": "I was nominated by P1. This is unexpected since we just moved the marker closer to the goal. I need to defend my position and explain why this move was beneficial for Blue's progress toward (0,0)."
+    },
+    {
+      "after_event": 8,
+      "seat": 2,
+      "text": "I oppose eliminating P1. P1 voted against the move earlier but we need all players to work together. Vote no on elimination."
+    },
+    {
+      "after_event": 8,
+      "seat": 1,
+      "text": "P1 is my teammate and essential for reaching the goal. I oppose elimination of P1 to keep our team intact."
+    },
+    {
+      "after_event": 8,
+      "seat": 0,
+      "text": "I was nominated by P2. We're all working together to reach the goal at (0,0). The marker is now at (-1,0), just one step away from victory. Eliminating anyone would hurt our chances. I vote no on elimination."
+    },
+    {
+      "after_event": 10,
+      "seat": 0,
+      "text": "I've nominated P1. We need to keep all players alive to maximize our chances of reaching the goal at (0,0). The marker is at (-1,0), just one step away from victory. Let's vote on whether to eliminate P1 or not."
+    },
+    {
+      "after_event": 10,
+      "seat": 1,
+      "text": "I oppose eliminating P1. We need all players to work together and reach the goal at (0,0). Eliminating anyone would hurt our chances. Vote no on elimination."
+    },
+    {
+      "after_event": 10,
+      "seat": 2,
+      "text": "I oppose eliminating P1 again. We need all players to reach the goal at (0, 0). Vote no on elimination."
+    },
+    {
+      "after_event": 15,
+      "seat": 1,
+      "text": "I propose moving the marker to (0, 0), which is the goal. This will win the game for Blue. Vote yes on this move."
+    },
+    {
+      "after_event": 15,
+      "seat": 0,
+      "text": "Excellent! P1 has proposed moving the marker from (-1, 0) to (0, 0), which is the goal. This move will win the game for Blue. Let's vote yes on this proposal."
+    },
+    {
+      "after_event": 15,
+      "seat": 2,
+      "text": "I support moving to (0, 0). This is the goal! The tile at (-1, 0) has full entrances/exits (NESW), so entry from there to (0, 0) is valid. Marker movement is legal and will win for Blue. Vote yes."
+    }
+  ]
+}

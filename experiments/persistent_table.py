@@ -9,11 +9,11 @@ from pathlib import Path
 from random import Random
 from time import monotonic
 
-from experiments.persistent_listener import live_table, measured_step, public_call
+from experiments.persistent_listener import live_table, measured_step, public_call, resident_model
 from footsteps.decision_notes import open_private
 from footsteps.ollama import request
 from footsteps.record import read, starting_game
-from footsteps.session import Session
+from footsteps.session import CONTEXT_WINDOWS, Session
 from footsteps.table import Table
 
 
@@ -102,6 +102,7 @@ def play(root, private, model, context, seconds, discussion_seconds):
             "discussion_seconds": discussion_seconds,
             "play_seconds": round(monotonic() - start, 2),
         }
+        timing["resident"] = resident_model(model)
         (root / "timing.json").write_text(json.dumps(timing, indent=2) + "\n")
 
 
@@ -217,7 +218,7 @@ if __name__ == "__main__":
         "private", type=Path, nargs="?", help="new private directory; omit for offline report"
     )
     cli.add_argument("--model", default="footsteps-qwen3.8:27b-rana-layout")
-    cli.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
+    cli.add_argument("--context", type=int, choices=CONTEXT_WINDOWS, default=8192)
     cli.add_argument("--decision-seconds", type=int, default=45)
     cli.add_argument("--discussion-seconds", type=int, default=15)
     args = cli.parse_args()
