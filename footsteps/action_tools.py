@@ -46,7 +46,9 @@ def build_tools(snapshot, mode):
         tools = [
             function(
                 "place_tile",
-                "Commit this held piece at the literal empty square. The marker stays put. A rotation is an absolute count of clockwise quarter turns, 0 through 3.",
+                "Place this held piece at (x,y) using the supplied absolute clockwise rotation (0–3). The marker stays put."
+                if mode == "direct"
+                else "Place this piece at (x,y) in its current held rotation. Use orient_tile to change it first. The marker stays put.",
                 args | check,
             ),
             function(
@@ -65,7 +67,7 @@ def build_tools(snapshot, mode):
             tools.append(
                 function(
                     "inspect_rotations_at",
-                    "For this one held piece and empty square, compare the four clockwise orientations and whether the marker could step onto it. Leaves the piece in hand as it was.",
+                    "For this one held piece and empty square, compare the four clockwise orientations and whether the marker could step onto it. The held rotation stays unchanged. To use a row, call orient_tile with its piece and rotation before place_tile.",
                     piece | square,
                 )
             )
@@ -156,11 +158,12 @@ def apply_call(name, args, state, choices, pieces, mode, orient):
             canonical = {"tile": face}
         else:
             at = (args["x"], args["y"])
+            board = {tuple(p): f for p, f in state["board"]}
+            require(at not in board, f"The build square {at} is occupied. Choose an empty square.")
             require(
                 at in map(tuple, choices["at"]),
-                "choose an empty build square listed in your view",
+                f"The build square {at} must share an edge with START or a placed tile.",
             )
-            board = {tuple(p): f for p, f in state["board"]}
             marker = tuple(state["marker"])
             if name == "inspect_rotations_at":
                 rows = []
@@ -215,7 +218,7 @@ def apply_call(name, args, state, choices, pieces, mode, orient):
             dest = [args["x"], args["y"]] if name == "propose_step" else None
             require(
                 dest is None or tuple(dest) in [tuple(p) for p in choices["to"] if p is not None],
-                "choose a legal marker step",
+                f"From {tuple(state['marker'])} the legal step destinations are {[p for p in choices['to'] if p is not None]}. You can also stay.",
             )
             choice = {"to": dest}
         elif name in ("pass_nomination", "nominate"):

@@ -1,0 +1,11 @@
+{"revision": 1, "tool": "get_state", "prompt_tokens": 1759, "reply_tokens": 14, "inference_seconds": 2.808, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "orient_tile", "prompt_tokens": 2333, "reply_tokens": 40, "inference_seconds": 5.321, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "place_tile", "prompt_tokens": 2553, "reply_tokens": 51, "inference_seconds": 3.762, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 2, "tool": "return_tile", "prompt_tokens": 2752, "reply_tokens": 28, "inference_seconds": 4.265, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 3, "tool": "propose_step", "prompt_tokens": 3148, "reply_tokens": 39, "inference_seconds": 3.518, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true}
+{"revision": 3, "tool": "stay", "prompt_tokens": 3463, "reply_tokens": 14, "inference_seconds": 1.074, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "get_state", "prompt_tokens": 4000, "reply_tokens": 14, "inference_seconds": 5.384, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "orient_tile", "prompt_tokens": 4557, "reply_tokens": 40, "inference_seconds": 4.666, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "place_tile", "prompt_tokens": 4773, "reply_tokens": 50, "inference_seconds": 1.957, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true}
+{"revision": 5, "tool": "place_tile", "prompt_tokens": 5103, "reply_tokens": 51, "inference_seconds": 2.045, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 6, "tool": "stay", "prompt_tokens": 5359, "reply_tokens": 14, "inference_seconds": 4.665, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}

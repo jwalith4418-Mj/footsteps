@@ -1,0 +1,153 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "start": [
+      -2,
+      0
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        40,
+        0
+      ],
+      [
+        65,
+        0
+      ],
+      [
+        68,
+        0
+      ]
+    ],
+    "store": [
+      65,
+      40,
+      255
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        255,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 40,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        1
+      ],
+      "tile": 65,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        -1
+      ],
+      "tile": 68,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        false,
+        true
+      ]
+    }
+  ]
+}

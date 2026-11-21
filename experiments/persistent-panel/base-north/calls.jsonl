@@ -1,0 +1,13 @@
+{"revision": 1, "tool": "get_state", "prompt_tokens": 1756, "reply_tokens": 14, "inference_seconds": 3.109, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "preview_placement", "prompt_tokens": 2330, "reply_tokens": 51, "inference_seconds": 2.041, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "orient_tile", "prompt_tokens": 2596, "reply_tokens": 40, "inference_seconds": 1.773, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "orient_tile", "prompt_tokens": 2815, "reply_tokens": 40, "inference_seconds": 1.833, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "preview_placement", "prompt_tokens": 3035, "reply_tokens": 51, "inference_seconds": 1.966, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 1, "tool": "place_tile", "prompt_tokens": 3301, "reply_tokens": 51, "inference_seconds": 2.048, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 2, "tool": "return_tile", "prompt_tokens": 3497, "reply_tokens": 28, "inference_seconds": 6.423, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 3, "tool": "stay", "prompt_tokens": 3890, "reply_tokens": 14, "inference_seconds": 3.001, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "get_state", "prompt_tokens": 4427, "reply_tokens": 14, "inference_seconds": 2.756, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "preview_placement", "prompt_tokens": 4982, "reply_tokens": 51, "inference_seconds": 2.951, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true}
+{"revision": 5, "tool": "preview_placement", "prompt_tokens": 5312, "reply_tokens": 52, "inference_seconds": 2.931, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "place_tile", "prompt_tokens": 5574, "reply_tokens": 52, "inference_seconds": 2.112, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 6, "tool": "stay", "prompt_tokens": 5829, "reply_tokens": 14, "inference_seconds": 6.054, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}

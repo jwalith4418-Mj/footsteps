@@ -1,0 +1,207 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "start": [
+      -2,
+      0
+    ],
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        40,
+        0
+      ],
+      [
+        65,
+        0
+      ],
+      [
+        68,
+        0
+      ]
+    ],
+    "store": [
+      65,
+      40,
+      255
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        255,
+        40
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 255,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        1
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        65,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        1
+      ],
+      "tile": 65,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 0,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I propose moving the marker from (-2, 0) to (-2, 1). This is a safe step that doesn't risk elimination and keeps us on track toward the goal at (0, 0). I vote for this move."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I support moving to (-2, 1). This is a safe step toward the goal at (0, 0) and doesn't risk elimination. I vote for this move."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support P0's proposal to move the marker from (-2, 0) to (-2, 1). This is a safe and logical step toward our goal at (0, 0). I vote for this move."
+    },
+    {
+      "after_event": 12,
+      "seat": 1,
+      "text": "I propose moving the marker from (-2,1) to (-2,0). This is a legal step as the tile at (-1,1) has an S exit and the destination (-2,0) allows entry from all sides. As Red's only player, I vote for this move."
+    },
+    {
+      "after_event": 12,
+      "seat": 0,
+      "text": "I oppose moving back to (-2, 0). We need to progress toward the goal at (0, 0). The marker is already at (-2, 1), which is one step closer than our start. Moving backward wastes a turn and doesn't help us reach the goal. I vote no on this proposal."
+    },
+    {
+      "after_event": 19,
+      "seat": 2,
+      "text": "Proposed moving to (-2, 0). This gets us closer to the goal at (0, 0). The path seems clear. Let's vote yes."
+    },
+    {
+      "after_event": 19,
+      "seat": 1,
+      "text": "I'm Red seat 1. P2 proposed moving to (-2,0). The goal is (0,0). Let me check the board: (-2,0) has entrances/exits NESW, so it's accessible. But I need to verify if this move actually gets us closer or if there's a trap. Also, who else is voting?"
+    },
+    {
+      "after_event": 19,
+      "seat": 0,
+      "text": "I support the move to (-2, 0). It's a valid step toward the goal at (0, 0)."
+    }
+  ]
+}

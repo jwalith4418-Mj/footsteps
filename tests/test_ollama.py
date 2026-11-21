@@ -146,3 +146,18 @@ class ModelSeat(unittest.TestCase):
         self.assertEqual(
             [c.args[0] for c in seat.call.call_args_list], ["/ready", "/state", "/state", "/choice"]
         )
+
+    @patch("footsteps.ollama.HTTPConnection")
+    def test_only_recognized_compact_parser_error_is_retained_from_model(self, connection):
+        from footsteps.ollama import INCOMPLETE_COMPACT, request
+
+        response = connection.return_value.getresponse.return_value
+        response.status = 500
+        for message, expected in (
+            (INCOMPLETE_COMPACT, INCOMPLETE_COMPACT),
+            ("private response details", None),
+        ):
+            response.read.return_value = json.dumps({"error": message}).encode()
+            with self.assertRaises(ServiceError) as caught:
+                request(11434, "/api/chat", {}, 1)
+            self.assertEqual(caught.exception.detail, expected)

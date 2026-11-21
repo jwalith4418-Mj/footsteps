@@ -1,0 +1,240 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      2,
+      0
+    ],
+    "roles": [
+      "blue",
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        255
+      ],
+      [
+        9
+      ],
+      [
+        33
+      ],
+      [
+        0
+      ]
+    ],
+    "store": [
+      18,
+      12,
+      0
+    ],
+    "start": [
+      0,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        18,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 255,
+      "at": [
+        1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        0,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 0,
+      "at": [
+        0,
+        1
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 9
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        9
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 9,
+      "at": [
+        -1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I vote YES on the proposal to move the marker to (1, 0). This is a safe step toward our goal at (2, 0)."
+    },
+    {
+      "after_event": 8,
+      "seat": 3,
+      "text": "I nominate P0 as the builder. They can place a tile at (2,0) to complete the path to the goal."
+    },
+    {
+      "after_event": 14,
+      "seat": 3,
+      "text": "I support the proposal to move to (0, 0). This is a safe step and keeps us on track. Let's vote yes."
+    },
+    {
+      "after_event": 16,
+      "seat": 2,
+      "text": "P0 voted No on the first marker step. We should remove P0."
+    },
+    {
+      "after_event": 16,
+      "seat": 3,
+      "text": "I agree we should remove P0. They voted No on the first step, which was necessary to progress toward (2,0). Removing them strengthens our position."
+    },
+    {
+      "after_event": 18,
+      "seat": 3,
+      "text": "I nominated P1 (the builder) because we need a builder who can place tile at (2,0) or move marker there. The current board shows the goal is at (2,0) and marker at (1,0). We need to advance the marker to reach the goal."
+    },
+    {
+      "after_event": 24,
+      "seat": 3,
+      "text": "I support the move to (2,0) which is the goal. This will win for Blue."
+    }
+  ]
+}

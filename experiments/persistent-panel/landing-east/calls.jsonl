@@ -1,0 +1,7 @@
+{"revision": 1, "tool": "place_tile", "prompt_tokens": 1864, "reply_tokens": 51, "inference_seconds": 3.695, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 2, "tool": "return_tile", "prompt_tokens": 1955, "reply_tokens": 28, "inference_seconds": 2.755, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 3, "tool": "stay", "prompt_tokens": 2404, "reply_tokens": 14, "inference_seconds": 2.649, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "get_state", "prompt_tokens": 3047, "reply_tokens": 14, "inference_seconds": 1.985, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 5, "tool": "place_tile", "prompt_tokens": 3603, "reply_tokens": 51, "inference_seconds": 2.257, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": true}
+{"revision": 5, "tool": "place_tile", "prompt_tokens": 3933, "reply_tokens": 51, "inference_seconds": 2.165, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
+{"revision": 6, "tool": "stay", "prompt_tokens": 4132, "reply_tokens": 14, "inference_seconds": 3.548, "model": "footsteps-qwen3.8:27b-rana-layout", "forced_compaction": false, "error": false}
