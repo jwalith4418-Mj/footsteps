@@ -29,10 +29,17 @@ def play_seat(seat, model, queue, log, trace, context, request_budget, session_c
     queued = 0
     discussion = None
 
+    last_remark = None
+
     def infer(port, path, body, budget):
-        nonlocal discussion
+        nonlocal discussion, last_remark
         submitted = monotonic()
         revision = session.snap["revision"]
+        if any(t["function"]["name"] in ("vote_move", "vote_removal") for t in body["tools"]):
+            notice = json.loads(body["messages"][-1]["content"])
+            for entry in notice["latest"]:
+                if entry["kind"] == "remark" and entry["event"] == revision:
+                    last_remark = entry["speaker"]
         if session.snap["phase"] == "discussion":
             discussion = {
                 "revision": revision,
@@ -57,12 +64,15 @@ def play_seat(seat, model, queue, log, trace, context, request_budget, session_c
     while session.snap["phase"] != "over":
         queued = 0
         discussion = None
+        last_remark = None
         row = measured_step(session, model, infer=infer, budget=request_budget)
         if row:
             print(json.dumps(row), file=trace, flush=True)
             public = public_call(row, model, False)
             public["queue_seconds"] = round(queued, 3)
             public["discussion"] = discussion
+            if last_remark is not None:
+                public["ballot_prompt_last_speaker"] = last_remark
             print(json.dumps(public), file=log, flush=True)
 
 
@@ -103,6 +113,7 @@ def play(
             "num_ctx": context,
             "decision_seconds": table.seconds,
             "discussion_seconds": table.discussion,
+            "early_ballot": table.early_ballot,
             "play_seconds": round(monotonic() - start, 2),
         }
         timing["resident"] = resident_model(model)

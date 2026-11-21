@@ -166,6 +166,7 @@ def serve(args):
         args.seconds,
         args.discussion,
         placement_check=args.placement_check,
+        early_ballot=args.early_ballot,
     )
     with ExitStack() as stack:
         if args.private_rotations:

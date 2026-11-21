@@ -151,8 +151,13 @@ function controls(d) {
 
 function render(d) {
   const s = d.state;
-  byId("clock").textContent = d.seconds_left === null ? "" :
-    Math.ceil(d.seconds_left) + "s until " + (d.phase === "discussion" ? "voting opens" : "deadline");
+  const seconds = Math.ceil(d.seconds_left);
+  let clock = d.seconds_left === null ? "" : seconds + "s until deadline";
+  if (d.phase === "discussion") {
+    clock = d.early_ballot ? "Voting opens when everyone has spoken or in " + seconds + "s" :
+      seconds + "s until voting opens";
+  }
+  byId("clock").textContent = clock;
   if (d.history.length !== logLength) {
     logLength = d.history.length;
     byId("log").replaceChildren(...d.history.slice().reverse().map(h => node("li", "Turn " + h.turn + " · " + h.text)));
