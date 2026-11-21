@@ -14,11 +14,36 @@ from .game import require
 from .ollama import Seat, ServiceError, request
 from .seat_tools import tile
 
+HISTORY_KINDS = (
+    "draw",
+    "place",
+    "discard",
+    "propose",
+    "move_vote",
+    "nominate",
+    "eliminate_vote",
+    "remark",
+)
+
 
 def history_page(
     history, *, before=None, after=None, turn=None, kind=None, speaker=None, voter=None, limit=6
 ):
     require(1 <= limit <= 20, "limit must be 1–20")
+    require(
+        kind is None or kind in HISTORY_KINDS,
+        f"Choose a history kind from {', '.join(HISTORY_KINDS)}.",
+    )
+    require(turn is None or turn >= 1, "Game turns start at 1.")
+    require(
+        speaker is None or voter is None,
+        "Query a speaker's remarks and a voter's revealed ballots separately.",
+    )
+    require(speaker is None or kind in (None, "remark"), "speaker filters remark entries.")
+    require(
+        voter is None or kind in (None, "move_vote", "eliminate_vote"),
+        "voter filters move_vote and eliminate_vote entries.",
+    )
     rows = []
     for index, item in enumerate(history, 1):
         if before is not None and index >= before or after is not None and index <= after:
@@ -78,6 +103,7 @@ HISTORY = function(
     },
 )
 HISTORY["function"]["parameters"]["required"] = []
+HISTORY["function"]["parameters"]["properties"]["kind"]["enum"] = list(HISTORY_KINDS)
 
 
 class Session:

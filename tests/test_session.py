@@ -273,3 +273,36 @@ class PersistentSeat(unittest.TestCase):
             t.submit(i, t.revision, {"vote": True}, 0)
         self.assertEqual(call("history", turn=2, voter=0)["entries"], [])
         self.assertTrue(call("history", turn=1, voter=0)["entries"][0]["requested_ballot"])
+
+    def test_compaction_trigger_uses_the_snapshot_offered_to_the_model(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=10, discussion=0)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 0)
+        s = Session(peer)
+        self.assertEqual(s.snap["state"]["stage"], "place")
+        peer.now = 10
+
+        def answer(_port, _path, body, _budget):
+            self.assertEqual([tool["function"]["name"] for tool in body["tools"]], ["compact"])
+            return {
+                "message": {
+                    "tool_calls": [
+                        {
+                            "function": {
+                                "name": "compact",
+                                "arguments": {"summary": "Placement expired."},
+                            }
+                        }
+                    ]
+                }
+            }
+
+        row = s.step(
+            "fixture", infer=answer, compact_when=lambda snap: snap["state"]["stage"] == "discard"
+        )
+        self.assertTrue(row["forced_compaction"])
+        self.assertEqual(row["revision"], 2)
+        self.assertEqual(table.game.stage, "discard")
+        with self.assertRaisesRegex(ValueError, "history kind"):
+            s.execute("history", {"kind": "vote_move"}, s.tools(), 2)

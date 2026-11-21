@@ -7,7 +7,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from experiments.persistent_panel import corridor
-from footsteps.ollama import request
+from footsteps.ollama import ServiceError, request
 from footsteps.record import replay
 from footsteps.session import Session
 
@@ -76,7 +76,10 @@ def run(path, model):
                 ):
                     try:
                         row = s.step(model, budget=budget)
-                    except TimeoutError:
+                    except (TimeoutError, ServiceError) as exc:
+                        if isinstance(exc, ServiceError) and exc.status < 500:
+                            raise
+                        calls.append({"tool": None, "error": str(exc) or "request timed out"})
                         break
                     calls.append(
                         {
@@ -105,8 +108,16 @@ def run(path, model):
 
 
 def report(path):
+    seen = set()
     for row in map(json.loads, path.read_text().splitlines()):
+        key = (row["heading"], row["show_landings"])
+        assert key not in seen
+        seen.add(key)
+        prefix, midpoint = prepared(row["heading"])
         r = row["record"]
+        assert row["midpoint"] == midpoint
+        expected = prefix.seat.table.record
+        assert r["setup"] == expected["setup"] and r["events"][:3] == expected["events"]
         replay(r)
         choice = next(e for e in r["events"] if e["kind"] == "propose")
         print(
@@ -116,6 +127,8 @@ def report(path):
             choice["to"] == row["midpoint"],
             [c["tool"] for c in row["calls"]],
         )
+
+    assert len(seen) == 6
 
 
 if __name__ == "__main__":
