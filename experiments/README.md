@@ -76,3 +76,5 @@ The [removal ballot perspective experiment](voter-perspective/README.md) checks 
 The [pivotal removal ballots](pivotal-votes/README.md) measure whether the same voter changes its actual choice when a private roster or two public final-turn policies are exchanged, then revisit the five-seat game with a stronger local model.
 
 The [persistent listener](persistent-listener/README.md) follows one seat through a public accusation, a removal vote, private compaction and the next turn.
+
+The [persistent runner panel](persistent-panel/README.md) compares build inspection and movement updates on solitaire floors, then follows conflicting public ballots across compaction and into a full social table.

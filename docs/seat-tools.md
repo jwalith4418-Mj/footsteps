@@ -44,7 +44,7 @@ The native action client also lets a builder commit directly through Ollama, opt
 
 ## Persistent seat tool conventions
 
-The persistent player receives one function schema for each action available to its seat. Coordinates in state, placement previews and movement updates use named integer `x` and `y` fields. A position returned by `get_state()` can supply those same two arguments to a placement or proposal. Checked placements name a second square with `origin_x` and `origin_y`. A held `piece` is a seat-local handle such as `H1`; multiple handles may have the same printed face.
+The persistent player receives one function schema for each action available to its seat. Coordinates in state, placement previews and movement updates use named integer `x` and `y` fields. Phase time is shown in whole seconds remaining, rounded down at the observation. A position returned by `get_state()` can supply those same two arguments to a placement or proposal. Checked placements name a second square with `origin_x` and `origin_y`. A held `piece` is a seat-local handle such as `H1`; multiple handles may have the same printed face.
 
 | Tools | How the values fit together |
 |---|---|

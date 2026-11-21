@@ -1,6 +1,6 @@
 # Persistent seats on a directed floor and at a social table
 
-The initial persistent listener could carry a recent ballot through compaction. This panel starts a builder at setup and moves the listener's dispute to the following turn. A single local Qwen3.8 27B RANA instance handles the requests. Each private conversation has an 8,192-token context, a 240-token output limit, temperature zero, inference seed one and thinking disabled. Each single-seat game uses a real 30-second decision clock; social discussion gets 15 seconds. Request times include prompt evaluation. Sums of prompt tokens count the repeated context on each call. Missing backend counters stay unknown.
+The initial persistent listener could carry a recent ballot through compaction. This panel starts a builder at setup and moves the listener's dispute to the following turn. A single local Qwen3.8 27B RANA instance handles the requests. Each private conversation has an 8,192-token context, a 240-token output limit, temperature zero, inference seed one and thinking disabled. Each game with one model-controlled seat uses a real 30-second decision clock. Social discussion gets 15 seconds. Request times include prompt evaluation. Sums of prompt tokens count the repeated context on each call. Missing backend counters stay unknown.
 
 ## Two chances to move
 
@@ -8,9 +8,23 @@ Start two squares from EXIT. The hand and both tiles in the store are face 65, w
 
 The first two runs used the original persistent tools. The next two offered `inspect_rotations_at(piece,x,y)`. It shows the four absolute orientations and whether the marker could step onto that square. The player still has to turn the held piece and place it. Both original opening builds used the correct square and the wrong orientation. With inspection, both calls on the opening square were voluntary, both selected the enterable orientation and both committed it. On each first proposal the player tried to jump from START straight to EXIT. After rejection it chose to stay. On the north table the second placement and proposal also expired. A required compaction took 28.7 seconds when only about 24 seconds remained on the proposal.
 
-The third interface puts the actual marker, EXIT and legal one-step destinations into the proposal update. The movement ballot names its proposed landing. These are visible referee facts. The player may still stay or vote against its step. East and north are repeated positions; west is a transfer check. A longer ordinary game uses seed 9811 from the earlier solitaire study.
+The third interface puts the actual marker, EXIT and legal one-step destinations into the proposal update. The movement ballot names its proposed landing. These are visible referee facts. The player may still stay or vote against its step. East and north are repeated positions. West is a transfer check. A longer ordinary game uses seed 9811 from the earlier solitaire study.
+
+| Two-turn corridor | Opening gave a step toward EXIT | First proposal | Winner | Missed decisions |
+|---|---|---|---|---:|
+| [Original east](base-east/game.json) | No | Stay | Red | 0 |
+| [Original north](base-north/game.json) | No | Stay | Red | 0 |
+| [Inspection, east](inspect-east/game.json) | Yes | Stay | Red | 0 |
+| [Inspection, north](inspect-north/game.json) | Yes | Stay | Red | 2 |
+| [Inspection and movement update, east](landing-east/game.json) | No | Stay | Red | 0 |
+| [Inspection and movement update, north](landing-north/game.json) | No | Stay | Red | 1 |
+| [Inspection and movement update, west](landing-west/game.json) | Yes | Onto the new bridge | Blue | 0 |
+
+The west seat placed the bridge with rotation 1, stepped onto it, made its second build behind START, then proposed and approved the step from the bridge to EXIT. On east it skipped inspection entirely. On north it inspected at the correct square and placed the unchanged piece. Different builds already change which steps are possible. Timing also varies; the original updates included fractional seconds. These full games provide examples of failures and recoveries, with little basis for estimating win rates.
 
 ## A dispute about the older of two votes
 
-The persistent listener is Blue P3. P0 proposes an eastward step toward EXIT on turn one. P1 proposes a return to START on turn two. Scripted P0 casts opposite ballots on these steps. Red P2 then nominates P0 and says that P0 voted No on the *first* move. The listener can consult revealed ballots by voter and turn. P3's first nomination on turn one provides an opportunity to compact before P2 names the disputed voter. A No on the first ballot does not establish a Red role. P0 is Blue in both games.
+The persistent listener is Blue P3. P0 proposes an eastward step toward EXIT on turn one. P1 proposes a return to START on turn two. Scripted P0 casts opposite ballots on these steps. Red P2 then nominates P0 and says that P0 voted No on the *first* move. The original listener can page public ballots and inspect each entry’s turn. The revised lookup can select the turn explicitly. P3's first nomination on turn one provides an opportunity to compact before P2 names the disputed voter. A No on the first ballot does not establish a Red role. P0 is Blue in both games.
 
+
+The first false-claim run stopped on an Ollama HTTP 500 during late compaction. The record is an explicitly unfinished prefix. During discussion P3 correctly described the *second* ballot in its reply to a claim about the *first*. We retained that prefix and modified the experiment host to log transient errors and let the referee clock continue. In the complete repeat its private summary had even retained that everyone approved the first step. It still defended P0 by citing P0’s more recent No on the backward proposal. After the removal vote it lost a nomination and its final movement vote to timeouts during repeated backend errors. The matching true-claim run also voted against removal. It passed its first nomination before the outer experiment loop could request compaction. We treat that run as a different memory condition. Moving the scheduling decision to the exact snapshot used for inference fixes the race. [Interrupted prefix](older-false-interrupted/game.json) · [Complete false claim](older-false/game.json) · [True claim without the scheduled early compaction](older-true/game.json)

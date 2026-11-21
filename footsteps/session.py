@@ -152,7 +152,9 @@ class Session:
             "revision": s["revision"],
             "stage": s["state"]["stage"],
             "phase": s["phase"],
-            "seconds_left_in_phase": s["seconds_left"],
+            "seconds_left_in_phase": int(s["seconds_left"])
+            if s["seconds_left"] is not None
+            else None,
             "can_speak": s["can_speak"],
             "owe_action": s["choices"] is not None,
             "last_history_id": len(s["history"]),
