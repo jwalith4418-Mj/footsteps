@@ -1,8 +1,10 @@
 # Persistent seats on a directed floor and at a social table
 
+For a three-seat discussion playtest on this workstation, start with 9B/4k, 30 seconds of discussion and 45-second decisions. The most useful exchange to read is turn two, event 12 of the [longer discussion game](three-9b-30s/game.json). The [clock comparison](#calibrating-a-shared-discussion-clock) shows how often each model could actually reply. The [frozen proposal comparison](#the-same-movement-decision-with-and-without-the-landing-in-the-update) separates reading a movement opportunity from building a route.
+
 The initial persistent listener could carry a recent ballot through compaction. This panel starts a builder at setup and moves the listener's dispute to the following turn. A single local Qwen3.8 27B RANA instance handles the requests. The starting configuration uses an 8,192-token context, a 240-token output limit, temperature zero, inference seed one and thinking disabled. Later comparisons change model size, context size and the compaction allowance as indicated. Each game with one model-controlled seat uses a real 30-second decision clock. Social discussion gets 15 seconds. Request times include prompt evaluation. Sums of prompt tokens count the repeated context on each call. Missing backend counters stay unknown.
 
-This panel ran on one RTX 4090 (24,564 MiB) with Ollama 0.40.15. The installed model IDs were `05ec8ea1b9a8` for the 27B RANA layout and `a8ee95bc3592` for Qwen3.5 9B Q8_0. Changing the context can reload a model. Live clocks start after warmup.
+This panel ran on one RTX 4090 (24,564 MiB) with Ollama 0.40.15. The installed model IDs were `05ec8ea1b9a8` for the 27B RANA layout, `a8ee95bc3592` for Qwen3.5 9B Q8_0 and `d8b0f5e9760c` for Qwen3.5 4B. Changing the context can reload a model. Live clocks start after warmup.
 
 ## Two chances to move
 
@@ -83,7 +85,19 @@ In the first 9B/4k full table all nine seat-windows had at least one reply ready
 
 At 30 seconds, 9B spoke in all 11 seat-windows. Two Blue players explicitly echoed earlier remarks. In the opening vote all three called the southward step progress even though it increased the distance to EXIT. On the second turn everyone opposed Red P1's further southward proposal, including P1 itself. Blue P0 later nominated P1 and P1 publicly supported its own removal. Red won after removal when the last turn ended away from EXIT. The game took 369 seconds, included an extra removal ballot, and missed two of 24 decisions. With a single diverging game per clock we can measure the invitations and replies delivered under each setting, but cannot attribute a change of winner or judgment quality to the clock. [9B/4k, 30 seconds](three-9b-30s/)
 
+Turn two, event 12 is a useful example to review with roles hidden. P1 proposed going south to (−2, −2) and floated repositioning as a reason. P0 correctly identified the destination's north entrance and south exit, asked what the extra distance would buy, and announced a conditional No. P2 explicitly answered P0. All three voted No. A separate check was already decisive: after turn one the marker at (−2, −1) was three Manhattan steps from EXIT with two movement opportunities remaining. No tile or ballot could close that gap in base-1. The transcript supports judging conversational relevance, reading the tile and recognizing a forced game result separately. Generate a public viewer with `python -m footsteps view experiments/persistent-panel/three-9b-30s/game.json -o /tmp/footsteps-public.html`.
+
 The removed Red seat in the 30-second game made 23 more inference requests, consuming about 25.5 seconds of service time after subtracting its queue waits. At that point it had no remaining opportunity to speak, vote or build. The runner now lets a removed seat observe the table until the result without invoking its model again. Commit `83e2546` reproduces the earlier spectator behavior for these clock controls.
+
+The 4B/4k run used the original 15-second discussion clock. All 12 seat-windows had a reply ready before closing. Ten remarks landed. Red P1 both said that reaching EXIT was its objective and voted to approve the winning step. Two removal ballots added work. A faster model offered more speaking and tool opportunities, and still missed four decisions. [4B/4k, 15 seconds](three-4b-15s/)
+
+| Three seats, 4k context and 45-second decisions | Timely speaking opportunities | Remarks | Timely decisions | Requests / minute of play | 95th percentile request time including queue | Game wall time |
+|---|---:|---:|---:|---:|---:|---:|
+| 9B, 15 s discussion | 9/9 | 6 | 20/23 | 38.9 | 8.21 s | 301 s |
+| 9B, 30 s discussion | 11/11 | 11 | 22/24 | 42.8 | 8.14 s | 369 s |
+| 4B, 15 s discussion | 12/12 | 10 | 22/26 | 50.5 | 3.30 s | 340 s |
+
+For discussion studies on this workstation, use three 9B seats with a 30-second window as the starting condition. It leaves room to hear someone else's remark, inspect the state and answer. The 15-second window is a cheaper baseline for seeing whether seats speak at all. Use 4B when testing the plumbing or collecting more tool calls per minute. Its role confusion makes it a weak stand-in for a more capable social player. The table runs are one game per condition with different nominations, so a future paired prompt or repeated deal panel should evaluate persuasion and skill separately. The shipped table clock remains configurable.
 
 ## Reproduce
 

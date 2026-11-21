@@ -4,6 +4,7 @@ import argparse
 import json
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from math import ceil
 from pathlib import Path
 from random import Random
 from time import monotonic
@@ -124,8 +125,11 @@ def report(root):
         g.apply(e)
     assert g.winner
     print("Winner", g.winner, "turn", g.turn, "marker", g.marker)
+    latencies = []
+    timely_windows = 0
     for i in range(3):
         calls = list(map(json.loads, (root / f"seat-{i}.jsonl").read_text().splitlines()))
+        latencies.extend(c["inference_seconds"] for c in calls)
         print(
             i,
             g.roles[i],
@@ -152,18 +156,41 @@ def report(root):
                     for call in calls
                     if (d := call["discussion"]) and d["revision"] == revision and d["offered"]
                 ]
+                ready = [
+                    call["tool"]
+                    for call in offered
+                    if call["discussion"].get("seconds_after_reply", 0) > 0
+                ]
+                timely_windows += bool(ready)
                 print(
                     "  discussion",
                     revision,
                     "offered",
                     len(offered),
                     "replies before close",
-                    [
-                        call["tool"]
-                        for call in offered
-                        if call["discussion"].get("seconds_after_reply", 0) > 0
-                    ],
+                    ready,
                 )
+
+    if (root / "timing.json").exists():
+        timing = json.loads((root / "timing.json").read_text())
+        print(
+            "wall seconds",
+            timing["play_seconds"],
+            "timely discussion windows",
+            timely_windows,
+            "/",
+            sum(map(len, windows.values())),
+            "remarks",
+            len(r.get("remarks", [])),
+            "timely decisions",
+            owed.total() - missed.total(),
+            "/",
+            owed.total(),
+            "requests per minute",
+            round(60 * len(latencies) / timing["play_seconds"], 1),
+            "p95 seconds including queue",
+            sorted(latencies)[ceil(len(latencies) * 0.95) - 1],
+        )
 
 
 if __name__ == "__main__":
