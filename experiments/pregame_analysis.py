@@ -11,10 +11,13 @@ from experiments.persistent_runtime import resident_model
 from experiments.rana_speakers import act
 from footsteps.decision_notes import open_private
 from footsteps.ollama import request
-from footsteps.session import Session
+from footsteps.session import MOVEMENT_CLOCK, Session
 
 MODELS = {"27b": "footsteps-qwen3.8:27b-rana-layout", "9b": "qwen3.5:9b-q8_0"}
 CONTEXT = 8192
+ORIGINAL_SYSTEM = (
+    (Path(__file__).parent / "pregame-analysis/original-system.txt").read_text().rstrip("\n")
+)
 # Procedural rules only. The full human rulebook explicitly derives the target bound.
 RULES = """Footsteps is played on an unbounded square grid. East increases x and north increases y. EXIT is at (0,0). START and EXIT have open entrances and exits on all four sides. The shared marker starts at START. There are three Blue seats and one Red seat. Blue wins when the marker enters EXIT. Red wins if a movement opportunity ends short of EXIT with the store empty, or all Blue seats are eliminated. Eliminated players share the result of their team. A Blue player knows only their own role. A Red player knows the Red roster. These information rules and the starting team counts are public.
 
@@ -34,8 +37,14 @@ def digest(note):
 
 def write_note(model, cue, seed, owner, log):
     thinking = cue == "deliberate"
-    hint = CUES["invariants" if thinking else cue]
-    messages = [{"role": "system", "content": RULES}, {"role": "user", "content": TASK + hint}]
+    hint = CUES["invariants" if thinking or cue == "clarified-invariants" else cue]
+    messages = [
+        {
+            "role": "system",
+            "content": RULES + (" " + MOVEMENT_CLOCK if cue == "clarified-invariants" else ""),
+        },
+        {"role": "user", "content": TASK + hint},
+    ]
     options = {"num_ctx": CONTEXT, "temperature": 0.7, "seed": seed}
     limits = (3072, 6144) if thinking else (512, 1024)
     attempts = []
@@ -83,12 +92,15 @@ def generate(model, owner, log, deliberate=False):
 class PreparedSession(Session):
     """Restore the seat's unedited predeal note separately from its rolling summary."""
 
-    def __init__(self, *args, pregame_note, **kwargs):
+    def __init__(self, *args, pregame_note, clarified=False, **kwargs):
+        self.clarified = clarified
         self.pregame_note = pregame_note
         super().__init__(*args, **kwargs)
 
     def reset(self, *, recovered=False):
         super().reset(recovered=recovered)
+        if not self.clarified:
+            self.messages[0]["content"] = ORIGINAL_SYSTEM
         if self.pregame_note:
             bootstrap = self.messages[-1]
             private = json.loads(bootstrap["content"])
@@ -96,12 +108,12 @@ class PreparedSession(Session):
             bootstrap["content"] = json.dumps(private)
 
 
-def ballot(model, note, case, heading, team):
+def ballot(model, note, case, heading, team, *, clarified=False):
     s = seat_session(
         fixture(case, heading),
         3,
         team,
-        session_class=partial(PreparedSession, pregame_note=note),
+        session_class=partial(PreparedSession, pregame_note=note, clarified=clarified),
         context=CONTEXT,
     )
     rev = s.snap["revision"]
@@ -133,15 +145,20 @@ def read_notes(model, owner_path, expected):
     return notes
 
 
-def transfer(model, notes, out, *, include_control=True):
-    control = {"cue": "none", "seed": None, "sha256": None, "note": ""}
+def transfer(model, notes, out, *, include_control=True, clarified=False):
+    control = {
+        "cue": "clarified-none" if clarified else "none",
+        "seed": None,
+        "sha256": None,
+        "note": "",
+    }
     conditions = [control, *notes] if include_control else notes
     for row in conditions:
         key = {"model": model, **{k: row[k] for k in ("cue", "seed", "sha256")}}
         for case in ("short", "detour"):
             for heading in ("west", "north"):
                 for team in ("blue", "red"):
-                    result = ballot(model, row["note"], case, heading, team)
+                    result = ballot(model, row["note"], case, heading, team, clarified=clarified)
                     print(json.dumps(key | result), file=out, flush=True)
 
 
@@ -151,7 +168,13 @@ if __name__ == "__main__":
     cli.add_argument("model", choices=MODELS)
     cli.add_argument("private", type=Path)
     cli.add_argument("output", type=Path)
-    cli.add_argument(
+    arms = cli.add_mutually_exclusive_group()
+    arms.add_argument(
+        "--clarified",
+        action="store_true",
+        help="use the revised public clock rules in preparation and play; compare seed one against a matched bare seat",
+    )
+    arms.add_argument(
         "--deliberate",
         action="store_true",
         help="invariant cue with thinking enabled at note-writing time only; reuse the existing no-note ballot results",
@@ -159,13 +182,18 @@ if __name__ == "__main__":
     args = cli.parse_args()
     model = MODELS[args.model]
     cues = ("deliberate",) if args.deliberate else CUES
+    seeds = (1, 2, 3)
+    if args.clarified:
+        cues, seeds = ("clarified-invariants",), (1,)
     if args.phase == "transfer":
-        expected = {(cue, seed) for seed in (1, 2, 3) for cue in cues}
+        expected = {(cue, seed) for seed in seeds for cue in cues}
         notes = read_notes(model, args.private, expected)
     with args.output.open("x") as log:
         if args.phase == "generate":
             with open_private(args.private) as owner:
-                generate(model, owner, log, args.deliberate)
+                generate(model, owner, log, seeds, cues)
         else:
-            transfer(model, notes, log, include_control=not args.deliberate)
+            transfer(
+                model, notes, log, include_control=not args.deliberate, clarified=args.clarified
+            )
     print(json.dumps(resident_model(model)))

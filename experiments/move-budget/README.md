@@ -59,3 +59,5 @@ python -m footsteps view experiments/move-budget/detour.json --omniscient -o /tm
 ```
 
 The offline summary scores the saved ballots and bounded checks and joins the published reason codes. In the viewer, stop at turn 5, event 37 for the proposal. All subsequent events in that viewer are the scripted winning witness.
+
+The archived move-budget requests used study commit `fcf00f9`. Use that revision for the original system prompt when reproducing those inference runs. The persistent seat subsequently gained an explicit explanation of the clock. [Pregame and revised-prompt comparison](../pregame-analysis/README.md)

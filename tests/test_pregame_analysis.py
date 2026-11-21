@@ -15,6 +15,7 @@ from experiments.pregame_analysis import (
     read_notes,
     write_note,
 )
+from footsteps.session import MOVEMENT_CLOCK
 
 
 class PregameAnalysis(unittest.TestCase):
@@ -86,3 +87,27 @@ class PregameAnalysis(unittest.TestCase):
             path.write_text(json.dumps(note | {"note": "changed"}))
             with self.assertRaisesRegex(ValueError, "intact"):
                 read_notes(MODELS["9b"], path, {("open", 1)})
+
+    def test_clarified_arm_uses_the_normal_live_prompt_after_reset(self):
+        prefix = fixture("short", "west")
+        live = seat_session(prefix, 3, "red", context=CONTEXT)
+        clarified = seat_session(
+            prefix,
+            3,
+            "red",
+            session_class=partial(PreparedSession, pregame_note="", clarified=True),
+            context=CONTEXT,
+        )
+        original = seat_session(
+            prefix,
+            3,
+            "red",
+            session_class=partial(PreparedSession, pregame_note=""),
+            context=CONTEXT,
+        )
+        for session in (live, clarified, original):
+            session.reset()
+        self.assertEqual(live.messages, clarified.messages)
+        self.assertEqual(clarified.messages[1:], original.messages[1:])
+        self.assertIn(MOVEMENT_CLOCK, live.messages[0]["content"])
+        self.assertNotIn(MOVEMENT_CLOCK, original.messages[0]["content"])

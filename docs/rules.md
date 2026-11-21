@@ -36,6 +36,8 @@ The builder proposes either staying put or moving one square. For a move east, t
 
 The proposed destination may be an older tile or the one just placed. On a movement ballot, vote to **move the marker** to the named square or **keep the marker here**. A rejected step leaves the newly placed tile on the floor. Staying skips the movement vote. Otherwise all living players, including the builder, cast ballots simultaneously and then reveal them by name. Move on a majority yes. On a tie, use the builder's ballot, which may be no. Reaching the exit ends the game with a Blue-team win. Otherwise an empty bag at this point ends the game with a Red-team win, even if every Red player has been eliminated.
 
+At a movement ballot the build is complete. Count the tiles left in the bag to find how many movement opportunities come **after** this one if play continues to depletion. Staying or rejecting the step uses the current opportunity. The bag count stays the same through nominations and removals.
+
 ## Discussion
 
 Everyone knows the discussion rules. When there is time to speak before a ballot, every seat hears each remark and knows who said it. Players on either team may tell the truth, lie, bluff, or stay silent. Players may claim either role. A promised vote leaves the speaker free to vote either way.
