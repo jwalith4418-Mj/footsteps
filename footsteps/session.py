@@ -108,6 +108,10 @@ HISTORY["function"]["parameters"]["required"] = []
 HISTORY["function"]["parameters"]["properties"]["kind"]["enum"] = list(HISTORY_KINDS)
 
 
+class UnavailableTool(ValueError):
+    """The reply named a function outside the schema sent for that inference."""
+
+
 class Session:
     def __init__(
         self,
@@ -332,8 +336,7 @@ class Session:
     def execute(self, name, args, offered, revision):
         spec = next((t["function"] for t in offered if t["function"]["name"] == name), None)
         if spec is None:
-            names = ", ".join(t["function"]["name"] for t in offered)
-            raise ValueError("Choose one of the currently offered functions: " + names)
+            raise UnavailableTool("That function was not offered for this request.")
         require(isinstance(args, dict), "expected a function argument object")
         schema = spec["parameters"]
         types = {"integer": int, "boolean": bool, "string": str}
@@ -513,16 +516,23 @@ class Session:
                 raise
             self.refresh()
             result = {"error": str(exc), "current": self.opportunity()}
-            stage = self.snap["state"]["stage"]
-            if (
-                isinstance(name, str)
-                and name.startswith("vote_")
-                and stage in BALLOT_TOOLS
-                and self.snap["phase"] in ("discussion", "decision")
-                and not compact_required
-                and not any(t["function"]["name"] == name for t in offered)
-            ):
-                result["pending_ballot"] = self.ballot_guidance()
+            if isinstance(exc, UnavailableTool):
+                # A reply can arrive after a remark, ballot opening or change of turn.
+                # Report the tools for the same snapshot as current, never execute the old call.
+                available = offered if compact_required else self.tools()
+                result["available_tools"] = (
+                    [t["function"]["name"] for t in available]
+                    if self.snap["phase"] != "over"
+                    and self.snap["seat"] in self.snap["state"]["alive"]
+                    else []
+                )
+                if (
+                    name.startswith("vote_")
+                    and self.snap["state"]["stage"] in BALLOT_TOOLS
+                    and self.snap["phase"] in ("discussion", "decision")
+                    and not compact_required
+                ):
+                    result["pending_ballot"] = self.ballot_guidance()
         if name != "compact" or "error" in result:
             if name is None or not isinstance(args, dict):
                 self.messages.append({"role": "user", "content": json.dumps(result)})

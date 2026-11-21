@@ -182,6 +182,28 @@ class PersistentSeat(unittest.TestCase):
                 if kind == "move_vote":
                     table.submit(1, table.revision, {"target": 3}, peer.now)
 
+    def test_unoffered_action_reports_tools_for_the_refreshed_opportunity(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 2)
+        player = Session(peer)
+
+        def vote_at_opening(*_):
+            peer.now = table.opens
+            fn = {"name": "vote_move", "arguments": {"approve": True}}
+            return {"message": {"tool_calls": [{"function": fn}]}}
+
+        result = player.step("mock", infer=vote_at_opening)["result"]
+        self.assertIn("error", result)
+        self.assertIn("vote_move", result["available_tools"])
+        self.assertNotIn("speak", result["available_tools"])
+        self.assertTrue(result["current"]["owe_action"])
+        self.assertEqual(table.votes, {})
+        self.assertTrue(player.step("mock", infer=vote_at_opening)["result"]["accepted"])
+
     def test_removed_seat_observes_result_without_using_inference(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
         for i in range(4):
