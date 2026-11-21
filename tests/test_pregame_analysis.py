@@ -10,8 +10,11 @@ from experiments.horizon_votes import fixture, seat_session
 from experiments.pregame_analysis import (
     CONTEXT,
     MODELS,
+    PROMPTS,
+    ROUTE_BOUND,
     PreparedSession,
     digest,
+    main,
     read_notes,
     write_note,
 )
@@ -61,7 +64,7 @@ class PregameAnalysis(unittest.TestCase):
         ]
         owner, public = io.StringIO(), io.StringIO()
         with patch("experiments.pregame_analysis.request", side_effect=replies) as infer:
-            write_note(MODELS["27b"], "deliberate", 3, owner, public)
+            write_note(MODELS["27b"], "deliberate", 1, owner, public)
         a, b = (call.args[2] for call in infer.call_args_list)
         self.assertTrue(a["think"])
         self.assertEqual(a["messages"], b["messages"])
@@ -95,7 +98,9 @@ class PregameAnalysis(unittest.TestCase):
             prefix,
             3,
             "red",
-            session_class=partial(PreparedSession, pregame_note="", clarified=True),
+            session_class=partial(
+                PreparedSession, pregame_note="", system_prompt=PROMPTS["clarified-none"]
+            ),
             context=CONTEXT,
         )
         original = seat_session(
@@ -111,3 +116,52 @@ class PregameAnalysis(unittest.TestCase):
         self.assertEqual(clarified.messages[1:], original.messages[1:])
         self.assertIn(MOVEMENT_CLOCK, live.messages[0]["content"])
         self.assertNotIn(MOVEMENT_CLOCK, original.messages[0]["content"])
+
+    def test_capped_preparation_keeps_the_failure_and_drops_the_draft(self):
+        owner, public = io.StringIO(), io.StringIO()
+        with patch(
+            "experiments.pregame_analysis.request",
+            return_value={"done_reason": "length", "message": {"content": "cut-off draft"}},
+        ) as infer:
+            write_note(MODELS["27b"], "deliberate", 2, owner, public)
+        infer.assert_called_once()
+        self.assertIsNone(json.loads(owner.getvalue())["note"])
+        self.assertEqual(json.loads(public.getvalue())["status"], "unfinished")
+        self.assertNotIn("cut-off draft", owner.getvalue() + public.getvalue())
+
+    def test_taught_condition_survives_a_reset_without_a_private_note(self):
+        session = seat_session(
+            fixture("detour", "north"),
+            3,
+            "blue",
+            session_class=partial(
+                PreparedSession, pregame_note="", system_prompt=PROMPTS["taught-none"]
+            ),
+            context=CONTEXT,
+        )
+        session.execute(
+            "compact", {"summary": "Ballot open."}, session.tools(), session.snap["revision"]
+        )
+        self.assertIn(MOVEMENT_CLOCK, session.messages[0]["content"])
+        self.assertIn(ROUTE_BOUND, session.messages[0]["content"])
+        self.assertNotIn("your_private_pregame_note", json.loads(session.messages[1]["content"]))
+
+    def test_generate_cli_writes_only_a_receipt_to_the_public_log(self):
+        with TemporaryDirectory() as tmp:
+            owner, receipt = (Path(tmp) / name for name in ("private", "public"))
+            with (
+                patch(
+                    "experiments.pregame_analysis.request",
+                    return_value={
+                        "done_reason": "stop",
+                        "message": {"content": "my private opening memo"},
+                    },
+                ),
+                patch("experiments.pregame_analysis.resident_model", return_value={}),
+                patch("sys.stdout", new_callable=io.StringIO),
+            ):
+                main(["generate", "9b", str(owner), str(receipt), "--clarified"])
+            memo, key = (json.loads(p.read_text()) for p in (owner, receipt))
+            self.assertEqual(key["sha256"], digest(memo["note"]))
+            self.assertEqual(key["cue"], "clarified-invariants")
+            self.assertNotIn("note", key)

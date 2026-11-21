@@ -1,0 +1,3 @@
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "deliberate", "seed": 1, "sha256": null, "status": "unfinished", "attempt_limits": [3072, 6144]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "deliberate", "seed": 2, "sha256": null, "status": "unfinished", "attempt_limits": [3072]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "deliberate", "seed": 3, "sha256": null, "status": "unfinished", "attempt_limits": [3072]}

@@ -18,6 +18,18 @@ CONTEXT = 8192
 ORIGINAL_SYSTEM = (
     (Path(__file__).parent / "pregame-analysis/original-system.txt").read_text().rstrip("\n")
 )
+ROUTE_BOUND = (
+    "From each possible ballot landing, the marker needs at least "
+    "|x - exit_x| + |y - exit_y| more steps. If that distance exceeds the remaining "
+    "movement opportunities, Blue cannot reach EXIT. Fitting inside this budget is "
+    "only a necessary condition. A legal directed route may first lead away from EXIT."
+)
+CLOCK_SYSTEM = ORIGINAL_SYSTEM.replace("North increases y.", "North increases y. " + MOVEMENT_CLOCK)
+PROMPTS = {
+    "none": ORIGINAL_SYSTEM,
+    "clarified-none": CLOCK_SYSTEM,
+    "taught-none": CLOCK_SYSTEM + " " + ROUTE_BOUND,
+}
 # Procedural rules only. The full human rulebook explicitly derives the target bound.
 RULES = """Footsteps is played on an unbounded square grid. East increases x and north increases y. EXIT is at (0,0). START and EXIT have open entrances and exits on all four sides. The shared marker starts at START. There are three Blue seats and one Red seat. Blue wins when the marker enters EXIT. Red wins if a movement opportunity ends short of EXIT with the store empty, or all Blue seats are eliminated. Eliminated players share the result of their team. A Blue player knows only their own role. A Red player knows the Red roster. These information rules and the starting team counts are public.
 
@@ -36,7 +48,8 @@ def digest(note):
 
 
 def write_note(model, cue, seed, owner, log):
-    thinking = cue == "deliberate"
+    extended_context = {"deliberate-16k": 16384, "deliberate-32k": 32768}.get(cue)
+    thinking = cue == "deliberate" or extended_context is not None
     hint = CUES["invariants" if thinking or cue == "clarified-invariants" else cue]
     messages = [
         {
@@ -45,9 +58,14 @@ def write_note(model, cue, seed, owner, log):
         },
         {"role": "user", "content": TASK + hint},
     ]
-    options = {"num_ctx": CONTEXT, "temperature": 0.7, "seed": seed}
-    limits = (3072, 6144) if thinking else (512, 1024)
+    options = {"num_ctx": extended_context or CONTEXT, "temperature": 0.7, "seed": seed}
+    limits = (512, 1024)
+    if extended_context:
+        limits = (extended_context - 2048,)
+    elif thinking:
+        limits = (3072, 6144) if seed == 1 else (3072,)
     attempts = []
+    usage = {}
     for limit in limits:
         response = request(
             11434,
@@ -59,14 +77,25 @@ def write_note(model, cue, seed, owner, log):
                 "messages": messages,
                 "options": options | {"num_predict": limit},
             },
-            480 if thinking else 120,
+            2400 if extended_context else (480 if thinking else 120),
         )
+        if extended_context:
+            usage = {
+                "preparation_context": extended_context,
+                "prompt_tokens": response.get("prompt_eval_count"),
+                "generated_tokens": response.get("eval_count"),
+                "seconds": round(response.get("total_duration", 0) / 1e9, 2),
+                "done_reason": response.get("done_reason"),
+            }
         attempts.append(limit)
         note = response["message"]["content"].strip()
         if note and response.get("done_reason") != "length":
             break
     else:
-        raise ValueError(f"Incomplete note for {model} {cue} {seed} after {attempts}")
+        failed = {"model": model, "cue": cue, "seed": seed, "sha256": None, "status": "unfinished"}
+        print(json.dumps(failed | {"note": None}), file=owner, flush=True)
+        print(json.dumps(failed | {"attempt_limits": attempts} | usage), file=log, flush=True)
+        return
     key = {"model": model, "cue": cue, "seed": seed, "sha256": digest(note)}
     print(json.dumps(key | {"note": note}), file=owner, flush=True)
     print(
@@ -77,30 +106,30 @@ def write_note(model, cue, seed, owner, log):
                 "tokens": response.get("eval_count"),
                 "attempt_limits": attempts,
             }
+            | usage
         ),
         file=log,
         flush=True,
     )
 
 
-def generate(model, owner, log, deliberate=False):
-    for seed in (1, 2, 3):
-        for cue in ("deliberate",) if deliberate else CUES:
+def generate(model, owner, log, seeds, cues):
+    for seed in seeds:
+        for cue in cues:
             write_note(model, cue, seed, owner, log)
 
 
 class PreparedSession(Session):
     """Restore the seat's unedited predeal note separately from its rolling summary."""
 
-    def __init__(self, *args, pregame_note, clarified=False, **kwargs):
-        self.clarified = clarified
+    def __init__(self, *args, pregame_note, system_prompt=ORIGINAL_SYSTEM, **kwargs):
+        self.system_prompt = system_prompt
         self.pregame_note = pregame_note
         super().__init__(*args, **kwargs)
 
     def reset(self, *, recovered=False):
         super().reset(recovered=recovered)
-        if not self.clarified:
-            self.messages[0]["content"] = ORIGINAL_SYSTEM
+        self.messages[0]["content"] = self.system_prompt
         if self.pregame_note:
             bootstrap = self.messages[-1]
             private = json.loads(bootstrap["content"])
@@ -108,12 +137,12 @@ class PreparedSession(Session):
             bootstrap["content"] = json.dumps(private)
 
 
-def ballot(model, note, case, heading, team, *, clarified=False):
+def ballot(model, note, case, heading, team, *, system_prompt):
     s = seat_session(
         fixture(case, heading),
         3,
         team,
-        session_class=partial(PreparedSession, pregame_note=note, clarified=clarified),
+        session_class=partial(PreparedSession, pregame_note=note, system_prompt=system_prompt),
         context=CONTEXT,
     )
     rev = s.snap["revision"]
@@ -140,14 +169,17 @@ def read_notes(model, owner_path, expected):
     notes = [json.loads(line) for line in owner_path.read_text().splitlines()]
     if len(notes) != len(expected) or {(r["cue"], r["seed"]) for r in notes} != expected:
         raise ValueError("the private note panel is incomplete or duplicated")
-    if any(r["model"] != model or digest(r["note"]) != r["sha256"] for r in notes):
+    complete = [r for r in notes if r.get("status") != "unfinished"]
+    if any(r["model"] != model for r in notes) or any(
+        digest(r["note"]) != r["sha256"] for r in complete
+    ):
         raise ValueError("expected intact notes from the model being evaluated")
-    return notes
+    return complete
 
 
-def transfer(model, notes, out, *, include_control=True, clarified=False):
+def transfer(model, notes, out, *, include_control=True, control_cue="none"):
     control = {
-        "cue": "clarified-none" if clarified else "none",
+        "cue": control_cue,
         "seed": None,
         "sha256": None,
         "note": "",
@@ -158,15 +190,19 @@ def transfer(model, notes, out, *, include_control=True, clarified=False):
         for case in ("short", "detour"):
             for heading in ("west", "north"):
                 for team in ("blue", "red"):
-                    result = ballot(model, row["note"], case, heading, team, clarified=clarified)
+                    result = ballot(
+                        model, row["note"], case, heading, team, system_prompt=PROMPTS[control_cue]
+                    )
                     print(json.dumps(key | result), file=out, flush=True)
 
 
-if __name__ == "__main__":
+def main(argv=None):
     cli = argparse.ArgumentParser(description=__doc__)
-    cli.add_argument("phase", choices=("generate", "transfer"))
+    cli.add_argument("phase", choices=("generate", "transfer", "teach"))
     cli.add_argument("model", choices=MODELS)
-    cli.add_argument("private", type=Path)
+    cli.add_argument(
+        "private", type=Path, nargs="?", help="owner note file for generate or transfer"
+    )
     cli.add_argument("output", type=Path)
     arms = cli.add_mutually_exclusive_group()
     arms.add_argument(
@@ -179,12 +215,28 @@ if __name__ == "__main__":
         action="store_true",
         help="invariant cue with thinking enabled at note-writing time only; reuse the existing no-note ballot results",
     )
-    args = cli.parse_args()
+    arms.add_argument(
+        "--preparation-context",
+        type=int,
+        choices=(16384, 32768),
+        help="retry invariant preparation with thinking on, seed 1, reserving 2048 tokens for input. Ballots still use 8192",
+    )
+    args = cli.parse_args(argv)
+    if args.phase == "teach":
+        if args.private or args.clarified or args.deliberate or args.preparation_context:
+            cli.error("teach takes just the model and a new ballot output path")
+        with args.output.open("x") as log:
+            transfer(MODELS[args.model], [], log, control_cue="taught-none")
+        return
+    if args.private is None:
+        cli.error("generate and transfer require both a private note path and an output path")
     model = MODELS[args.model]
     cues = ("deliberate",) if args.deliberate else CUES
     seeds = (1, 2, 3)
     if args.clarified:
         cues, seeds = ("clarified-invariants",), (1,)
+    if args.preparation_context:
+        cues, seeds = (f"deliberate-{args.preparation_context // 1024}k",), (1,)
     if args.phase == "transfer":
         expected = {(cue, seed) for seed in seeds for cue in cues}
         notes = read_notes(model, args.private, expected)
@@ -194,6 +246,14 @@ if __name__ == "__main__":
                 generate(model, owner, log, seeds, cues)
         else:
             transfer(
-                model, notes, log, include_control=not args.deliberate, clarified=args.clarified
+                model,
+                notes,
+                log,
+                include_control=not (args.deliberate or args.preparation_context),
+                control_cue="clarified-none" if args.clarified else "none",
             )
     print(json.dumps(resident_model(model)))
+
+
+if __name__ == "__main__":
+    main()

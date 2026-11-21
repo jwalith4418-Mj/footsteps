@@ -90,3 +90,5 @@ The [required-choice wait trial](required-wait/README.md) follows two previously
 The [ballot polling study](ballot-polling/README.md) compares reveal guidance and waiting tool names on frozen positions, then follows the same small deal with a fourth seat.
 
 The [four-seat move-budget probes](move-budget/README.md) pair a losing outward step with the only viable retreat and replay silent, scripted and model-generated discussion into matched voters.
+
+The [private pregame analysis study](pregame-analysis/README.md) asks two local models to discover useful principles before the deal, restores their own notes after compaction, and tests transfer to movement ballots on both teams.
