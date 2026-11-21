@@ -1,6 +1,6 @@
 """Single live table. The transport serializes calls and supplies a monotonic clock."""
 
-from copy import copy
+from copy import copy, deepcopy
 from math import isfinite
 
 from .board import frontier, moves
@@ -127,7 +127,9 @@ class Table:
         before.alive = game.alive.copy()
         before.queue = game.queue.copy()
         game.apply(event)
-        self.record["events"].append(event)
+        # The commit owns the recorded event: callers may keep and mutate
+        # the lists they submitted (e.g. a reused coordinate pair).
+        self.record["events"].append(deepcopy(event))
         kind = event["kind"]
         if kind == "draw":
             self.add_pieces(before.actor, event["tiles"])
