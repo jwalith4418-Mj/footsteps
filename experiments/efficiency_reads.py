@@ -11,9 +11,22 @@ from experiments.game_efficiency import READ_TOOLS
 def counts(trace):
     counts = Counter()
     preceding = None
+    preceding_idle_cursor = None
     for line in trace.read_text().splitlines():
         row = json.loads(line)
         result = row["result"]
+        notice = row.get("opportunity", {})
+        idle_cursor = None
+        if (
+            row["tool"] == "get_state"
+            and "cursor" in result
+            and notice.get("owe_action") is False
+            and notice.get("can_speak") is False
+        ):
+            idle_cursor = result["cursor"]
+            counts["idle_state_reads"] += 1
+            counts["consecutive_same_idle_cursor"] += idle_cursor == preceding_idle_cursor
+        preceding_idle_cursor = idle_cursor
         if row["tool"] not in READ_TOOLS or "error" in result:
             preceding = None
             continue

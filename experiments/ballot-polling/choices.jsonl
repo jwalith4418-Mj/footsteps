@@ -1,0 +1,24 @@
+{"revision": 4, "phase": "discussion", "variant": "guided", "entries": [], "calls": [{"tool": "speak", "error": false, "force": false}]}
+{"revision": 4, "phase": "discussion", "variant": "plain", "entries": [], "calls": [{"tool": "get_state", "error": false, "force": false}, {"tool": "unavailable", "error": true, "force": false}, {"tool": "speak", "error": false, "force": false}]}
+{"revision": 4, "phase": "discussion", "variant": "named", "entries": [], "calls": [{"tool": "speak", "error": false, "force": false}]}
+{"revision": 4, "phase": "discussion", "variant": "await", "entries": [], "calls": [{"tool": "speak", "error": false, "force": false}]}
+{"revision": 4, "phase": "due", "variant": "guided", "entries": [], "calls": [{"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 4, "phase": "due", "variant": "plain", "entries": [], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 4, "phase": "due", "variant": "named", "entries": [], "calls": [{"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 4, "phase": "due", "variant": "await", "entries": [], "calls": [{"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 4, "phase": "submitted", "variant": "guided", "entries": [], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "wait", "error": false, "force": false}]}
+{"revision": 4, "phase": "submitted", "variant": "plain", "entries": [], "calls": [{"tool": "get_state", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}]}
+{"revision": 4, "phase": "submitted", "variant": "named", "entries": [], "calls": [{"tool": "wait_for_change", "error": false, "force": false}]}
+{"revision": 4, "phase": "submitted", "variant": "await", "entries": [], "calls": [{"tool": "await_change", "error": false, "force": false}]}
+{"revision": 12, "phase": "discussion", "variant": "guided", "entries": [7], "calls": [{"tool": "speak", "error": false, "force": false}]}
+{"revision": 12, "phase": "discussion", "variant": "plain", "entries": [7], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "history", "error": true, "force": false}]}
+{"revision": 12, "phase": "discussion", "variant": "named", "entries": [7], "calls": [{"tool": "speak", "error": false, "force": false}]}
+{"revision": 12, "phase": "discussion", "variant": "await", "entries": [7], "calls": [{"tool": "speak", "error": false, "force": false}]}
+{"revision": 12, "phase": "due", "variant": "guided", "entries": [7], "calls": [{"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 12, "phase": "due", "variant": "plain", "entries": [7], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 12, "phase": "due", "variant": "named", "entries": [7], "calls": [{"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 12, "phase": "due", "variant": "await", "entries": [7], "calls": [{"tool": "vote_move", "error": false, "force": false}]}
+{"revision": 12, "phase": "submitted", "variant": "guided", "entries": [7], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "wait", "error": false, "force": false}]}
+{"revision": 12, "phase": "submitted", "variant": "plain", "entries": [7], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "history", "error": false, "force": false}, {"tool": "get_state", "error": false, "force": false}, {"tool": "unavailable", "error": true, "force": false}, {"tool": "history", "error": false, "force": false}]}
+{"revision": 12, "phase": "submitted", "variant": "named", "entries": [7], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "wait_for_change", "error": false, "force": false}]}
+{"revision": 12, "phase": "submitted", "variant": "await", "entries": [7], "calls": [{"tool": "history", "error": false, "force": false}, {"tool": "await_change", "error": false, "force": false}]}

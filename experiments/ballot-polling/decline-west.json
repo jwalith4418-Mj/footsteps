@@ -1,0 +1,202 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        182,
+        188
+      ],
+      [
+        44,
+        153
+      ],
+      [
+        107,
+        91
+      ],
+      [
+        16,
+        71
+      ]
+    ],
+    "store": [
+      234,
+      16,
+      41
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        41,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        0
+      ],
+      "tile": 182,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 188
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -3,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        188
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 44,
+      "rotation": 0,
+      "at": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "discard",
+      "tile": 16
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 16,
+      "rotation": 0,
+      "at": [
+        -2,
+        -1
+      ]
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I propose moving the marker to (-3, 0). This is a safe first step that doesn't risk elimination. The board is still open for future expansion toward the goal at (0,0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I support moving to (-3, 0). It's a safe move and keeps us progressing toward the goal."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support moving to (-3, 0). It's a safe step and keeps options open."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I agree with P0's proposal to move to (-3, 0). It's a safe step that doesn't risk elimination and keeps the board open for future expansion toward our goal at (0,0). I'll vote yes."
+    }
+  ]
+}
