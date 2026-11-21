@@ -127,9 +127,18 @@ def report(root):
     print("Winner", g.winner, "turn", g.turn, "marker", g.marker)
     latencies = []
     timely_windows = 0
+    service_seconds = 0
+    compact_seconds = 0
+    compactions = 0
     for i in range(3):
         calls = list(map(json.loads, (root / f"seat-{i}.jsonl").read_text().splitlines()))
-        latencies.extend(c["inference_seconds"] for c in calls)
+        for c in calls:
+            latencies.append(c["inference_seconds"])
+            service = c["inference_seconds"] - c["queue_seconds"]
+            service_seconds += service
+            if c["tool"] == "compact":
+                compactions += 1
+                compact_seconds += service
         print(
             i,
             g.roles[i],
@@ -171,6 +180,14 @@ def report(root):
                     ready,
                 )
 
+    print(
+        "compact calls",
+        compactions,
+        "compact service seconds",
+        round(compact_seconds, 1),
+        "of all service seconds",
+        round(service_seconds, 1),
+    )
     if (root / "timing.json").exists():
         timing = json.loads((root / "timing.json").read_text())
         print(

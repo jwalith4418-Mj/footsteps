@@ -71,6 +71,8 @@ The successful prompts were 5,975 tokens and the saved note was 785 characters, 
 
 On ordinary deal 9811 both versions moved twice and finished at (−1, −2), three steps from EXIT. The old runner missed eight of 22 decisions and logged 27 failed backend requests. The revised 27B runner completed six private compactions and recorded zero backend failures. It still missed five of 22 decisions, all placements on turns 3–7. For example, on turn three it read the board, inspected different rotations seven times, then used another 13.3 seconds to compact. The 30-second placement period had elapsed. Providing a viable summary allowance addresses the backend failure and leaves a separate question about how much wall time to allow for investigation and action. [Original](landing-ordinary/) · [Revised](revised-ordinary/)
 
+With a 60-second decision period on the same deal and revised client, the first two turns matched exactly. Only one of 22 decisions expired, a placement on turn four. At 30 seconds there were five expirations. Inference time rose from 248.5 to 287.8 seconds. The marker again finished at (−1, −2). The extra allowance helped the builder commit a choice and did little for its route planning on this deal. [60-second game](ordinary-60/)
+
 ## All three seats share one local inference queue
 
 Blue P0, Red P1 and Blue P2 each hold their own seat credentials and persistent conversation. The referee gives 45 seconds per decision and 15 seconds for discussion. The three sessions use one FIFO inference worker. Queue time counts against the allowance. START is two steps west of EXIT and the store supports three turns. The same private opening hands and draw seed are used for the smaller-model repeat.
@@ -98,6 +100,10 @@ The 4B/4k run used the original 15-second discussion clock. All 12 seat-windows 
 | 4B, 15 s discussion | 12/12 | 10 | 22/26 | 50.5 | 3.30 s | 340 s |
 
 For discussion studies on this workstation, use three 9B seats with a 30-second window as the starting condition. It leaves room to hear someone else's remark, inspect the state and answer. The 15-second window is a cheaper baseline for seeing whether seats speak at all. Use 4B when testing the plumbing or collecting more tool calls per minute. Its role confusion makes it a weak stand-in for a more capable social player. The table runs are one game per condition with different nominations, so a future paired prompt or repeated deal panel should evaluate persuasion and skill separately. The shipped table clock remains configurable.
+
+## How much game time goes into summaries?
+
+Sum each request's elapsed time less its queue wait. Compaction calls used 75.4 of 301.0 service-seconds in the 9B/4k table with 15-second discussion and 111.6 of 368.7 with 30-second discussion. That is 25% and 30% respectively. The corresponding 4B/4k share was 64.9 of 200.4 seconds (32%). A request's elapsed inference time ends when inference returns, before the client waits for another event. Service time does not include deliberate idle time. Starting a fresh message history after compaction keeps the seat credentials and the loaded model. Subsequent prompt evaluation is charged to the subsequent call, so these numbers measure the cost of producing the summaries themselves.
 
 ## Reproduce
 
@@ -143,6 +149,7 @@ done
 run 9b-4096-east east --inspect-rotations --movement-context --implicit-wait --model qwen3.5:9b-q8_0 --context 4096
 python -m experiments.persistent_table "$out/three-9b-4096" "$out/three-9b-4096-private" --model qwen3.5:9b-q8_0 --context 4096
 python -m experiments.persistent_table "$out/three-9b-30s" "$out/three-9b-30s-private" --model qwen3.5:9b-q8_0 --context 4096 --discussion-seconds 30
+python -m experiments.persistent_table "$out/three-9b-8k-30s" "$out/three-9b-8k-30s-private" --model qwen3.5:9b-q8_0 --context 8192 --discussion-seconds 30
 python -m experiments.persistent_table "$out/three-4b-15s" "$out/three-4b-15s-private" --model qwen3.5:4b --context 4096
 ```
 
