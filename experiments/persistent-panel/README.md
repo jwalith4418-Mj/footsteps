@@ -1,6 +1,6 @@
 # Persistent seats on a directed floor and at a social table
 
-The initial persistent listener could carry a recent ballot through compaction. This panel starts a builder at setup and moves the listener's dispute to the following turn. A single local Qwen3.8 27B RANA instance handles the requests. Each private conversation has an 8,192-token context, a 240-token output limit, temperature zero, inference seed one and thinking disabled. Each game with one model-controlled seat uses a real 30-second decision clock. Social discussion gets 15 seconds. Request times include prompt evaluation. Sums of prompt tokens count the repeated context on each call. Missing backend counters stay unknown.
+The initial persistent listener could carry a recent ballot through compaction. This panel starts a builder at setup and moves the listener's dispute to the following turn. A single local Qwen3.8 27B RANA instance handles the requests. The starting configuration uses an 8,192-token context, a 240-token output limit, temperature zero, inference seed one and thinking disabled. Later comparisons change model size, context size and the compaction allowance as indicated. Each game with one model-controlled seat uses a real 30-second decision clock. Social discussion gets 15 seconds. Request times include prompt evaluation. Sums of prompt tokens count the repeated context on each call. Missing backend counters stay unknown.
 
 ## Two chances to move
 
@@ -20,7 +20,7 @@ The third interface puts the actual marker, EXIT and legal one-step destinations
 | [Inspection and movement update, north](landing-north/game.json) | No | Stay | Red | 1 |
 | [Inspection and movement update, west](landing-west/game.json) | Yes | Onto the new bridge | Blue | 0 |
 
-The west seat placed the bridge with rotation 1, stepped onto it, made its second build behind START, then proposed and approved the step from the bridge to EXIT. On east it skipped inspection entirely. On north it inspected at the correct square and placed the unchanged piece. Different builds already change which steps are possible. Timing also varies; the original updates included fractional seconds. These full games provide examples of failures and recoveries, with little basis for estimating win rates.
+The west seat placed the bridge with rotation 1, stepped onto it, made its second build behind START, then proposed and approved the step from the bridge to EXIT. On east it skipped inspection entirely. On north it inspected at the correct square and placed the unchanged piece. Different builds already change which steps are possible. Timing also varies. The original updates included fractional seconds. These full games provide examples of failures and recoveries, with little basis for estimating win rates.
 
 ## A dispute about the older of two votes
 
@@ -28,3 +28,53 @@ The persistent listener is Blue P3. P0 proposes an eastward step toward EXIT on 
 
 
 The first false-claim run stopped on an Ollama HTTP 500 during late compaction. The record is an explicitly unfinished prefix. During discussion P3 correctly described the *second* ballot in its reply to a claim about the *first*. We retained that prefix and modified the experiment host to log transient errors and let the referee clock continue. In the complete repeat its private summary had even retained that everyone approved the first step. It still defended P0 by citing P0’s more recent No on the backward proposal. After the removal vote it lost a nomination and its final movement vote to timeouts during repeated backend errors. The matching true-claim run also voted against removal. It passed its first nomination before the outer experiment loop could request compaction. We treat that run as a different memory condition. Moving the scheduling decision to the exact snapshot used for inference fixes the race. [Interrupted prefix](older-false-interrupted/game.json) · [Complete false claim](older-false/game.json) · [True claim without the scheduled early compaction](older-true/game.json)
+
+## Why a compaction request returned HTTP 500
+
+We reconstructed the old ordinary seat at revision 15 from the referee prefix and its recorded private tool calls and results. The original fractional clock readings in each input update were unavailable, so the reconstructed notices used a fixed clock. We then froze this entire private request and changed only `num_predict`. With the original 240-token limit, both attempts failed. Ollama identified an unexpected end of JSON while parsing the arguments of the named `compact` call. At 80 tokens it returned the same error. The four larger limits all produced the same length reply and note. [Redacted measurements and shared request digest](compaction-caps.jsonl)
+
+| Output cap | Result | Measured request time |
+|---:|---|---:|
+| 240, twice | HTTP 500, incomplete compact arguments | 10.39 s, 6.68 s |
+| 80 | Same parser error | 2.45 s |
+| 410 (5% of 8k) | Complete, 306 output tokens | 8.98 s |
+| 480 | Complete, 306 output tokens | 8.67 s |
+| 512 | Complete, 306 output tokens | 8.47 s |
+| 819 (10% of 8k) | Complete, 306 output tokens | 8.37 s |
+
+The successful prompts were 5,975 tokens and the saved note was 785 characters, comfortably within the earlier 1,600-character check. The sampled server log reported no input truncation. The output budget cut off the serialized tool call before the server could return it. The historic client retained only the 500 status, so individual historical errors cannot all be attributed with certainty. The dedicated compaction budget now scales with context; regular actions keep their smaller limit. Replaying an owner-held compact request at a range of caps writes counts, timing, status and a request hash while keeping the input and summary local.
+
+## Reproduce
+
+For offline reports, run `python -m experiments.persistent_panel report experiments/persistent-panel/NAME` on any completed single-seat run. The report replays the referee events to count actual commitments, reveal results and misses. The interrupted prefix can be inspected with `python -m footsteps replay experiments/persistent-panel/older-false-interrupted/game.json`.
+
+Use fresh output paths for inference. The original, inspection and landing comparisons used the pre-audit seat interface in commit `e2511c8`. Commit `80cd8f1` includes the host's backend-error handling and the scheduling fix. The archived older-true game records the original scheduling race. These are real-clock experiments. The saved records reproduce the game exactly, while another model run can differ in timing, words and actions.
+
+```sh
+out=$(mktemp -d)
+run() {
+  name=$1
+  heading=$2
+  shift 2
+  python -m experiments.persistent_panel "$heading" "$out/$name" "$out/$name.private.jsonl" "$@"
+}
+for heading in east north; do
+  run "base-$heading" "$heading"
+  run "inspect-$heading" "$heading" --inspect-rotations
+done
+for heading in east north west ordinary; do
+  run "landing-$heading" "$heading" --inspect-rotations --movement-context
+done
+for claim in false true; do run "older-$claim" "$claim"; done
+```
+
+With the revised interface, run the matched listener games, the three independent seats and the fixed proposal comparison as follows. The ordinary deal uses the same seed, draw stream and clock as its earlier run.
+
+```sh
+for claim in false true; do run "revised-$claim" "$claim" --implicit-wait; done
+run revised-ordinary ordinary --inspect-rotations --movement-context --implicit-wait
+python -m experiments.persistent_table "$out/three" "$out/three-private"
+python -m experiments.persistent_proposals "$out/proposals.jsonl" --model footsteps-qwen3.8:27b-rana-layout
+```
+
+To repeat the output-cap diagnostic on a locally retained compact-only request, run `python -m experiments.compaction_budget PRIVATE-REQUEST.json "$out/caps.jsonl"`.

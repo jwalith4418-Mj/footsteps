@@ -93,6 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("output", type=Path)
     parser.add_argument("private", type=Path, nargs="?")
     parser.add_argument("--seed", type=int, default=9811, help="ordinary solitaire deal")
+    parser.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
     parser.add_argument("--model", default="footsteps-qwen3.8:27b-rana-layout")
     args = parser.parse_args()
     if args.case == "report":
@@ -116,6 +117,7 @@ if __name__ == "__main__":
             Table(setup, Random(1), seconds=30, discussion=15),
             3,
             opponents=lambda host, done: opponents(host, done, args.case == "false", delayed=True),
+            context=args.context,
             session_class=partial(Session, wait_at_notice=args.implicit_wait),
             compact_when=lambda snap: (
                 snap["state"]["turn"] == 1 and snap["state"]["nominator"] == 3
@@ -135,6 +137,7 @@ if __name__ == "__main__":
             if args.case == "ordinary"
             else corridor(args.case),
             0,
+            context=args.context,
             session_class=partial(
                 Session,
                 inspect_rotations=args.inspect_rotations,

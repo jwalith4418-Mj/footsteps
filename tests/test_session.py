@@ -306,3 +306,40 @@ class PersistentSeat(unittest.TestCase):
         self.assertEqual(table.game.stage, "discard")
         with self.assertRaisesRegex(ValueError, "history kind"):
             s.execute("history", {"kind": "vote_move"}, s.tools(), 2)
+
+    def test_truncated_voluntary_compact_reopens_with_proportional_output_allowance(self):
+        from footsteps.ollama import INCOMPLETE_COMPACT, ServiceError
+
+        for context in (4096, 8192):
+            with self.subTest(context=context):
+                s = Session(ProjectedSeat(Table(CROSSING["setup"], Random(1)), 0), context=context)
+
+                def truncated(_port, _path, body, _budget, context=context):
+                    self.assertEqual(
+                        (body["options"]["num_ctx"], body["options"]["num_predict"]), (context, 240)
+                    )
+                    raise ServiceError(500, INCOMPLETE_COMPACT)
+
+                with self.assertRaises(ServiceError):
+                    s.step("fixture", infer=truncated)
+
+                def completed(_port, _path, body, _budget, context=context):
+                    self.assertEqual(body["options"]["num_predict"], context // 10)
+                    self.assertEqual([t["function"]["name"] for t in body["tools"]], ["compact"])
+                    return {
+                        "message": {
+                            "tool_calls": [
+                                {
+                                    "function": {
+                                        "name": "compact",
+                                        "arguments": {"summary": "notes " * 300},
+                                    }
+                                }
+                            ]
+                        }
+                    }
+
+                row = s.step("fixture", infer=completed)
+                self.assertTrue(row["result"]["compacted"])
+                self.assertFalse(s.near_capacity)
+                self.assertEqual(s.summary, "notes " * 300)

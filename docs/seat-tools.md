@@ -44,15 +44,15 @@ The native action client also lets a builder commit directly through Ollama, opt
 
 ## Persistent seat tool conventions
 
-The persistent player receives one function schema for each action available to its seat. Coordinates in state, placement previews and movement updates use named integer `x` and `y` fields. Phase time is shown in whole seconds remaining, rounded down at the observation. A position returned by `get_state()` can supply those same two arguments to a placement or proposal. Checked placements name a second square with `origin_x` and `origin_y`. A held `piece` is a seat-local handle such as `H1`; multiple handles may have the same printed face.
+The persistent player receives one function schema for each action available to its seat. Coordinates in state, placement previews and movement updates use named integer `x` and `y` fields. Phase time is shown in whole seconds remaining, rounded down at the observation. A position returned by `get_state()` can supply those same two arguments to a placement or proposal. Checked placements name a second square with `origin_x` and `origin_y`. A held `piece` is a seat-local handle such as `H1`. Multiple handles may have the same printed face.
 
 | Tools | How the values fit together |
 |---|---|
 | `get_state()`, `get_role()` | Read authoritative facts for this seat. Held pieces show their printed face, current rotation, entrances and exits. Board tiles show the face after rotation. State supplies build squares, possible steps or nomination targets when the seat can use them. |
-| `inspect_rotations_at`, `orient_tile`, `preview_placement`, `place_tile` | Inspection compares one held piece at one candidate square. Its rows use the same `rotation` value accepted by `orient_tile`. Only orienting changes the copy in hand. Both preview and placement take that handle and square; placement commits its current rotation. The marker stays on its original square throughout. |
+| `inspect_rotations_at`, `orient_tile`, `preview_placement`, `place_tile` | Inspection compares one held piece at one candidate square. Its rows use the same `rotation` value accepted by `orient_tile`. Only orienting changes the copy in hand. Both preview and placement take that handle and square. Placement commits its current rotation. The marker stays on its original square throughout. |
 | `return_tile` | Return the named held copy to the store. Its handle leaves this seat's hand. |
 | `propose_step`, `stay`, `vote_move` | A step takes one destination. Stay takes no arguments. On a step proposal, `approve: true` votes to land on that square and `false` votes to stay. |
-| `nominate`, `pass_nomination`, `vote_removal` | Nominate takes another living seat's integer ID. Pass takes no arguments. The removal ballot identifies the nominee; `approve: true` votes to remove that player. Ballots remain private until the group reveal. |
+| `nominate`, `pass_nomination`, `vote_removal` | Nominate takes another living seat's integer ID. Pass takes no arguments. The removal ballot identifies the nominee. `approve: true` votes to remove that player. Ballots remain private until the group reveal. |
 | `speak`, `history` | Speech is public and attributed. History pages distinguish a speaker's claim from a revealed ballot. Use `{"kind":"move_vote","turn":1,"voter":0}` to check P0's first-turn movement ballot when a later vote is also visible. A revealed null ballot denotes a missed vote. |
 | `compact`, `wait` | Compact takes short player-authored notes. Wait normally takes no arguments and starts at the visible update the player just saw. An intervening remark wakes it immediately. An optional `after_cursor` names an earlier visible-state update. History pagination uses entry IDs instead. |
 

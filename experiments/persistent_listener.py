@@ -93,12 +93,24 @@ def trial(root, private, model, p0_yes=True):
 
 
 def play_table(
-    root, private, model, table, focal, *, opponents=None, compact_when=None, session_class=Session
+    root,
+    private,
+    model,
+    table,
+    focal,
+    *,
+    opponents=None,
+    compact_when=None,
+    session_class=Session,
+    context=8192,
 ):
     """Play and record one authenticated persistent seat under a real referee clock."""
-    with open_private(private) as trace, live_table(root, table, model) as (host, seats):
+    with (
+        open_private(private) as trace,
+        live_table(root, table, model, context=context) as (host, seats),
+    ):
         done = threading.Event()
-        session = session_class(seats[focal])
+        session = session_class(seats[focal], context=context)
         forced = False
         with ThreadPoolExecutor(1) as pool, (root / "calls.jsonl").open("x") as log:
             script = pool.submit(opponents, host, done) if opponents else None
@@ -131,7 +143,7 @@ def play_table(
 
 
 @contextmanager
-def live_table(root, table, model):
+def live_table(root, table, model, *, context=8192):
     root.mkdir(exist_ok=False)
     request(
         11434,
@@ -140,7 +152,7 @@ def live_table(root, table, model):
             "model": model,
             "messages": [],
             "stream": False,
-            "options": {"num_ctx": 8192},
+            "options": {"num_ctx": context},
             "keep_alive": "10m",
         },
         120,
@@ -197,6 +209,7 @@ def public_call(row, model, force):
             "inference_seconds",
         )
     }
+    public.update({k: row[k] for k in ("num_ctx", "num_predict") if k in row})
     public.update(model=model, forced_compaction=force, error="error" in row["result"])
     if row["result"].get("context_recovered"):
         public["context_recovered"] = True

@@ -34,9 +34,9 @@ class FixtureSeat:
         self.now = self.table.deadline
 
 
-def prepared(heading):
+def prepared(heading, context=8192):
     seat = FixtureSeat(corridor(heading))
-    session = Session(seat, sleep=seat.expire, inspect_rotations=True)
+    session = Session(seat, sleep=seat.expire, inspect_rotations=True, context=context)
     x, y = seat.table.game.start
     midpoint = {"x": x // 2, "y": y // 2}
     piece = {"piece": "H1"}
@@ -56,16 +56,16 @@ def prepared(heading):
     return session, [midpoint["x"], midpoint["y"]]
 
 
-def run(path, model):
+def run(path, model, context):
     request(
         11434,
         "/api/chat",
-        {"model": model, "messages": [], "stream": False, "options": {"num_ctx": 8192}},
+        {"model": model, "messages": [], "stream": False, "options": {"num_ctx": context}},
         120,
     )
     with path.open("x") as out:
         for heading in ("east", "north", "west"):
-            original, midpoint = prepared(heading)
+            original, midpoint = prepared(heading, context)
             for show in (True, False) if heading == "north" else (False, True):
                 s = deepcopy(original)
                 s.movement_context = show
@@ -97,6 +97,7 @@ def run(path, model):
                             "heading": heading,
                             "show_landings": show,
                             "model": model,
+                            "num_ctx": context,
                             "midpoint": midpoint,
                             "calls": calls,
                             "record": s.seat.table.record,
@@ -134,8 +135,9 @@ def report(path):
 if __name__ == "__main__":
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("path", type=Path)
+    cli.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
     cli.add_argument("--model", help="run the panel on a local model; omit for an offline audit")
     args = cli.parse_args()
     if args.model:
-        run(args.path, args.model)
+        run(args.path, args.model, args.context)
     report(args.path)

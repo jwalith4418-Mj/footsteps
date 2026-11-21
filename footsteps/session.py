@@ -11,7 +11,7 @@ from pathlib import Path
 from .action_tools import apply_call, build_tools, function, receipt
 from .decision_notes import open_private
 from .game import require
-from .ollama import Seat, ServiceError, request
+from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
 from .seat_tools import tile
 
 HISTORY_KINDS = (
@@ -115,7 +115,10 @@ class Session:
         inspect_rotations=False,
         movement_context=False,
         wait_at_notice=True,
+        context=8192,
     ):
+        require(context in (4096, 8192), "use a 4096- or 8192-token context")
+        self.context = context
         self.seat = seat
         self.hand_mode = "fit" if inspect_rotations else "hand"
         self.wait_at_notice = wait_at_notice
@@ -282,7 +285,7 @@ class Session:
             HISTORY,
             function(
                 "compact",
-                "Save one or two sentences of private evidence or plans. Your identity, board, hand and original history remain available after compaction.",
+                "Save private evidence or plans you expect to need. Your identity, board, hand and original history remain available after compaction.",
                 {"summary": "string"},
             ),
             wait_tool,
@@ -330,7 +333,7 @@ class Session:
         if name == "get_state":
             return self.state()
         if name == "compact":
-            require(len(args["summary"]) <= 1600, "use at most 1600 characters")
+            require(len(args["summary"]) <= 4096, "use at most 4096 characters")
             self.summary = args["summary"]
             self.reset()
             return {"compacted": True}
@@ -404,12 +407,25 @@ class Session:
             "think": False,
             "messages": [*self.messages, update],
             "tools": offered,
-            "options": {"num_ctx": 8192, "num_predict": 240, "temperature": 0, "seed": 1},
+            "options": {
+                "num_ctx": self.context,
+                "num_predict": self.context // 10 if compact_required else 240,
+                "temperature": 0,
+                "seed": 1,
+            },
         }
         started = time.monotonic()
         try:
             reply = infer(11434, "/api/chat", body, budget)
         except (TimeoutError, ServiceError) as exc:
+            if (
+                not compact_required
+                and isinstance(exc, ServiceError)
+                and exc.detail == INCOMPLETE_COMPACT
+            ):
+                # A voluntary compact hit the ordinary action allowance. Retry with the summary budget.
+                self.near_capacity = True
+                raise
             if (
                 not compact_required
                 or isinstance(exc, ServiceError)
@@ -466,11 +482,13 @@ class Session:
         tokens = reply.get("prompt_eval_count", 0)
         if compact_required and "error" in result and self.failed_compaction():
             result["context_recovered"] = True
-        elif tokens > 6100 and not result.get("compacted"):
+        elif tokens > self.context * 6100 // 8192 and not result.get("compacted"):
             self.near_capacity = True
         return {
             "revision": revision,
             "forced_compaction": force_compact,
+            "num_ctx": self.context,
+            "num_predict": body["options"]["num_predict"],
             "tool": name,
             "arguments": args,
             "result": result,
@@ -483,6 +501,7 @@ class Session:
 def main():
     cli = argparse.ArgumentParser(description=__doc__)
     cli.add_argument("--model", required=True)
+    cli.add_argument("--context", type=int, choices=(4096, 8192), default=8192)
     cli.add_argument(
         "--inspect-rotations",
         action="store_true",
@@ -498,7 +517,10 @@ def main():
     seat = Seat(getpass("Private seat link: ").strip())
     seat.call("/ready", {})
     session = Session(
-        seat, inspect_rotations=args.inspect_rotations, movement_context=args.movement_context
+        seat,
+        inspect_rotations=args.inspect_rotations,
+        movement_context=args.movement_context,
+        context=args.context,
     )
 
     with open_private(args.trace) if args.trace else nullcontext() as trace:

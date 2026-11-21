@@ -28,10 +28,16 @@ INDEX_INSTRUCTIONS = """Each field of options is a list of legal values.
 Return the ZERO-BASED INDEX of your choice for each field, even for numeric values."""
 
 
+INCOMPLETE_COMPACT = (
+    'llama-server returned invalid tool call arguments for "compact": unexpected end of JSON input'
+)
+
+
 class ServiceError(OSError):
     def __init__(self, status, detail=None):
         super().__init__(f"HTTP {status}: {detail}" if detail else f"HTTP {status}")
         self.status = status
+        self.detail = detail
 
 
 def request(port, path, body, timeout, token=None):
@@ -48,9 +54,16 @@ def request(port, path, body, timeout, token=None):
         response = conn.getresponse()
         if response.status != 200:
             detail = None
-            if token and response.status in (400, 409):
+            if (
+                token
+                and response.status in (400, 409)
+                or path == "/api/chat"
+                and response.status == 500
+            ):
                 try:
-                    detail = json.loads(response.read(8192)).get("error")
+                    message = json.loads(response.read(8192)).get("error")
+                    if token or message == INCOMPLETE_COMPACT:
+                        detail = message
                 except (ValueError, AttributeError):
                     pass
             raise ServiceError(response.status, detail)
