@@ -494,6 +494,17 @@ class Session:
             "forced_compaction": force_compact,
             "num_ctx": self.context,
             "num_predict": body["options"]["num_predict"],
+            "opportunity": {
+                key: notice[key]
+                for key in (
+                    "turn",
+                    "stage",
+                    "phase",
+                    "can_speak",
+                    "owe_action",
+                    "seconds_left_in_phase",
+                )
+            },
             "tool": name,
             "tool_offered": any(t["function"]["name"] == name for t in offered),
             "arguments": args,

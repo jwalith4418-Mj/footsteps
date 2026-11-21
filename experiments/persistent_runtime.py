@@ -145,7 +145,13 @@ def public_call(row, model, force):
     public.update(
         {
             k: row[k]
-            for k in ("num_ctx", "num_predict", "prefill_seconds", "generation_seconds")
+            for k in (
+                "num_ctx",
+                "num_predict",
+                "prefill_seconds",
+                "generation_seconds",
+                "opportunity",
+            )
             if k in row
         }
     )
