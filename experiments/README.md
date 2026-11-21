@@ -82,3 +82,5 @@ The [persistent runner panel](persistent-panel/README.md) compares build inspect
 The [complete-game timing study](game-efficiency/README.md) separates time spent choosing from time waiting for the GPU, compares two seat policies, and replays an illustrative per-player reserve against the observed deadlines.
 
 The [paired RANA speaker trial](rana-speakers/README.md) gives the base and abliterated 27B models identical removal discussions, a separate private role check, and a matched pair of complete games.
+
+The [early-ballot timing study](early-ballot/README.md) compares discussion clocks on a matched deal and checks whether vote prompts delivered the last speaker's remark.
