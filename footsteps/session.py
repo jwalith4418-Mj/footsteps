@@ -495,6 +495,7 @@ class Session:
             "num_ctx": self.context,
             "num_predict": body["options"]["num_predict"],
             "tool": name,
+            "tool_offered": any(t["function"]["name"] == name for t in offered),
             "arguments": args,
             "result": result,
             **{

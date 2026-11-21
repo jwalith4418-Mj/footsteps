@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from time import monotonic
 
-from experiments.persistent_listener import resident_model
 from experiments.persistent_proposals import prepared
+from experiments.persistent_runtime import resident_model
 from footsteps.ollama import ServiceError, request
 from footsteps.session import CONTEXT_WINDOWS
 
