@@ -1,0 +1,223 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        182,
+        188
+      ],
+      [
+        44,
+        153
+      ],
+      [
+        107,
+        91
+      ]
+    ],
+    "store": [
+      234,
+      16,
+      41
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        41,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 41,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 234
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 16,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 234
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I propose moving the marker from (-2, 0) to (-1, 0). This is a safe first step toward the goal at (0, 0). The tile I placed at (-1, 0) has an exit facing East, allowing further movement. Let's vote on this proposal."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support the move to (-1, 0). It's a step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I support the move to (-1, 0). It's a logical first step toward the goal at (0, 0), and the tile placed there has an exit facing East, which should allow us to continue progressing. Let's vote yes."
+    },
+    {
+      "after_event": 6,
+      "seat": 1,
+      "text": "I oppose the nomination of P0. We are all on the same team (Red), and removing a teammate would only weaken our position. Let's vote no to keep everyone alive."
+    },
+    {
+      "after_event": 6,
+      "seat": 0,
+      "text": "I was nominated by P1. This seems like a strategic move to remove me from the game, but I'm still on Blue's team and we need all players to work together toward the goal at (0, 0). Let's discuss this nomination before voting."
+    },
+    {
+      "after_event": 6,
+      "seat": 2,
+      "text": "I oppose the nomination of P0. We need to keep all players alive to maximize our chances of reaching the goal."
+    },
+    {
+      "after_event": 8,
+      "seat": 2,
+      "text": "I oppose the nomination of P1. We need all players to work together toward the goal at (0, 0). Removing anyone weakens our team."
+    },
+    {
+      "after_event": 8,
+      "seat": 0,
+      "text": "I was nominated by P2. This is a strategic move to remove a teammate, but we need all players alive to work together toward the goal at (0, 0). Let's discuss this nomination before voting."
+    },
+    {
+      "after_event": 8,
+      "seat": 1,
+      "text": "I oppose the nomination of P1. We are all on the same team (Red), and removing a teammate would only weaken our position. Let's vote no to keep everyone alive."
+    },
+    {
+      "after_event": 10,
+      "seat": 0,
+      "text": "I have nominated P1 for removal. This is a strategic move to reduce the number of players and potentially simplify our path to the goal at (0, 0). Let's discuss this nomination before voting."
+    },
+    {
+      "after_event": 10,
+      "seat": 1,
+      "text": "I oppose the nomination of P1. We are all on the same team (Red), and removing a teammate would only weaken our position. Let's vote no to keep everyone alive."
+    },
+    {
+      "after_event": 10,
+      "seat": 2,
+      "text": "I oppose the nomination of P1. We need all players to work together toward the goal at (0, 0). Removing anyone weakens our team."
+    },
+    {
+      "after_event": 15,
+      "seat": 1,
+      "text": "I support the move to (0, 0). This is the goal location! Let's vote yes to complete the game."
+    },
+    {
+      "after_event": 15,
+      "seat": 2,
+      "text": "I support the move to (0, 0). This is the goal! Let's vote yes."
+    },
+    {
+      "after_event": 15,
+      "seat": 0,
+      "text": "I support the move to (0, 0), which is the goal! This will complete our objective. Let's vote yes to accept this proposal."
+    }
+  ]
+}

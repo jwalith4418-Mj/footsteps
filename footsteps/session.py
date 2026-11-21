@@ -8,7 +8,7 @@ from getpass import getpass
 from http.client import HTTPException
 from pathlib import Path
 
-from .action_tools import PREPARATIONS, apply_call, build_tools, function, receipt
+from .action_tools import BALLOT_TOOLS, PREPARATIONS, apply_call, build_tools, function, receipt
 from .decision_notes import open_private
 from .game import require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
@@ -106,6 +106,10 @@ HISTORY = function(
 )
 HISTORY["function"]["parameters"]["required"] = []
 HISTORY["function"]["parameters"]["properties"]["kind"]["enum"] = list(HISTORY_KINDS)
+
+
+class UnavailableTool(ValueError):
+    """The reply named a function outside the schema sent for that inference."""
 
 
 class Session:
@@ -319,11 +323,20 @@ class Session:
             self.refresh()
         return self.opportunity()
 
+    def ballot_guidance(self):
+        s = self.snap
+        if s["phase"] == "discussion":
+            action = "Speak now or wait() to listen." if s["can_speak"] else "Use wait() to listen."
+            return f"Voting has not opened. {action}"
+        if s["choices"] is not None:
+            tool = BALLOT_TOOLS[s["state"]["stage"]]
+            return f"Your ballot is due now. Cast it with {tool}."
+        return "Use wait() for a visible change."
+
     def execute(self, name, args, offered, revision):
         spec = next((t["function"] for t in offered if t["function"]["name"] == name), None)
         if spec is None:
-            names = ", ".join(t["function"]["name"] for t in offered)
-            raise ValueError("Choose one of the currently offered functions: " + names)
+            raise UnavailableTool("That function was not offered for this request.")
         require(isinstance(args, dict), "expected a function argument object")
         schema = spec["parameters"]
         types = {"integer": int, "boolean": bool, "string": str}
@@ -342,7 +355,21 @@ class Session:
         notice_cursor = self.cursor
         self.refresh()
         if name == "history":
-            return history_page(self.snap["history"], **args)
+            page = history_page(self.snap["history"], **args)
+            state = self.snap["state"]
+            stage = state["stage"]
+            if (
+                stage in BALLOT_TOOLS
+                and self.snap["phase"] in ("discussion", "decision")
+                and (args.get("kind") == stage or ("kind" not in args and "voter" in args))
+                and args.get("turn", state["turn"]) == state["turn"]
+                and "before" not in args
+            ):
+                page["pending_ballot"] = (
+                    "The current tally enters history only when ballots are revealed. "
+                    + self.ballot_guidance()
+                )
+            return page
         if name == "get_role":
             return self.role()
         if name == "get_state":
@@ -489,6 +516,23 @@ class Session:
                 raise
             self.refresh()
             result = {"error": str(exc), "current": self.opportunity()}
+            if isinstance(exc, UnavailableTool):
+                # A reply can arrive after a remark, ballot opening or change of turn.
+                # Report the tools for the same snapshot as current, never execute the old call.
+                available = offered if compact_required else self.tools()
+                result["available_tools"] = (
+                    [t["function"]["name"] for t in available]
+                    if self.snap["phase"] != "over"
+                    and self.snap["seat"] in self.snap["state"]["alive"]
+                    else []
+                )
+                if (
+                    name.startswith("vote_")
+                    and self.snap["state"]["stage"] in BALLOT_TOOLS
+                    and self.snap["phase"] in ("discussion", "decision")
+                    and not compact_required
+                ):
+                    result["pending_ballot"] = self.ballot_guidance()
         if name != "compact" or "error" in result:
             if name is None or not isinstance(args, dict):
                 self.messages.append({"role": "user", "content": json.dumps(result)})

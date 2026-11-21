@@ -86,3 +86,5 @@ The [paired RANA speaker trial](rana-speakers/README.md) gives the base and abli
 The [early-ballot timing study](early-ballot/README.md) compares discussion clocks on a matched deal and checks whether vote prompts delivered the last speaker's remark.
 
 The [required-choice wait trial](required-wait/README.md) follows two previously missed choices and a fresh same-deal game after making a plain wait return immediately when the player owes an action.
+
+The [ballot polling study](ballot-polling/README.md) compares reveal guidance and waiting tool names on frozen positions, then follows the same small deal with a fourth seat.

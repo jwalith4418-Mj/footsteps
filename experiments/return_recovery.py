@@ -16,9 +16,13 @@ class ErrorExperimentSession(ControlSession):
     name_available = False
 
     def execute(self, name, args, offered, revision):
-        if self.name_available:
-            return Session.execute(self, name, args, offered, revision)
-        return super().execute(name, args, offered, revision)
+        if not self.name_available:
+            return super().execute(name, args, offered, revision)
+        if not any(t["function"]["name"] == name for t in offered):
+            # Preserve the original error text for this frozen experiment.
+            names = ", ".join(t["function"]["name"] for t in offered)
+            raise ValueError("Choose one of the currently offered functions: " + names)
+        return Session.execute(self, name, args, offered, revision)
 
 
 def prepared(depth, named):
