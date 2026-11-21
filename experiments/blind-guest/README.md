@@ -14,6 +14,8 @@ P2 alone backed that accusation at event 34. At event 51 the other four seats, i
 
 Four guest decision notes originally lacked the record identifier. The local viewer notes were recovered by matching each original private request, revision, seat, turn, command and observation, then checking all 114 notes against the replay. The runner now sets the identifier before dispatching every decision, with an end-to-end regression for guest build notes. The public events and ballots needed no repair.
 
+For a guest with the current persistent model seats and a live referee clock, use the [persistent guest terminal](../open-tables/README.md#a-blind-guest-with-persistent-opponents).
+
 ## Run another blind seat
 
 Start a host with a fresh empty exchange directory and separate destinations for the postgame record and private notes. Provide the guest only the copied rulebook and the terminal in the exchange directory. A new game chooses a fresh seed; add `--seed 1244867160 --start-origin` to reconstruct this deal. Decisions still depend on the participants. The virtual clock advances through referee phases when a decision is submitted. This playtest does not measure workstation timeouts.

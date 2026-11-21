@@ -77,7 +77,16 @@ def play_seat(seat, model, queue, log, trace, context, request_budget, session_c
 
 
 def play(
-    root, private, model, context, seconds, discussion_seconds, *, table=None, session_class=Session
+    root,
+    private,
+    model,
+    context,
+    seconds,
+    discussion_seconds,
+    *,
+    table=None,
+    session_class=Session,
+    guest=None,
 ):
     private.mkdir(exist_ok=False)
     if table is None:
@@ -104,6 +113,9 @@ def play(
                 (root / f"seat-{i}.jsonl").open("x") as log,
                 open_private(private / f"seat-{i}.jsonl") as trace,
             ):
+                if guest is not None and i == guest.seat:
+                    guest.play(seats[i], trace)
+                    return
                 play_seat(seats[i], model, queue, log, trace, context, table.seconds, session_class)
 
         with ThreadPoolExecutor(len(seats)) as clients:
@@ -116,6 +128,8 @@ def play(
             "early_ballot": table.early_ballot,
             "play_seconds": round(monotonic() - start, 2),
         }
+        if guest is not None:
+            timing["guest_seat"] = guest.seat
         timing["resident"] = resident_model(model)
         (root / "timing.json").write_text(json.dumps(timing, indent=2) + "\n")
 

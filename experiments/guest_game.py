@@ -25,7 +25,7 @@ class Guest:
         self.sequence = 0
         self.history_count = 0
 
-    def ask(self, kind, snap):
+    def ask(self, kind, snap, *, timeout=None):
         self.sequence += 1
         state = snap["state"]
         packet = {
@@ -37,7 +37,6 @@ class Guest:
             "alive": state["alive"],
             "marker": state["marker"],
         }
-        self.history_count = len(snap["history"])
         if kind == "debrief":
             packet["instructions"] = (
                 "Play has ended. Write your pre-reveal observations and seat-by-seat inferences in observation."
@@ -64,13 +63,20 @@ class Guest:
                 packet["instructions"] = (
                     "Acknowledge with a private observation. In this table's trial only the nominator may speak before an elimination ballot. Movement has no discussion. Hand triples show printed face, entrances, exits. Board faces already include rotation."
                 )
+        if timeout is not None:
+            packet["seconds_available"] = round(timeout, 1)
         path = self.root / f"{self.sequence:04}.request.json"
         tmp = path.with_suffix(".tmp")
         tmp.write_text(json.dumps(packet, separators=(",", ":")))
         tmp.replace(path)
         reply = self.root / f"{self.sequence:04}.reply.json"
+        deadline = None if timeout is None else time.monotonic() + timeout
         while not reply.exists():
+            if deadline is not None and time.monotonic() >= deadline:
+                (self.root / f"{self.sequence:04}.expired").touch()
+                return None
             time.sleep(0.15)
+        self.history_count = len(snap["history"])
         return json.loads(reply.read_text())
 
     def choose(self, snap, sink):
@@ -79,10 +85,11 @@ class Guest:
         save_note(sink, snap, "Blinded guest", choice, reply["observation"], [])
         return choice
 
-    def finish(self, snap):
-        response = self.ask("debrief", snap)
-        with open_private(self.debrief_path) as out:
-            out.write(response["observation"] + "\n")
+    def finish(self, snap, *, timeout=None):
+        response = self.ask("debrief", snap, timeout=timeout)
+        if response is not None:
+            with open_private(self.debrief_path) as out:
+                out.write(response["observation"] + "\n")
         (self.root / "finished").touch()
 
 
