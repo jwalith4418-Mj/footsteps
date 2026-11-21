@@ -96,3 +96,5 @@ The [private pregame analysis study](pregame-analysis/README.md) asks two local 
 The [open social tables](open-tables/README.md) follow two fresh deals with the live movement clock, discussion and independent persistent seats.
 
 The [proposer and voter comparison](exit-interest/README.md) crosses private team assignments on two actual EXIT proposals and a nonterminal step into a permanent dead end.
+
+The [native thinking-budget study](ballot-thinking/README.md) measures whether time spent thinking changes an actual movement ballot and preserves full local traces in an owner-only board viewer.
