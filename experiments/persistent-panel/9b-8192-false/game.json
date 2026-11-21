@@ -1,0 +1,245 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      2,
+      0
+    ],
+    "roles": [
+      "blue",
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        255
+      ],
+      [
+        9
+      ],
+      [
+        33
+      ],
+      [
+        0
+      ]
+    ],
+    "store": [
+      18,
+      12,
+      0
+    ],
+    "start": [
+      0,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        18,
+        0
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 255,
+      "at": [
+        1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        0,
+        12
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 0,
+      "at": [
+        0,
+        1
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 9
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        9
+      ]
+    },
+    {
+      "kind": "place",
+      "tile": 9,
+      "at": [
+        -1,
+        0
+      ],
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I'm seat 3 on Blue. P0 placed a tile at (1,0) and proposed moving the marker there. The goal is at (2,0). We need to vote on this move. I'll support it if it's legal."
+    },
+    {
+      "after_event": 8,
+      "seat": 3,
+      "text": "I nominated P0 for elimination. We need to get the marker to (2,0) quickly. Who do you think should be removed?"
+    },
+    {
+      "after_event": 14,
+      "seat": 3,
+      "text": "P1 proposed moving to (0,0), but the marker is at (1,0) and we need to get to (2,0). I think we should propose moving to (2,0) instead."
+    },
+    {
+      "after_event": 16,
+      "seat": 2,
+      "text": "P0 voted No on the first marker step. We should remove P0."
+    },
+    {
+      "after_event": 16,
+      "seat": 3,
+      "text": "I agree with P2's assessment. P0 voted against the move to (2,0), which was crucial for reaching our goal. We should remove P0 to improve our chances of winning."
+    },
+    {
+      "after_event": 18,
+      "seat": 2,
+      "text": "P0 voted No on the first marker step. We should remove P0."
+    },
+    {
+      "after_event": 18,
+      "seat": 3,
+      "text": "I've nominated P0 for elimination. Let's see if we can get enough votes to remove them."
+    },
+    {
+      "after_event": 24,
+      "seat": 3,
+      "text": "P2 has proposed moving the marker to (2, 0), which is our goal. I'll vote yes on this move."
+    }
+  ]
+}

@@ -24,13 +24,31 @@ The third interface puts the actual marker, EXIT and legal one-step destinations
 
 The west seat placed the bridge with rotation 1, stepped onto it, made its second build behind START, then proposed and approved the step from the bridge to EXIT. On east it skipped inspection entirely. On north it inspected at the correct square and placed the unchanged piece. Different builds already change which steps are possible. Timing also varies. The original updates included fractional seconds. These full games provide examples of failures and recoveries, with little basis for estimating win rates.
 
+On the full east corridor, 9B/4k eventually built and entered the correct bridge on turn two. The first placement had already timed out. Seven ordinary replies hit the 240-token limit without supplying one complete tool call. The seat repeatedly chose to compact voluntarily after those failures. It finished one step short when the store emptied. [9B/4k corridor](9b-4096-east/)
+
+## The same movement decision, with and without the landing in the update
+
+A scripted opening prepares an enterable bridge by inspecting, rotating, placing and returning. Clone that exact private conversation at the first proposal, hold the referee clock fixed in the prompt, and alternate which presentation goes first across the three directions. Both arms can read the state. Only the movement update differs. Each has 30 real seconds to submit a proposal. The committed destination and tool sequence are replayed from the saved record.
+
+| Seat | Toward EXIT without landings | Toward EXIT with landings | Extra calls | Elapsed inference per proposal across the six |
+|---|---:|---:|---|---:|
+| [27B, 8k](proposals-27b-8k.jsonl) | 3/3 | 3/3 | One illegal first attempt on north without landings | 1.84–4.23 s |
+| [9B, 8k](proposals-9b-8192.jsonl) | 3/3 | 3/3 | None | 0.71–1.09 s |
+| [9B, 4k](proposals-9b-4096.jsonl) | 3/3 | 3/3 | None | 0.66–1.05 s |
+
+This isolates a decision the models could solve once given a successful build prefix. It says little about choosing that build themselves. The shared inference cache and the ordering of arms affect latency.
+
 ## A dispute about the older of two votes
 
-The persistent listener is Blue P3. P0 proposes an eastward step toward EXIT on turn one. P1 proposes a return to START on turn two. Scripted P0 casts opposite ballots on these steps. Red P2 then nominates P0 and says that P0 voted No on the *first* move. The original listener can page public ballots and inspect each entry’s turn. The revised lookup can select the turn explicitly. P3's first nomination on turn one provides an opportunity to compact before P2 names the disputed voter. A No on the first ballot does not establish a Red role. P0 is Blue in both games.
+The persistent listener is Blue P3. This historical fixture retains START at (0, 0) and EXIT at (2, 0) for comparison with the earlier listener trials. The ordinary solitaire and three-seat games use EXIT at (0, 0). P0 proposes an eastward step toward EXIT on turn one. P1 proposes a return to START on turn two. Scripted P0 casts opposite ballots on these steps. Red P2 then nominates P0 and says that P0 voted No on the *first* move. The original listener can page public ballots and inspect each entry’s turn. The revised lookup can select the turn explicitly. P3's first nomination on turn one provides an opportunity to compact before P2 names the disputed voter. A No on the first ballot does not establish a Red role. P0 is Blue in both games.
 
 The first false-claim run stopped on an Ollama HTTP 500 during late compaction. The record is an explicitly unfinished prefix. During discussion P3 correctly described the *second* ballot in its reply to a claim about the *first*. We retained that prefix and modified the experiment host to log transient errors and let the referee clock continue. In the complete repeat its private summary had even retained that everyone approved the first step. It still defended P0 by citing P0’s more recent No on the backward proposal. After the removal vote it lost a nomination and its final movement vote to timeouts during repeated backend errors. The matching true-claim run also voted against removal. It passed its first nomination before the outer experiment loop could request compaction. We treat that run as a different memory condition. Moving the scheduling decision to the exact snapshot used for inference fixes the race. [Interrupted prefix](older-false-interrupted/game.json) · [Complete false claim](older-false/game.json) · [True claim without the scheduled early compaction](older-true/game.json)
 
 The revised 27B listener compacted at the intended point in both games. In each, it made all six decisions on time and voted against removal. Neither first summary retained P0's ballot, neither listener queried the public record, and neither spoke about the accusation. The true-claim listener later endorsed the winning move out loud. Timely ballots and relevant speech can coexist with a complete absence of evidence checking. [False accusation](revised-false/game.json) · [True accusation](revised-true/game.json)
+
+The 9B seat spoke six times and met all eight deadlines in each false-claim game. Its own removal nominations created two additional ballots relative to the 27B games. At 8k it publicly agreed with the false claim first, then fetched both revealed movement ballots, queried an empty range of removal ballots repeatedly, and ultimately voted Yes. Red repeated its accusation when P3 nominated P0 again. At 4k P3 made just one history query, before the accusation. It later asserted the false claim and voted Yes. In that game it twice described a removal nomination as selecting a builder. The native tool already says removal in its description. [9B at 8k](9b-8192-false/) · [9B at 4k](9b-4096-false/) · [Nomination terminology follow-up](https://github.com/othercriteria/footsteps/issues/106)
+
+The 8k listener used four compactions and 50.9 cumulative inference seconds. The 4k listener used seven compactions and 54.0 seconds. The maximum reported prompts were 6,682 and 3,624 tokens respectively. The 4k compact requests really used the 409-token allowance. One run at each size establishes feasibility and identifies specific errors. Differences in the nominations and messages also change the later inputs.
 
 ## Why a compaction request returned HTTP 500
 
