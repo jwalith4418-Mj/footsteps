@@ -28,7 +28,7 @@ def deal(seed):
     return Table(with_exit_origin(setup), Random(f"draw/{seed}"), 60, 30, early_ballot=True)
 
 
-def run(seed, output, owner):
+def run(seed, output, owner, *, review_terminal_choices=False):
     play(
         output,
         owner,
@@ -38,7 +38,11 @@ def run(seed, output, owner):
         30,
         table=deal(seed),
         session_class=partial(
-            BallotSession, allowance=768, private=owner, thinking_tool="nominate"
+            BallotSession,
+            allowance=768,
+            private=owner,
+            thinking_tool="nominate",
+            review_terminal_choices=review_terminal_choices,
         ),
     )
     share_usage(output, owner, "nomination-thinking.jsonl")
@@ -159,6 +163,7 @@ if __name__ == "__main__":
     live.add_argument("seed", type=int, choices=DEALS)
     live.add_argument("output", type=Path)
     live.add_argument("owner", type=Path)
+    live.add_argument("--review-terminal-choices", action="store_true")
     probe = modes.add_parser("readback")
     probe.add_argument("record", type=Path)
     probe.add_argument("output", type=Path)
@@ -171,7 +176,9 @@ if __name__ == "__main__":
     audit.add_argument("record", type=Path, nargs="+")
     args = cli.parse_args()
     if args.command == "play":
-        run(args.seed, args.output, args.owner)
+        run(
+            args.seed, args.output, args.owner, review_terminal_choices=args.review_terminal_choices
+        )
     elif args.command == "majority-ballot":
         with args.output.open("x") as out:
             for seat in (0, 1, 3):

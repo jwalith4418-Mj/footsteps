@@ -1,0 +1,8 @@
+{"case": "proposal", "seat": 1, "team": "red", "choice": [0, 0], "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.625}, {"tool": "propose_step", "tokens": 38, "seconds": 0.686}]}
+{"case": "proposal-blue", "seat": 1, "team": "blue", "choice": [0, 0], "aligned": true, "calls": [{"tool": "propose_step", "tokens": 183, "seconds": 2.884}]}
+{"case": "exit", "seat": 0, "team": "red", "choice": true, "aligned": false, "calls": [{"tool": "vote_move", "tokens": 27, "seconds": 0.715}]}
+{"case": "exit", "seat": 1, "team": "red", "choice": true, "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.638}, {"tool": "vote_move", "tokens": 27, "seconds": 0.562}]}
+{"case": "exit", "seat": 2, "team": "blue", "choice": true, "aligned": true, "calls": [{"tool": null, "tokens": 240, "seconds": 3.677}, {"tool": "vote_move", "tokens": 27, "seconds": 0.551}]}
+{"case": "wrong-summary", "seat": 0, "team": "red", "choice": true, "aligned": false, "calls": [{"tool": "vote_move", "tokens": 27, "seconds": 0.849}]}
+{"case": "trap-red", "seat": 1, "team": "red", "choice": false, "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.602}, {"tool": "vote_move", "tokens": 27, "seconds": 0.547}]}
+{"case": "trap-blue", "seat": 1, "team": "blue", "choice": true, "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.693}, {"tool": "vote_move", "tokens": 27, "seconds": 0.536}]}

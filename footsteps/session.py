@@ -133,6 +133,7 @@ class Session:
         inspect_rotations=False,
         movement_context=False,
         wait_at_notice=True,
+        review_terminal_choices=False,
         context=8192,
     ):
         require(context in CONTEXT_WINDOWS, f"choose a context size from {CONTEXT_WINDOWS}")
@@ -140,6 +141,8 @@ class Session:
         self.seat = seat
         self.hand_mode = "fit" if inspect_rotations else "hand"
         self.wait_at_notice = wait_at_notice
+        self.review_terminal_choices = review_terminal_choices
+        self.reviewed_revision = None
         self.movement_context = movement_context
         self.sleep = sleep
         self.cursor = 0
@@ -233,22 +236,71 @@ class Session:
             )
         return f"You are P{seat} on {team.title()}. Your only objective is for your team to win. {payoff}"
 
-    def proposal_results(self):
+    def movement_winners(self):
         state = self.snap["state"]
+        if state["stage"] == "move_vote":
+            steps = [state["pending"]]
+        elif state["stage"] == "propose" and self.snap["choices"]:
+            steps = [p for p in self.snap["choices"]["to"] if p is not None]
+        else:
+            return {}
+        landings = [state["marker"], *steps]
+        return {
+            tuple(p): movement_winner(tuple(p), tuple(state["goal"]), state["store_count"])
+            for p in landings
+        }
 
-        def outcome(position):
-            winner = movement_winner(position, state["goal"], state["store_count"])
+    def movement_results(self):
+        state = self.snap["state"]
+        winners = self.movement_winners()
+        if not any(winners.values()):
+            return {}
+        marker = tuple(state["marker"])
+
+        def outcome(winner):
             if winner is None:
                 return "Play continues."
             result = "win" if winner == state["role"] else "lose"
             return f"{winner.title()} wins. You {result}."
 
-        steps = [p for p in self.snap["choices"]["to"] if p is not None]
-        if state["goal"] not in steps and state["store_count"] > 0:
-            return {}
+        if state["stage"] == "move_vote":
+            return {
+                "if_table_votes_yes": outcome(winners[tuple(state["pending"])]),
+                "if_table_votes_no": outcome(winners[marker]),
+            }
         return {
-            "if_stay_or_step_rejected": outcome(state["marker"]),
-            "if_step_approved": [{**xy(p), "result": outcome(p)} for p in steps],
+            "if_stay_or_step_rejected": outcome(winners[marker]),
+            "if_step_approved": [
+                {**xy(p), "result": outcome(w)} for p, w in winners.items() if p != marker
+            ],
+        }
+
+    def review_movement(self, revision, choice):
+        """One private check of a terminal tradeoff. Repeating the same choice commits it."""
+        winners = self.movement_winners()
+        if not winners:
+            return None
+        state = self.snap["state"]
+        landing = state["marker"]
+        if state["stage"] == "propose":
+            landing = choice["to"] or landing
+        elif choice["vote"]:
+            landing = state["pending"]
+        winner = winners[tuple(landing)]
+        team = state["role"]
+        if winner != team and team in winners.values():
+            reason = f"Another legal landing wins immediately for your team, {team.title()}."
+        elif winner and winner != team and any(w != winner for w in winners.values()):
+            reason = f"This landing wins for {winner.title()}. You are {team.title()} and would lose. Another legal choice avoids that immediate loss."
+        else:
+            return None
+        if self.reviewed_revision == revision:
+            return None
+        self.reviewed_revision = revision
+        return {
+            "submitted": False,
+            "private_review": reason + " Choose again. Repeating this choice confirms it.",
+            **self.movement_results(),
         }
 
     def state(self):
@@ -466,6 +518,10 @@ class Session:
                             xy(p) for p in result["legal_steps_after_build"]
                         ]
                 return result
+            if self.review_terminal_choices and name in ("propose_step", "stay", "vote_move"):
+                review = self.review_movement(revision, choice)
+                if review is not None:
+                    return review
             self.seat.call("/choice", {"revision": revision, "choice": choice})
         self.refresh()
         return {
@@ -501,16 +557,15 @@ class Session:
             notice["context_request"] = (
                 "Call compact with a short private note about evidence or a plan. Your current state is restored automatically."
             )
-        if notice["owe_action"] or notice["can_speak"]:
+        if notice["owe_action"]:
             notice["private_objective"] = self.private_objective()
-            if notice["stage"] == "propose" and notice["owe_action"]:
-                notice.update(self.proposal_results())
-            if notice["can_speak"]:
-                notice["remark_audience"] = (
-                    "Speak to the whole table in your own voice. Your seat number is shown automatically. "
-                    "Keep your private briefing to yourself unless revealing it advances your team's goal. "
-                    "You may bluff, speak about the public floor or stay silent."
-                )
+            notice.update(self.movement_results())
+        if notice["can_speak"]:
+            notice["remark_audience"] = (
+                "Speak to the whole table in your own voice. Your seat number is shown automatically. "
+                "Keep your private briefing to yourself unless revealing it advances your team's goal. "
+                "You may bluff, speak about the public floor or stay silent."
+            )
         update = {"role": "user", "content": json.dumps(notice)}
         body = {
             "model": model,
@@ -660,6 +715,11 @@ def main():
         action="store_true",
         help="show the marker and available or proposed landing in movement updates",
     )
+    cli.add_argument(
+        "--review-terminal-choices",
+        action="store_true",
+        help="privately confirm an avoidable loss or passing up an immediate win",
+    )
     cli.add_argument("--trace", type=Path, help="new private JSONL tool trace")
     args = cli.parse_args()
     seat = Seat(getpass("Private seat link: ").strip())
@@ -668,6 +728,7 @@ def main():
         seat,
         inspect_rotations=args.inspect_rotations,
         movement_context=args.movement_context,
+        review_terminal_choices=args.review_terminal_choices,
         context=args.context,
     )
 

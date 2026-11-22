@@ -101,10 +101,13 @@ class PersistentSeat(unittest.TestCase):
                 infer = Mock(return_value=reply)
                 row = session.step("script", infer=infer)
                 notice = json.loads(infer.call_args.args[2]["messages"][-1]["content"])
-                self.assertIn(f"P{seat} on {team}", notice["private_objective"])
-                self.assertIn(
-                    f"You {outcome} if the marker enters EXIT", notice["private_objective"]
-                )
+                if now == 5:
+                    self.assertIn(f"P{seat} on {team}", notice["private_objective"])
+                    self.assertIn(
+                        f"You {outcome} if the marker enters EXIT", notice["private_objective"]
+                    )
+                else:
+                    self.assertNotIn("private_objective", notice)
                 self.assertEqual("remark_audience" in notice, now == 0)
                 self.assertNotIn(
                     "private_objective", public_call(row, "script", False)["opportunity"]
@@ -123,29 +126,75 @@ class PersistentSeat(unittest.TestCase):
             for seat in range(4):
                 table.join(seat, 0)
             session = Session(ProjectedSeat(table, 1))
-            session.step(
-                "script",
-                infer=(
-                    reply := Mock(
-                        return_value={
-                            "message": {
-                                "tool_calls": [
-                                    {
-                                        "function": {
-                                            "name": "propose_step",
-                                            "arguments": {"x": 2, "y": 0},
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    )
-                ),
-            )
+            fn = {"name": "propose_step", "arguments": {"x": 2, "y": 0}}
+            reply = Mock(return_value={"message": {"tool_calls": [{"function": fn}]}})
+            session.step("script", infer=reply)
             notice = json.loads(reply.call_args.args[2]["messages"][-1]["content"])
             self.assertIn({"x": 2, "y": 0, "result": exit_result}, notice["if_step_approved"])
             self.assertEqual(notice["if_stay_or_step_rejected"], stay_result)
             self.assertEqual(table.game.pending, (2, 0))
+            self.assertEqual(
+                session.movement_results(),
+                {"if_table_votes_yes": exit_result, "if_table_votes_no": stay_result},
+            )
+
+    def test_review_is_private_and_can_be_confirmed_or_revised_before_timeout(self):
+        for second_vote in (True, False):
+            table = Table(
+                CROSSING["setup"] | {"roles": ["blue", "red", "blue", "red"]},
+                Random(1),
+                discussion=0,
+            )
+            for event in CROSSING["events"][:11]:
+                table.commit(event)
+            for seat in range(4):
+                table.join(seat, 0)
+            s = Session(ProjectedSeat(table, 1), review_terminal_choices=True)
+
+            def call(name, session=s, **args):
+                return session.execute(name, args, session.tools(), session.snap["revision"])
+
+            rev = table.revision
+            before = table.view(0, 0)
+            self.assertFalse(call("propose_step", x=2, y=0)["submitted"])
+            self.assertEqual(table.view(0, 0), before)
+            self.assertTrue(call("propose_step", x=2, y=0)["accepted"])
+            self.assertEqual(table.revision, rev + 1)
+            # The same landing during the ballot is a new decision.
+            deadline = table.deadline
+            self.assertFalse(call("vote_move", approve=True)["submitted"])
+            self.assertEqual(table.votes, {})
+            self.assertEqual(table.deadline, deadline)
+            self.assertTrue(call("vote_move", approve=second_vote)["accepted"])
+            self.assertIs(table.votes[1], second_vote)
+
+    def test_review_compares_possible_landings_before_the_final_turn(self):
+        setup = CROSSING["setup"] | {"roles": ["blue", "red", "blue", "red"], "store": [18, 12, 1]}
+        table = Table(setup, Random(1), discussion=0)
+        for event in CROSSING["events"][:10]:
+            # With one extra tile the second draw takes two and needs a return.
+            table.commit(
+                event | {"tiles": [18, 1]}
+                if event["kind"] == "draw" and table.game.turn == 2
+                else event
+            )
+        table.commit(CROSSING["events"][10])
+        table.commit({"kind": "discard", "tile": 1})
+        for seat in range(4):
+            table.join(seat, 0)
+        s = Session(ProjectedSeat(table, 1), review_terminal_choices=True)
+        warning = s.execute("propose_step", {"x": 2, "y": 0}, s.tools(), table.revision)
+        self.assertEqual(warning["if_stay_or_step_rejected"], "Play continues.")
+        self.assertIn("would lose", warning["private_review"])
+        self.assertTrue(s.execute("stay", {}, s.tools(), table.revision)["accepted"])
+
+    def test_review_allows_an_unavoidable_final_loss(self):
+        table = Table({"roles": ["blue"], "hands": [[0]], "goal": [4, 0], "store": [0]}, Random(1))
+        table.join(0, 0)
+        table.submit(0, table.revision, {"tile": 0, "rotation": 0, "at": [0, 1]}, 0)
+        s = Session(ProjectedSeat(table, 0), review_terminal_choices=True)
+        self.assertTrue(s.execute("stay", {}, s.tools(), table.revision)["accepted"])
+        self.assertEqual(table.game.winner, "red")
 
     def test_sealed_wait_and_recovery_across_turns(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)

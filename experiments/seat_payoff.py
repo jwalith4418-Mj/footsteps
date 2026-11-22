@@ -53,11 +53,12 @@ def crossing(case, seat):
     return session
 
 
-def trial(case, seat):
+def trial(case, seat, *, review=False):
     if case.startswith("trap-"):
         _, session = position("trap", case.removeprefix("trap-"))
     else:
         session = crossing(case, seat)
+    session.review_terminal_choices = review
     table = session.seat.table
     revision = table.revision
     calls = []
@@ -73,6 +74,8 @@ def trial(case, seat):
                 "seconds": row.get("inference_seconds"),
             }
         )
+        if "private_review" in row["result"]:
+            calls[-1]["reviewed"] = {"tool": row["tool"], "args": row["arguments"]}
         if row["result"].get("accepted"):
             if row["tool"] == "vote_move":
                 choice = table.votes[seat]
@@ -122,6 +125,7 @@ if __name__ == "__main__":
         help="open the first discussion separately for two Reds and one Blue",
     )
     cli.add_argument("--proposals", action="store_true", help="repeat just the two builder roles")
+    cli.add_argument("--review", action="store_true")
     args = cli.parse_args()
     with args.output.open("x") as out:
         if args.speech:
@@ -130,4 +134,4 @@ if __name__ == "__main__":
         else:
             for case, seat in CASES:
                 if not args.proposals or case.startswith("proposal"):
-                    print(json.dumps(trial(case, seat)), file=out, flush=True)
+                    print(json.dumps(trial(case, seat, review=args.review)), file=out, flush=True)
