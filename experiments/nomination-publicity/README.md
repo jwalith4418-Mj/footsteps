@@ -53,7 +53,7 @@ PYTHONPATH=/tmp/141-explicit python "$study" readback "$record" /tmp/141-public/
 python -m experiments.nomination_publicity readback "$record" /tmp/141-public/reveal.jsonl
 ```
 
-Use the omniscient viewer to see each private thinking call at the pending nomination, including calls that ended without an action. The public receipts store the length and digest of each trace. For example, to view the four-seat game in Bash:
+Use the omniscient viewer to see private thinking calls beside the resulting nomination or pass, including earlier calls that ended without an action. For an unresolved nomination the viewer labels its calls as pending. The public receipts store the length and digest of each trace. For example, to view the four-seat game in Bash:
 
 ```sh
 notes=()

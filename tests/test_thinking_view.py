@@ -12,7 +12,7 @@ from footsteps.viewer import export_html, transcript
 
 
 class ThinkingReplay(unittest.TestCase):
-    def test_owner_trace_is_attached_at_pending_revision_only_and_escaped(self):
+    def test_owner_trace_at_unresolved_ballot_is_pending_and_escaped(self):
         r = prefix("trap") | {"table_id": "private"}
         row = {
             "version": 1,
@@ -30,11 +30,44 @@ class ThinkingReplay(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "omniscient"):
                 transcript(r, notes=[row], **options)
         frames = transcript(r, omniscient=True, notes=[row])["frames"]
-        self.assertFalse(any("thinking_traces" in f for f in frames[:-1]))
-        self.assertEqual(frames[-1]["thinking_traces"][0]["thinking"], row["thinking"])
+        self.assertFalse(any("pending_thinking_traces" in f for f in frames[:-1]))
+        self.assertNotIn("thinking_traces", frames[-1])
+        self.assertEqual(frames[-1]["pending_thinking_traces"][0]["thinking"], row["thinking"])
         self.assertNotIn(row["thinking"], export_html(r, "test", omniscient=True, notes=[row]))
         with self.assertRaisesRegex(ValueError, "trace does not match"):
             transcript(r, omniscient=True, notes=[row | {"turn": 2}])
+
+    def test_adjacent_nominations_group_attempts_with_the_action_and_keep_open_prefix(self):
+        from footsteps.record import read
+
+        path = (
+            Path(__file__).resolve().parents[1] / "experiments/seat-payoff/explicit-14101/game.json"
+        )
+        record = read(path)
+        base = {
+            "version": 1,
+            "kind": "thinking",
+            "table_id": record["table_id"],
+            "turn": 1,
+            "stage": "nominate",
+            "model": "test",
+            "label": "attempt",
+        }
+        notes = [
+            base | {"seat": who, "revision": rev, "thinking": value}
+            for who, rev, value in [(1, 5, "wait"), (1, 5, "pass"), (2, 6, "pass")]
+        ]
+        full = transcript(record, omniscient=True, notes=notes)["frames"]
+        self.assertEqual(full[6]["message"], "P1 passed.")
+        self.assertEqual([r["thinking"] for r in full[6]["thinking_traces"]], ["wait", "pass"])
+        self.assertEqual(full[7]["message"], "P2 passed.")
+        self.assertEqual([r["seat"] for r in full[7]["thinking_traces"]], [2])
+        self.assertNotIn("thinking_traces", full[5])
+        self.assertFalse(any("pending_thinking_traces" in f for f in full))
+        prefix = record | {"events": record["events"][:6], "remarks": []}
+        last = transcript(prefix, omniscient=True, notes=notes)["frames"][-1]
+        self.assertEqual(last["thinking_traces"], full[6]["thinking_traces"])
+        self.assertEqual(last["pending_thinking_traces"], full[7]["thinking_traces"])
 
     def test_capped_reply_is_kept_only_in_owner_artifact_and_rendered_without_a_vote(self):
         owner = io.StringIO()

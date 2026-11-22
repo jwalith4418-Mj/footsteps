@@ -32,7 +32,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
                     and row.get("stage") == game.stage,
                     "thinking trace does not match seat or decision",
                 )
-                frame.setdefault("thinking_traces", []).append(
+                frame.setdefault("pending_thinking_traces", []).append(
                     {k: row[k] for k in ("seat", "model", "label", "thinking")}
                 )
             elif row.get("kind") == "hand_rotation":
@@ -81,7 +81,11 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
             message = (
                 f"P{nominee} was eliminated." if nominee not in game.alive else "Nomination failed."
             )
+        # A sidecar revision names the state the model saw before making this decision.
+        attempts = frames[-1].pop("pending_thinking_traces", None)
         frame = capture(kind, turn, message)
+        if attempts:
+            frame["thinking_traces"] = attempts
         if kind == "place":
             p = tuple(event["at"])
             frame["placed"] = [tuple(map(str, p)), game.board[p], event["tile"], event["rotation"]]

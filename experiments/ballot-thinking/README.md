@@ -8,7 +8,7 @@ Ollama 0.40.15 reported boolean thinking controls for Qwen3.5 9B Q8_0. The ordin
 
 ## Owner views
 
-Every returned Ollama thinking string, including incomplete attempts, goes verbatim into a private JSONL file. The matched public call stores its length and SHA-256 digest. Each role's omniscient review shows the actual board at the pending ballot. Expand a call to see its full trace, tool outcome and that trial's submitted vote or missing submission. The comparison never inserts an alternative vote into the referee's observed history. Public and single-seat viewer exports reject private sidecars. The thinking-game replay displays traces on the event where the seat received the opportunity.
+Every returned Ollama thinking string, including incomplete attempts, goes verbatim into a private JSONL file. The matched public call stores its length and SHA-256 digest. Each role's omniscient review shows the actual board at the pending ballot. Expand a call to see its full trace, tool outcome and that trial's submitted vote or missing submission. The comparison never inserts an alternative vote into the referee's observed history. Public and single-seat viewer exports reject private sidecars. The thinking-game replay groups traces with the resulting ballot reveal. Frozen trials ending at an open ballot label their traces as pending.
 
 Use matching basenames for public receipts and owner files. Regenerating a different game or checkpoint can produce different text even with the same seed. The viewer builder verifies the exact receipt/draft pairing before export.
 
