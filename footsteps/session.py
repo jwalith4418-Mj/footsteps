@@ -243,6 +243,7 @@ class Session:
             "marker": xy(g["marker"]),
             "builder": g["actor"],
             "nominator": g["nominator"],
+            **{key: g[key] for key in ("upcoming_builders", "remaining_nominators") if key in g},
             "alive": g["alive"],
             "store_count": g["store_count"],
             "winner": g["winner"],
@@ -295,8 +296,16 @@ class Session:
             [] if self.wait_at_notice else ["after_cursor"]
         )
         specs = [
-            function("get_state", "Read your current board, held pieces and legal choices.", {}),
-            function("get_role", "Read your authoritative private team assignment.", {}),
+            function(
+                "get_state",
+                "Read your seat and team, board, held pieces, legal choices and turn order. "
+                "Upcoming builders start next turn, up to one lap as the bag allows. "
+                "Remaining nominators are listed next first. Removal changes both orders.",
+                {},
+            ),
+            function(
+                "get_role", "Read your seat number, private team and any known Red teammates.", {}
+            ),
             HISTORY,
             function(
                 "compact",

@@ -48,13 +48,16 @@ The persistent player receives one function schema for each action available to 
 
 | Tools | How the values fit together |
 |---|---|
-| `get_state()`, `get_role()` | Read authoritative facts for this seat. Held pieces show their printed face, current rotation, entrances and exits. Board tiles show the face after rotation. State supplies build squares, possible steps or nomination targets when the seat can use them. |
+| `get_role()` | Read your seat number, team and public starting team counts. A Red seat also receives its fellow Red seat numbers. |
+| `get_state()` | Read the same private identity plus the board and turn order. Held pieces show their printed face, current rotation, entrances and exits. Board tiles show the face after rotation. State supplies build squares, possible steps or nomination targets when the seat can use them. |
 | `inspect_rotations_at`, `orient_tile`, `preview_placement`, `place_tile` | Inspection compares one held piece at one candidate square. Its rows use the same `rotation` value accepted by `orient_tile`. Only orienting changes the copy in hand. Both preview and placement take that handle and square. Placement commits its current rotation. The marker stays on its original square throughout. |
 | `return_tile` | Return the named held copy to the store. Its handle leaves this seat's hand. |
 | `propose_step`, `stay`, `vote_move` | A step takes one destination. Stay takes no arguments. On a step proposal, `approve: true` votes to land on that square and `false` votes to stay. |
 | `nominate`, `pass_nomination`, `vote_removal` | Nominate takes another living seat's integer ID. Pass takes no arguments. The removal ballot identifies the nominee. `approve: true` votes to remove that player. Ballots remain private until the group reveal. |
 | `speak`, `history` | Speech is public and attributed. History pages distinguish a speaker's claim from a revealed ballot. Use `{"kind":"move_vote","turn":1,"voter":0}` to check P0's first-turn movement ballot when a later vote is also visible. A revealed null ballot denotes a missed vote. |
 | `compact`, `wait` | Compact takes short player-authored notes. Wait normally takes no arguments and starts at the visible update the player just saw. An intervening remark wakes it immediately. An optional `after_cursor` names an earlier visible-state update. History pagination uses entry IDs instead. |
+
+In `get_state()`, `builder` is the seat whose turn this is. `upcoming_builders` lists the following turns in order, up to one lap of living seats and only as far as the bag allows. Reaching EXIT or removing players can change that forecast. During nominations and removal ballots, `remaining_nominators` lists the seats still due a nomination this turn, next first. For example, if P0 builds and P1 nominates P0 at a four-seat table, the remaining nominators during the ballot are P2, P3, P0. If the vote removes P0, only P2 and P3 still get a nomination, and P1 is due to build next.
 
 Accepted decisions identify the action and the revision at which it committed. The nested `current` field describes the seat's resulting opportunity. Reads and hand preparations return their own results. Rejections return an explanation and the current opportunity, subject to the original referee deadline.
 

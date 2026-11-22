@@ -71,3 +71,22 @@ At 3,072 tokens the 27B Blue trap voter rejected the step after 2,524 tokens and
 The fast finish made all eight independent submissions across four positions and two conditions. Restricting the seat to the voting tool with no draft already gave 3/4 team-serving ballots. Returning the exact capped 1,536-token draft gave 4/4. Only the Red trap ballot changed: it approved the dead end after seeing its own draft. Incremental finishing time averaged 2.26 seconds with the draft; preparing it had already cost 59.79 seconds on average. The no-draft finish averaged 2.71 seconds and needed no preparation. A finish with a draft cost about 62 seconds end to end under these conditions. Neither policy was tested on a full 27B social table. [Matched finish receipts](finish/results.jsonl)
 
 For this workstation, a 1,536-token allowance for 9B movement ballots is a useful experimental setting. The real-clock pilot used 768; the four frozen 9B seats all finished at 1,536. The harder route comparison and the small, correlated panel argue for keeping this optional while testing additional decisions.
+
+### Making seat order visible
+
+For #139 we replayed the four 9B directed-route ballots with the 1,536-token allowance. The revised state supplied at session start and through `get_state()` lists upcoming builders, and the tool descriptions advertise identity and order. Seat and team were already present. On both boards P3 is the voter and P0 built. Only P1 and P2 can still build on the short board. On the detour board P3 can expect another build if the game and seat survive. The board, roles, tools available, seed and budget match the earlier trials.
+
+| State shown | Short Red / Blue | Detour Red / Blue | Team-serving submissions | Total generated tokens |
+|---|---|---|---:|---:|
+| Original | No / No | No / No | 2/4 | 2,453 |
+| Upcoming builders visible | No / No | No submission / No | 1/4 | 3,422 |
+
+The three submitted votes repeated their earlier choices. Detour Red identified its own team and considered rejecting the step, then reconsidered until its allowance expired. There was no accepted vote. Mean inference time per decision went from 8.67 to 11.75 seconds. Four correlated decisions with one generation per condition do not establish an effect on skill or speed. The new state makes a table fact available, and the harder route judgment remains open. [Earlier receipts](9b-route.jsonl) · [Seat-order receipts](seat-order/9b-route.jsonl)
+
+To rerun the earlier condition use commit `efb6ff5`; the new condition starts with #139. Use fresh destinations for each condition.
+
+```sh
+mkdir -p /tmp/order-public /tmp/order-owner
+python -m experiments.ballot_thinking 9b /tmp/order-public/9b-route.jsonl /tmp/order-owner/9b-route.jsonl --budgets 1536 --cases short detour
+python -m experiments.thinking_view /tmp/order-owner /tmp/order-view --receipts /tmp/order-public
+```
