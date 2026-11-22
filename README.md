@@ -73,7 +73,7 @@ direnv allow                      # Once per checkout, and after editing .envrc
 
 Use `./scripts/resume-codex.sh --last` to resume the latest project conversation, or pass a session ID. The helper loads the locked development shell, selects the Footsteps workspace, and requests on-demand approvals for operations such as pushing to GitHub. Host policy governs which approvals are available. For a one-off development command, use `direnv exec . python -m unittest discover -s tests`.
 
-The [persistent-runner stocktake](docs/stocktake.md) lists the next experiments, migration dependencies, human playtest and coverage gaps. Use Issues for work and discussion. Submit mechanical decisions, worked examples and experimental results in the same PR as their implementation. [Contribution workflow](CONTRIBUTING.md) · [Worker guide](AGENTS.md) · [Design decisions](docs/decisions.md) · [Playtesting](docs/playtesting.md) · [Open issues](https://github.com/othercriteria/footsteps/issues)
+The [project stocktake](docs/stocktake.md) ranks the next model experiments and identifies independent work on replay analysis, human playtests and client reliability. Use Issues for work and discussion. Submit mechanical decisions, worked examples and experimental results in the same PR as their implementation. [Contribution workflow](CONTRIBUTING.md) · [Worker guide](AGENTS.md) · [Design decisions](docs/decisions.md) · [Playtesting](docs/playtesting.md) · [Open issues](https://github.com/othercriteria/footsteps/issues)
 
 Code and technical materials use MIT. The original rulebook, worked game prose and game art use CC BY 4.0. [License scope and texts](LICENSE)
 
