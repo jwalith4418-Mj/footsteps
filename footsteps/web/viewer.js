@@ -212,11 +212,13 @@ function entry(i, current) {
     }
     text.append(details);
   }
-  for (const trace of f.thinking_traces || []) {
-    const details = make("details", "decision-notes");
-    details.append(make("summary", "", "P" + trace.seat + " · " + trace.model + " · " + trace.label));
-    details.append(make("pre", "thinking-trace", trace.thinking || "No thinking text returned."));
-    text.append(details);
+  for (const [traces, prefix] of [[f.thinking_traces, ""], [f.pending_thinking_traces, "Pending decision · "]]) {
+    for (const trace of traces || []) {
+      const details = make("details", "decision-notes");
+      details.append(make("summary", "", prefix + "P" + trace.seat + " · " + trace.model + " · " + trace.label));
+      details.append(make("pre", "thinking-trace", trace.thinking || "No thinking text returned."));
+      text.append(details);
+    }
   }
   if (f.decision_notes) {
     const details = make("details", "decision-notes");
