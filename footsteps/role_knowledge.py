@@ -2,7 +2,8 @@
 
 NOMINATION_VISIBILITY = (
     "Everyone sees who passed or who nominated whom for removal before voting. "
-    "Ballots are revealed together by seat after voting closes."
+    "Until voting closes, other seats cannot see whether or how you voted. "
+    "Then everyone sees each seat’s Yes, No or timeout together."
 )
 
 COMMON_KNOWLEDGE = (

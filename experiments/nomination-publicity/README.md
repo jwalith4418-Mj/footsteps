@@ -8,6 +8,10 @@ Use two fresh deals, seed 14101 (two Blue, two Red) and 14102 (three Blue, two R
 
 Separately ask the first nominator in the four-seat deal what an uninvolved P2 would see after P1 names P0, passes, or P0 casts the first removal ballot. Swap P1's role with the first available opposite-team seat and repeat. Reconstruct a fresh conversation at the same referee revision with the seat's normal private state and available function descriptions. Omit prior table speech in both conditions. Request a private, structured explanation with thinking off and no action execution. Score whether the answer attributes both the nomination and pass to P1, distinguishes a nomination from removal, keeps P0's pending ballot private and identifies it at reveal. The two roles share a board and the questions call attention to observability. This tests what the model can report when asked. Organic use of that knowledge is a separate question.
 
+## What the nominator could report
+
+On the earlier wording, Red attributed the nomination and pass correctly. Blue named only the target and said passing produced no event. With explicit publicity, both said P2 sees P1 nominate P0 or pass. Blue then asserted that P2 sees *whether* P0 voted before reveal and learns *which seat* P0 voted for afterward. The referee actually withholds submission status and reveals a Yes, No or timeout on the one nominee. After making that precise, both seats described attribution, the sealed vote and the revealed value correctly. None explicitly said what happens to P0 pending the vote, so this readback does not settle #106. [Earlier wording](prior.jsonl) · [Explicit nomination wording](explicit.jsonl) · [Explicit ballot timing and values](reveal.jsonl)
+
 ## Live observations
 
 In the four-seat game, P1 told the table on the first movement ballot that both P1 and the builder P0 were Red. Both were. Everyone approved the step. All four then passed on nomination. Blue P3's private trace noticed the claim and judged the evidence insufficient to nominate. It was a claim anyone could make under the rules. On turn two P1 proposed entering EXIT and all four approved. All 18 required decisions were timely, with 160.15 seconds of play. These seats heard the disclosure, but this game provides little evidence that they could exploit the public authorship of a nomination. [Four-seat referee record](14101/game.json) · [Nomination calls](14101/nomination-thinking.jsonl)
@@ -24,7 +28,7 @@ At the pending EXIT vote we also started each surviving 9B seat independently on
 
 ## Reproduce
 
-From the checkout with this study, use a fresh output directory for each run. The model host runs the deals serially. The archive command prints one row per qualifying history.
+The two live games and the majority ballot used commit `0364e90`, before the final reveal-wording revision. Use a fresh output directory for each run. The model host runs the deals serially. The archive command prints one row per qualifying history.
 
 ```sh
 mkdir -p /tmp/141-public /tmp/141-owner
@@ -41,10 +45,12 @@ For the wording comparison, run the same study file against two package checkout
 
 ```sh
 git worktree add --detach /tmp/141-prior 32f57e6
+git worktree add --detach /tmp/141-explicit 0364e90
 study="$PWD/experiments/nomination_publicity.py"
 record="$PWD/experiments/nomination-publicity/14101/game.json"
 PYTHONPATH=/tmp/141-prior python "$study" readback "$record" /tmp/141-public/prior.jsonl
-python -m experiments.nomination_publicity readback "$record" /tmp/141-public/explicit.jsonl
+PYTHONPATH=/tmp/141-explicit python "$study" readback "$record" /tmp/141-public/explicit.jsonl
+python -m experiments.nomination_publicity readback "$record" /tmp/141-public/reveal.jsonl
 ```
 
 Use the omniscient viewer to see each private thinking call at the pending nomination, including calls that ended without an action. The public receipts store the length and digest of each trace. For example, to view the four-seat game in Bash:
