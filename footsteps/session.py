@@ -12,6 +12,7 @@ from .action_tools import BALLOT_TOOLS, PREPARATIONS, apply_call, build_tools, f
 from .decision_notes import open_private
 from .game import require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
+from .role_knowledge import NOMINATION_VISIBILITY
 from .seat_tools import tile
 
 CONTEXT_WINDOWS = (4096, 8192, 16384, 32768)
@@ -88,7 +89,8 @@ SYSTEM = (
     + MOVEMENT_CLOCK
     + " Rotation is an absolute number of clockwise quarter turns from the printed face, 0 through 3. "
     "Living seats vote on steps; a tie follows the builder's own ballot. Removal requires a strict "
-    "majority. Everyone hears public remarks, and either team can bluff. "
+    f"majority. {NOMINATION_VISIBILITY} "
+    "Everyone hears public remarks, and either team can bluff. "
     "Call exactly one tool per reply. Use literal piece handles, seats and coordinates. "
     "Use history to check evidence and compact to retain private notes. The host clock continues "
     "during all calls. An accepted decision is final. Reading and preparing tiles are private."

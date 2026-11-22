@@ -1,4 +1,4 @@
-"""Try a bounded thinking pass only when a live persistent seat owes a movement vote."""
+"""Give a persistent seat a bounded thinking allowance on a selected live decision."""
 
 import argparse
 import hashlib
@@ -17,6 +17,15 @@ from footsteps.table import Table, paper_setup
 
 
 def attach_result(note, row):
+    if note["stage"] == "nominate":
+        action = row["tool"] if row and row["result"].get("accepted") else None
+        if action == "nominate":
+            note["label"] += f" · nominated P{row['arguments']['seat']}"
+        elif action == "pass_nomination":
+            note["label"] += " · passed"
+        else:
+            note["label"] += " · no nomination committed"
+        return note
     vote = None
     if row and row["tool"] == "vote_move" and row["result"].get("accepted"):
         vote = row["arguments"]["approve"]
@@ -29,7 +38,8 @@ def attach_result(note, row):
 
 
 class BallotSession(Session):
-    def __init__(self, peer, *, allowance, private, **kwargs):
+    def __init__(self, peer, *, allowance, private, thinking_tool="vote_move", **kwargs):
+        self.thinking_tool = thinking_tool
         self.allowance = allowance
         registration = peer.call("/ready", {"request_note_id": True})
         self.table_id = registration["table_id"]
@@ -48,7 +58,7 @@ class BallotSession(Session):
 
         def during_vote(port, path, body, timeout):
             nonlocal returned, actual_limit, note
-            has_ballot = any(t["function"]["name"] == "vote_move" for t in body["tools"])
+            offered_choice = any(t["function"]["name"] == self.thinking_tool for t in body["tools"])
             rev = self.snap["revision"]
             if rev != self.ballot_revision:
                 self.ballot_revision = rev
@@ -57,7 +67,7 @@ class BallotSession(Session):
                     assistant.pop("thinking", None)
                 self.previous_thoughts.clear()
             left = self.allowance - self.used
-            if not has_ballot or left <= 0:
+            if not offered_choice or left <= 0:
                 return infer(port, path, body, timeout)
             actual_limit = left
             body = body | {"think": True, "options": body["options"] | {"num_predict": left}}
@@ -74,16 +84,17 @@ class BallotSession(Session):
                     name = function.get("name")
                     tool = name if isinstance(name, str) and name in offered else "unavailable tool"
             stop = reply.get("done_reason")
+            label = "Nomination" if self.thinking_tool == "nominate" else "Movement ballot"
             note = {
                 "kind": "thinking",
                 "version": 1,
                 "table_id": self.table_id,
                 "seat": self.snap["seat"],
                 "turn": self.snap["state"]["turn"],
-                "stage": "move_vote",
+                "stage": self.snap["state"]["stage"],
                 "revision": rev,
                 "model": model,
-                "label": f"Movement ballot · {tokens}/{left} tokens · {stop} · {tool}",
+                "label": f"{label} · {tokens}/{left} tokens · {stop} · {tool}",
                 "thinking": returned.get("thinking", ""),
                 "limit": left,
                 "tokens": tokens,
@@ -112,8 +123,8 @@ class BallotSession(Session):
         return row
 
 
-def share_usage(root, private):
-    with (root / "movement-thinking.jsonl").open("x") as output:
+def share_usage(root, private, filename="movement-thinking.jsonl"):
+    with (root / filename).open("x") as output:
         for sidecar in sorted(private.glob("thinking-*.jsonl")):
             for line in sidecar.read_text().splitlines():
                 row = json.loads(line)
@@ -128,9 +139,10 @@ def share_usage(root, private):
                         "stop",
                         "seconds",
                         "tool",
-                        "submitted_vote",
                     )
                 }
+                if "submitted_vote" in row:
+                    receipt["submitted_vote"] = row["submitted_vote"]
                 trace = row["thinking"]
                 receipt["thinking_chars"] = len(trace)
                 receipt["thinking_sha256"] = hashlib.sha256(trace.encode()).hexdigest()

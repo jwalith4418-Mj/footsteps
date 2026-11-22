@@ -1,0 +1,176 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "red",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        41,
+        107
+      ],
+      [
+        71,
+        234
+      ],
+      [
+        121,
+        74
+      ],
+      [
+        153,
+        45
+      ]
+    ],
+    "store": [
+      44,
+      188,
+      16
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        44,
+        188
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 44,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 41
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        41
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 16,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 41
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "table_id": "c5dbfde7b9827c0b7042e2d4393b6b8a",
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I propose stepping to (-1, 0). This is a safe move toward the goal at (0, 0). The tile I placed at (-1, 0) has exits facing East, which allows entry from the West. The marker can exit its current position toward (-1, 0), and the destination tile can accept entry from that direction. This step is legal and progresses us closer to victory."
+    },
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I support moving to (-1, 0). It's a good step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I'm seat 1 on Red. P0 (my teammate) proposed moving the marker from (-2,0) to (-1,0). The tile at (-1,0) has exits E and entrances SW. The move is legal. I'll vote for this step."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support moving to (-1, 0). It's a good step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 13,
+      "seat": 1,
+      "text": "I'm seat 1 on Red. P1 proposed moving the marker from (-1,0) to (0,0), which is the goal. The tile at (0,0) has entrances NESW and exits NESW, so it can accept entry from the West. This move completes the game for Red. I'll vote for this step."
+    },
+    {
+      "after_event": 13,
+      "seat": 3,
+      "text": "I support moving to (0, 0). This is the goal! The tile at (-1, 0) has exits E, and the tile at (0, 0) accepts entry from all sides. This step is legal and will win for Blue."
+    },
+    {
+      "after_event": 13,
+      "seat": 2,
+      "text": "I support moving to (0, 0). This is the goal and will win for Blue."
+    },
+    {
+      "after_event": 13,
+      "seat": 0,
+      "text": "I support the move to (0, 0), which is the goal. The tile at (-1, 0) has exits facing East, allowing the marker to exit toward (0, 0). The goal tile at (0, 0) has entrances on all sides including East, so it can accept entry from the West. This step is legal and will complete the game for Red."
+    }
+  ]
+}

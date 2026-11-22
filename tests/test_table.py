@@ -37,6 +37,23 @@ class LiveDecisions(unittest.TestCase):
             with self.assertRaises(ValueError):
                 fixed_kit(Random(1), 2, *counts)
 
+    def test_nominations_and_passes_are_attributed_before_ballot_reveal(self):
+        table = self.crossing_ballot(5)
+        table.submit(1, table.revision, {"target": None}, 0)
+        table.submit(2, table.revision, {"target": 0}, 0)
+        revision = table.revision
+        table.submit(0, revision, {"vote": False}, 5)
+        for seat in range(4):
+            history = table.view(seat, 5, structured_history=True)["history"]
+            self.assertEqual([r["text"] for r in history[-2:]], ["P1 passed.", "P2 nominated P0."])
+            self.assertNotIn("ballots", history[-1])
+        for seat in (1, 2, 3):
+            table.submit(seat, revision, {"vote": True}, 5)
+        self.assertEqual(
+            table.view(0, 5, structured_history=True)["history"][-1]["ballots"],
+            {0: False, 1: True, 2: True, 3: True},
+        )
+
     def test_discussion_and_sealed_ballots(self):
         table = Table(CROSSING["setup"], Random(1), seconds=20, discussion=5)
         for seat in range(4):

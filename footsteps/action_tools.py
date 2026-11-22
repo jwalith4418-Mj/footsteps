@@ -93,9 +93,13 @@ def build_tools(snapshot, mode):
     if stage == "nominate":
         return [
             function(
-                "nominate", "Nominate a different living seat for removal.", {"seat": "integer"}
+                "nominate",
+                "Publicly name another living seat for a removal vote. Everyone sees who nominated whom.",
+                {"seat": "integer"},
             ),
-            function("pass_nomination", "Decline your nomination opportunity.", {}),
+            function(
+                "pass_nomination", "Publicly pass. Everyone sees that you declined to nominate.", {}
+            ),
         ]
     movement = stage == "move_vote"
     return [

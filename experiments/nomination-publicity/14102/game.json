@@ -1,0 +1,353 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        71,
+        121
+      ],
+      [
+        16,
+        45
+      ],
+      [
+        153,
+        182
+      ],
+      [
+        44,
+        16
+      ],
+      [
+        74,
+        41
+      ]
+    ],
+    "store": [
+      234,
+      107,
+      91
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        107,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        0
+      ],
+      "tile": 71,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 121
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -3,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        121,
+        91
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -4,
+        0
+      ],
+      "tile": 121,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 45,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -3,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 3
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 1
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        false,
+        false,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        45
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 45,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -3,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  ],
+  "table_id": "c50b971c8bd361e29afeef302ed13c55",
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I've placed a tile at (-3, 0) and proposed moving the marker there. The move is legal as the new tile has an exit facing south, allowing entry from the north side of the marker's current position. This step moves us closer to the goal at (0, 0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I propose staying. The marker is at (-2, 0) and the goal is (0, 0). Moving to (-3, 0) takes us further away from the goal. Let's stay and reassess our options."
+    },
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I agree with P0's proposal. The move from (-2, 0) to (-3, 0) is legal and brings us closer to the goal at (0, 0). I vote to accept this step."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I agree with P1. Moving to (-3, 0) moves us further from the goal at (0, 0). Let's stay and reassess our options."
+    },
+    {
+      "after_event": 4,
+      "seat": 4,
+      "text": "I agree with P1. Moving to (-3,0) moves us further from the goal at (0,0). Let's stay and reassess our options."
+    },
+    {
+      "after_event": 14,
+      "seat": 1,
+      "text": "I propose moving the marker from (-2, 0) to (-3, 0). This is a legal step as tile at (-3,0) has entrance NES and we're coming from east. We need to continue building toward goal (0,0)."
+    },
+    {
+      "after_event": 14,
+      "seat": 2,
+      "text": "I agree with P1. Moving to (-3, 0) moves us further from the goal at (0, 0). Let's stay and reassess our options."
+    },
+    {
+      "after_event": 14,
+      "seat": 4,
+      "text": "I agree with staying. Moving to (-3,0) takes us further from the goal at (0,0). Let's stay and reassess."
+    },
+    {
+      "after_event": 14,
+      "seat": 3,
+      "text": "I support moving to (-3, 0). It's a solid step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 16,
+      "seat": 2,
+      "text": "I agree with nominating P3. They voted to move the marker away from our goal at (0, 0), which is counterproductive for Red's win condition."
+    },
+    {
+      "after_event": 16,
+      "seat": 0,
+      "text": "I support removing P3. They voted yes on a move that takes us further from the goal, which is counterproductive for Blue."
+    },
+    {
+      "after_event": 16,
+      "seat": 1,
+      "text": "I oppose the nomination of P3. P3 is not a threat to Red's position, and removing them would weaken our team. I vote against elimination."
+    },
+    {
+      "after_event": 16,
+      "seat": 3,
+      "text": "I oppose removing P3. They voted to move the marker toward the goal, which benefits Blue. Removing them would hurt our chances."
+    },
+    {
+      "after_event": 16,
+      "seat": 4,
+      "text": "I support removing P3. Their vote to move the marker away from (0,0) is counterproductive for Blue's win condition. We need to eliminate them."
+    },
+    {
+      "after_event": 19,
+      "seat": 0,
+      "text": "I support removing P1. They proposed moving the marker away from our goal at (0, 0), which is counterproductive for Blue's win condition."
+    },
+    {
+      "after_event": 19,
+      "seat": 1,
+      "text": "I oppose the nomination of P1. P1 is my teammate and essential to Red's win condition. Removing them would be disastrous for our team. I vote against elimination."
+    },
+    {
+      "after_event": 19,
+      "seat": 2,
+      "text": "I vote no to eliminate P1. They are my teammate and we need both of us to reach the goal."
+    },
+    {
+      "after_event": 19,
+      "seat": 4,
+      "text": "I support removing P1. Their proposal to move the marker away from (0,0) is counterproductive for Blue's win condition. We need to eliminate them."
+    },
+    {
+      "after_event": 21,
+      "seat": 1,
+      "text": "I nominated P0 because they voted yes on a move that would have advanced the marker toward our goal. We need to be careful about who we trust with movement decisions."
+    },
+    {
+      "after_event": 21,
+      "seat": 2,
+      "text": "I vote no to eliminate P0. They are a Blue player and we should not remove them. We need to focus on our own strategy."
+    },
+    {
+      "after_event": 21,
+      "seat": 0,
+      "text": "I oppose removing P0. They are a teammate and essential to our win condition. Removing them would be disastrous for Blue. I vote no."
+    },
+    {
+      "after_event": 21,
+      "seat": 4,
+      "text": "I oppose removing P0. They voted yes on a move that would have advanced the marker toward our goal at (0,0), which is beneficial for Blue's win condition. Removing them would weaken our team. I vote against elimination."
+    },
+    {
+      "after_event": 25,
+      "seat": 2,
+      "text": "Proposed moving to (-3, 0) to get closer to goal at (0,0). This is a safe step forward for Red."
+    },
+    {
+      "after_event": 25,
+      "seat": 0,
+      "text": "I oppose moving to (-3, 0). This move takes us further from the goal at (0,0), which is counterproductive for Blue's win condition. We should stay and reassess our options. I vote no."
+    },
+    {
+      "after_event": 25,
+      "seat": 1,
+      "text": "P2 proposed moving to (-3, 0), which is away from our goal at (0,0). This move would not help us reach the exit. I will vote against this step."
+    },
+    {
+      "after_event": 25,
+      "seat": 4,
+      "text": "P2's proposed move to (-3, 0) moves us away from the goal at (0, 0). This is a bad move for Blue. I vote no on this step."
+    }
+  ]
+}
