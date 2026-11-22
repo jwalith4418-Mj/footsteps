@@ -133,6 +133,41 @@ class PersistentSeat(unittest.TestCase):
             call("history", before=statement["id"], kind="move_vote", voter=3)["entries"], [vote]
         )
 
+    def test_requestable_identity_and_turn_order_through_a_builders_removal(self):
+        setup = CROSSING["setup"] | {"roles": ["blue", "red", "blue", "red"], "store": [18, 12] * 4}
+        table = Table(setup, Random(1), discussion=0)
+        for event in CROSSING["events"][:5]:
+            table.commit(event)
+        for seat in range(4):
+            table.join(seat, 0)
+        blue, red = (Session(ProjectedSeat(table, seat)) for seat in (2, 3))
+
+        def read_tool(session, name):
+            return session.execute(name, {}, session.tools(), session.snap["revision"])
+
+        for seat, team, session in ((2, "blue", blue), (3, "red", red)):
+            state = read_tool(session, "get_state")
+            role = read_tool(session, "get_role")
+            self.assertEqual((role["seat"], role["team"]), (seat, team))
+            self.assertEqual({k: state[k] for k in role}, role)
+            self.assertEqual((state["builder"], state["nominator"]), (0, 1))
+            self.assertEqual(state["upcoming_builders"], [1, 2, 3, 0])
+            self.assertEqual(state["remaining_nominators"], [1, 2, 3, 0])
+        self.assertNotIn("red_teammates", read_tool(blue, "get_state"))
+        self.assertEqual(read_tool(red, "get_state")["red_teammates"], [1])
+        table.submit(1, table.revision, {"target": 0}, 0)
+        self.assertEqual(read_tool(blue, "get_state")["remaining_nominators"], [2, 3, 0])
+        for seat in range(4):
+            table.submit(seat, table.revision, {"vote": True}, 0)
+        state = read_tool(blue, "get_state")
+        self.assertEqual((state["builder"], state["upcoming_builders"]), (0, [1, 2, 3]))
+        self.assertEqual(state["remaining_nominators"], [2, 3])
+        for seat in (2, 3):
+            table.submit(seat, table.revision, {"target": None}, 0)
+        state = read_tool(blue, "get_state")
+        self.assertEqual((state["builder"], state["upcoming_builders"]), (1, [2, 3, 1]))
+        self.assertNotIn("remaining_nominators", state)
+
     def test_pending_ballot_history_and_unavailable_vote_tools(self):
         table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
         for event in CROSSING["events"][:4]:

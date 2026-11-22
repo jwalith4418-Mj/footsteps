@@ -215,13 +215,29 @@ class Game:
                 self.queue.pop(0)
                 self.stage = "eliminate_vote"
 
+    def seats_after_builder(self):
+        """One lap of living seats, starting clockwise from this turn's builder."""
+        return [i for i in self.alive if i > self.actor] + [
+            i for i in self.alive if i <= self.actor
+        ]
+
+    def upcoming_builders(self):
+        """At most one lap of future builders if nobody is removed and play continues."""
+        if self.winner:
+            return []
+        later_turns = len(self.store)
+        if self.stage == "draw":
+            later_turns -= 1  # The current turn will consume one net tile.
+        elif self.stage == "discard" or (self.stage == "place" and self.last_draw == 2):
+            later_turns += 1  # One of the two drawn tiles must still be returned.
+        return self.seats_after_builder()[:later_turns]
+
     def after_movement(self):
         winner = movement_winner(self.marker, self.goal, len(self.store))
         if winner is not None:
             self.finish(winner)
         else:
-            self.queue = [i for i in self.alive if i > self.actor]
-            self.queue += [i for i in self.alive if i <= self.actor]
+            self.queue = self.seats_after_builder()
             self.advance_nomination()
 
     def advance_nomination(self):
@@ -230,7 +246,7 @@ class Game:
             self.stage = "nominate"
         else:
             self.queue = []
-            self.actor = next((i for i in self.alive if i > self.actor), self.alive[0])
+            self.actor = self.seats_after_builder()[0]
             self.turn += 1
             self.stage = "draw"
 
@@ -253,10 +269,13 @@ class Game:
             "red_count": self.roles.count("red"),
             "store_count": len(self.store),
             "pending": self.pending,
+            "upcoming_builders": self.upcoming_builders(),
             "nominator": self.queue[0] if self.stage == "nominate" else None,
             "board": sorted(self.board.items()),
             "placements": sorted(self.placements.items()),
         }
+        if self.stage in ("nominate", "eliminate_vote"):
+            v["remaining_nominators"] = self.queue.copy()
         if self.stage == "place":
             v["draw_count"] = self.last_draw
         if self.winner:
