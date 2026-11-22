@@ -5,7 +5,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from random import Random
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from footsteps.record import read
 from footsteps.session import Session, main
@@ -74,6 +74,42 @@ class PersistentSeat(unittest.TestCase):
             self.assertIn("Winner: red", output.getvalue())
             self.assertEqual(json.loads(trace.read_text())["tool"], "stay")
             self.assertEqual(trace.stat().st_mode & 0o077, 0)
+
+    def test_model_sees_its_actual_payoff_after_compaction_and_keeps_it_private(self):
+        from experiments.persistent_runtime import public_call
+
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for seat in range(4):
+            table.join(seat, 0)
+        for seat, team, outcome in ((3, "Red", "lose"), (1, "Blue", "win")):
+            peer = ProjectedSeat(table, seat)
+            session = Session(peer)
+            session.execute(
+                "compact",
+                {"summary": "Entering EXIT wins for Red."},
+                session.tools(),
+                table.revision,
+            )
+            for now in (0, 5):
+                peer.now = now
+
+                reply = {
+                    "message": {"tool_calls": [{"function": {"name": "get_role", "arguments": {}}}]}
+                }
+                infer = Mock(return_value=reply)
+                row = session.step("script", infer=infer)
+                notice = json.loads(infer.call_args.args[2]["messages"][-1]["content"])
+                self.assertIn(f"P{seat} on {team}", notice["private_objective"])
+                self.assertIn(
+                    f"You {outcome} if the marker enters EXIT", notice["private_objective"]
+                )
+                self.assertEqual("remark_audience" in notice, now == 0)
+                self.assertNotIn(
+                    "private_objective", public_call(row, "script", False)["opportunity"]
+                )
+                self.assertNotIn("private_objective", session.opportunity())
 
     def test_sealed_wait_and_recovery_across_turns(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)

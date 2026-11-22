@@ -218,6 +218,21 @@ class Session:
             **({"red_teammates": state["teammates"]} if "teammates" in state else {}),
         }
 
+    def private_objective(self):
+        seat = self.snap["seat"]
+        team = self.snap["state"]["role"]
+        if team == "red":
+            payoff = (
+                "You lose if the marker enters EXIT. You win if the last movement ends short "
+                "of EXIT or all Blue players are removed."
+            )
+        else:
+            payoff = (
+                "You win if the marker enters EXIT. You lose if the last movement ends short "
+                "of EXIT or all Blue players are removed."
+            )
+        return f"You are P{seat} on {team.title()}. Your only objective is for your team to win. {payoff}"
+
     def state(self):
         s = self.snap
         g = s["state"]
@@ -468,6 +483,12 @@ class Session:
             notice["context_request"] = (
                 "Call compact with a short private note about evidence or a plan. Your current state is restored automatically."
             )
+        if notice["owe_action"] or notice["can_speak"]:
+            notice["private_objective"] = self.private_objective()
+            if notice["can_speak"]:
+                notice["remark_audience"] = (
+                    "Every player hears your words. You choose which private facts to disclose."
+                )
         update = {"role": "user", "content": json.dumps(notice)}
         body = {
             "model": model,
