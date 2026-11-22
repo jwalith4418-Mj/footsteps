@@ -10,7 +10,7 @@ from pathlib import Path
 
 from .action_tools import BALLOT_TOOLS, PREPARATIONS, apply_call, build_tools, function, receipt
 from .decision_notes import open_private
-from .game import require
+from .game import movement_winner, require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
 from .role_knowledge import NOMINATION_VISIBILITY
 from .seat_tools import tile
@@ -232,6 +232,24 @@ class Session:
                 "of EXIT or all Blue players are removed."
             )
         return f"You are P{seat} on {team.title()}. Your only objective is for your team to win. {payoff}"
+
+    def proposal_results(self):
+        state = self.snap["state"]
+
+        def outcome(position):
+            winner = movement_winner(position, state["goal"], state["store_count"])
+            if winner is None:
+                return "Play continues."
+            result = "win" if winner == state["role"] else "lose"
+            return f"{winner.title()} wins. You {result}."
+
+        steps = [p for p in self.snap["choices"]["to"] if p is not None]
+        if state["goal"] not in steps and state["store_count"] > 0:
+            return {}
+        return {
+            "if_stay_or_step_rejected": outcome(state["marker"]),
+            "if_step_approved": [{**xy(p), "result": outcome(p)} for p in steps],
+        }
 
     def state(self):
         s = self.snap
@@ -485,9 +503,13 @@ class Session:
             )
         if notice["owe_action"] or notice["can_speak"]:
             notice["private_objective"] = self.private_objective()
+            if notice["stage"] == "propose" and notice["owe_action"]:
+                notice.update(self.proposal_results())
             if notice["can_speak"]:
                 notice["remark_audience"] = (
-                    "Every player hears your words. You choose which private facts to disclose."
+                    "Speak to the whole table in your own voice. Your seat number is shown automatically. "
+                    "Keep your private briefing to yourself unless revealing it advances your team's goal. "
+                    "You may bluff, speak about the public floor or stay silent."
                 )
         update = {"role": "user", "content": json.dumps(notice)}
         body = {

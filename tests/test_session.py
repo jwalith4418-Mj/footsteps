@@ -111,6 +111,42 @@ class PersistentSeat(unittest.TestCase):
                 )
                 self.assertNotIn("private_objective", session.opportunity())
 
+    def test_proposal_results_follow_exit_precedence_and_leave_the_builder_free_to_choose(self):
+        for team, exit_result, stay_result in (
+            ("blue", "Blue wins. You win.", "Red wins. You lose."),
+            ("red", "Blue wins. You lose.", "Red wins. You win."),
+        ):
+            roles = ["blue", team, "blue", "red"]
+            table = Table(CROSSING["setup"] | {"roles": roles}, Random(1))
+            for event in CROSSING["events"][:11]:
+                table.commit(event)
+            for seat in range(4):
+                table.join(seat, 0)
+            session = Session(ProjectedSeat(table, 1))
+            session.step(
+                "script",
+                infer=(
+                    reply := Mock(
+                        return_value={
+                            "message": {
+                                "tool_calls": [
+                                    {
+                                        "function": {
+                                            "name": "propose_step",
+                                            "arguments": {"x": 2, "y": 0},
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    )
+                ),
+            )
+            notice = json.loads(reply.call_args.args[2]["messages"][-1]["content"])
+            self.assertIn({"x": 2, "y": 0, "result": exit_result}, notice["if_step_approved"])
+            self.assertEqual(notice["if_stay_or_step_rejected"], stay_result)
+            self.assertEqual(table.game.pending, (2, 0))
+
     def test_sealed_wait_and_recovery_across_turns(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
         for i in range(4):
