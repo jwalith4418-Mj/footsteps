@@ -1,0 +1,2 @@
+{"seat": 1, "team": "red", "revision": 5, "answer": {"nomination": "P2 sees you nominated P0 immediately.", "pass": "P2 sees you passed immediately.", "before_reveal": "P2 sees nothing of P0's vote yet.", "after_reveal": "P2 sees P0's Yes/No/Timeout ballot publicly."}}
+{"seat": 1, "team": "blue", "revision": 5, "answer": {"nomination": "P2 sees you nominated P0 immediately.", "pass": "P2 sees you passed immediately.", "before_reveal": "P2 sees nothing of P0's vote yet.", "after_reveal": "P2 sees P0's Yes/No/Timeout ballot."}}
