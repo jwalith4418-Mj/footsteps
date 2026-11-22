@@ -1,0 +1,2 @@
+{"case": "proposal", "seat": 1, "team": "red", "choice": "stay", "aligned": true, "calls": [{"tool": "stay", "tokens": 101, "seconds": 1.798}]}
+{"case": "proposal-blue", "seat": 1, "team": "blue", "choice": [0, 0], "aligned": true, "calls": [{"tool": "propose_step", "tokens": 136, "seconds": 1.969}]}

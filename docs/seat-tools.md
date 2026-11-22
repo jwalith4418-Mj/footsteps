@@ -62,3 +62,11 @@ In `get_state()`, `builder` is the seat whose turn this is. `upcoming_builders` 
 Accepted decisions identify the action and the revision at which it committed. The nested `current` field describes the seat's resulting opportunity. Reads and hand preparations return their own results. Rejections return an explanation and the current opportunity, subject to the original referee deadline.
 
 When extending an action, check that a value returned by one tool can be used in the next, that the description matches the actual parameter schema in every supported mode, and that the receipt distinguishes a private preparation from a committed event. Exercise a rejected argument and a stale revision as well as the successful sequence. [Local transport and runner](table.md#persistent-ollama-seat)
+
+### Previewing a decision
+
+A build preview can show a specific oriented tile and the steps it would open. A movement proposal or ballot has conditional consequences. The persistent seat's private decision notice names its own team objective. When a movement outcome ends the game, the notice describes what follows if the table approves or rejects. It uses the marker, destination, bag and referee's terminal rule. A seat that can speak receives a reminder of the audience. Its private role remains available from `get_role()`.
+
+With `python -m footsteps.session --model MODEL --review-terminal-choices`, the seat gets one private opportunity per movement decision to reconsider an avoidable immediate loss or forgoing an available immediate win. The first such call returns `submitted: false` and the possible outcomes. The next legal movement choice commits, including the original choice. The clock keeps running. Only the committed action reaches the referee. A pending ballot supplies no information about other votes. A nonterminal directed trap receives no special treatment. [Paired decisions and live games](../experiments/seat-payoff/README.md)
+
+Nominating someone opens a public vote and identifies the accuser. Predicting its result would require assumptions about other seats. A remark could be previewed privately as attributed text, but once heard it can change what a listener believes even if the speaker retracts it. These are reasons to keep previews local and conditional when extending the tools.

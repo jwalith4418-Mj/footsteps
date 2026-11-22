@@ -1,0 +1,243 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "red",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        41,
+        107
+      ],
+      [
+        71,
+        234
+      ],
+      [
+        121,
+        74
+      ],
+      [
+        153,
+        45
+      ]
+    ],
+    "store": [
+      44,
+      188,
+      16
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        44,
+        188
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 44,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 41
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        41
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 16,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 41
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        41
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        1
+      ],
+      "tile": 41,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        true,
+        true
+      ]
+    }
+  ],
+  "table_id": "857b6fa73365d169d059a8b31666db21",
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I've placed a tile at (-1, 0) and proposed moving the marker there. This is a safe step that doesn't reach EXIT yet. Let's see how others vote."
+    },
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I support moving the marker to (-1, 0). This is a valid step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "P0 proposed moving to (-1, 0). I'm P1 on Red. The marker is at (-2, 0), goal is (0, 0). Moving to (-1, 0) gets us closer but not there yet. We need to keep building and moving strategically. Let's vote on this proposal."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "P0 proposed moving to (-1, 0). I'm seat 2 on Blue. The marker is at (-2, 0) and goal is (0, 0). Moving to (-1, 0) gets us closer but not there yet. I'll vote Yes to support the move."
+    },
+    {
+      "after_event": 13,
+      "seat": 1,
+      "text": "P1 proposed moving to (0, 0). This is the EXIT square! If this move is approved, Blue wins immediately. As a Red player, I must vote No to reject this step and keep the marker at (-1, 0). We need to avoid reaching the goal."
+    },
+    {
+      "after_event": 13,
+      "seat": 2,
+      "text": "P1 proposed moving to (0, 0), which is the EXIT! This is a winning move for Blue. I'll vote Yes to approve this step and secure our victory."
+    },
+    {
+      "after_event": 13,
+      "seat": 0,
+      "text": "P1 proposed moving the marker from (-1, 0) to (0, 0), which is the EXIT. This would end the game with Blue winning since the marker entered EXIT. As Red, I must vote No to reject this move and prevent our loss."
+    },
+    {
+      "after_event": 13,
+      "seat": 3,
+      "text": "P1 proposed moving to (0, 0), which is the EXIT. This would win for Blue immediately. I support this move."
+    },
+    {
+      "after_event": 21,
+      "seat": 1,
+      "text": "P2 proposed moving to (0, 0), which is the EXIT. This would win for Blue immediately. I must vote No to reject this move and prevent our loss."
+    },
+    {
+      "after_event": 21,
+      "seat": 0,
+      "text": "P2 proposed moving to (0, 0), which is the EXIT. This would win for Blue immediately. I support this move."
+    },
+    {
+      "after_event": 21,
+      "seat": 2,
+      "text": "I'm proposing a move to (0,0), which is the EXIT. This ends the game immediately with a Blue win if approved. I need votes from P3 or hope for a tie where my ballot breaks it. Let's get this done."
+    },
+    {
+      "after_event": 21,
+      "seat": 3,
+      "text": "P2 proposed moving to (0, 0), which is the EXIT. This would win for Blue immediately. I support this move."
+    }
+  ]
+}
