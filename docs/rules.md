@@ -1,6 +1,6 @@
 # Footsteps · base rules 1
 
-A group explores a tiled floor with one shared marker. **Blue** wants the marker to reach the exit. **Red** wants the tile store to run out first. If the marker enters EXIT, Blue wins regardless of who built the tile, proposed the step or voted for it. Everyone knows both objectives and the starting team sizes at setup.
+A group explores a tiled floor with one shared marker. **Blue wins** when the marker enters EXIT, whoever built the tile, proposed the step or voted for it. **Red wins** if the last movement opportunity ends short of EXIT or all Blue players are eliminated. The win conditions and starting team sizes are public from setup. A player can make a move that helps the other team.
 
 ## Setup
 
@@ -36,6 +36,8 @@ The builder proposes either staying put or moving one square. For a move east, t
 
 The proposed destination may be an older tile or the one just placed. On a movement ballot, vote to **move the marker** to the named square or **keep the marker here**. A rejected step leaves the newly placed tile on the floor. Staying skips the movement vote. Otherwise all living players, including the builder, cast ballots simultaneously and then reveal them by name. Move on a majority yes. On a tie, use the builder's ballot, which may be no. Reaching the exit ends the game with a Blue-team win. Otherwise an empty bag at this point ends the game with a Red-team win, even if every Red player has been eliminated.
 
+At a movement ballot the build is complete. Count the tiles left in the bag to find how many movement opportunities come **after** this one if play continues to depletion. Staying or rejecting the step uses the current opportunity. The bag count stays the same through nominations and removals.
+
 ## Discussion
 
 Everyone knows the discussion rules. When there is time to speak before a ballot, every seat hears each remark and knows who said it. Players on either team may tell the truth, lie, bluff, or stay silent. Players may claim either role. A promised vote leaves the speaker free to vote either way.
@@ -44,13 +46,15 @@ A player can check a claim against the public floor and revealed ballots, and ag
 
 ## Nominate
 
-Starting with the next living player after the builder, go once around the table, builder last. Each surviving player may pass or name one other living player. Resolve each nomination immediately with a simultaneous public vote of all living players, including the nominee. On this ballot, vote to **remove the nominee** or **keep the nominee in play**. Neither choice moves the marker. A strict majority yes eliminates the nominee. A tie fails. Skip eliminated seats for all subsequent decisions. Set their hands aside privately. Roles stay hidden during play.
+Starting with the next living player after the builder, go once around the table, builder last. Each surviving player may pass or name one other living player for removal. Everyone sees who passed or who nominated whom as soon as the choice is made. Everyone knows this before choosing. Resolve each nomination immediately with a simultaneous public vote of all living players, including the nominee. On this ballot, vote to **remove the nominee** or **keep the nominee in play**. Neither choice moves the marker. Only the voter can see their own submission while voting is open. The table shows everyone each seat’s Yes, No or timeout together when voting closes. A strict majority yes eliminates the nominee. A tie fails. Skip eliminated seats for all subsequent decisions. Set their hands aside privately. Roles stay hidden during play.
 
-If the last Blue player is eliminated, the Red team wins immediately. Otherwise continue even if no Red players remain. When the round ends, the next living seat after the builder becomes the builder. A sole survivor skips nominations. Every member of the winning team shares the result, including eliminated players. Reveal roles at game end.
+If the last Blue player is eliminated, the Red team wins immediately. Otherwise continue, including when Red has a majority of the living seats or no Red players remain. When the round ends, the next living seat after the builder becomes the builder. A sole survivor skips nominations. Every member of the winning team shares the result, including eliminated players. Reveal roles at game end.
 
 ## Deadlines and solitaire
 
-For timed play announce deadlines before decisions. Mark a missing ballot publicly as timed out and count it as no, including the builder's tie-break. A missed proposal means stay and a missed nomination means pass. A missed required placement or discard triggers a public report of a random choice, with the discarded face still private. The referee samples uniformly among distinct legal commands. A command identifies a face value, and a placement also identifies a square and one of four rotations.
+For timed play announce deadlines before decisions. As an optional table convention, open voting early once nobody has a speaking opportunity left. For example, with five seconds for discussion and twenty for voting, a final remark at second two opens the ballot immediately and sets its deadline at second twenty-two. If a living player stays silent, voting opens at second five as scheduled. Everyone receives the final remark before voting opens.
+
+Mark a missing ballot publicly as timed out and count it as no, including the builder's tie-break. A missed proposal means stay and a missed nomination means pass. A missed required placement or discard triggers a public report of a random choice, with the discarded face still private. The referee samples uniformly among distinct legal commands. A command identifies a face value, and a placement also identifies a square and one of four rotations.
 
 In solitaire, use one Blue player, accept their legal movement proposals, and skip nomination. A store of S tiles **after dealing** permits exactly S movement opportunities unless the exit is reached earlier. Each build uses one net tile. The start-to-exit Manhattan distance is a lower bound on winning time.
 

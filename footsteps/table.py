@@ -48,7 +48,9 @@ class DecisionConflict(ValueError):
 
 
 class Table:
-    def __init__(self, setup, rng, seconds=60, discussion=15, *, placement_check=None):
+    def __init__(
+        self, setup, rng, seconds=60, discussion=15, *, placement_check=None, early_ballot=False
+    ):
         require(isfinite(seconds) and seconds > 0, "decision time must be positive")
         require(isfinite(discussion) and discussion >= 0, "discussion time must be nonnegative")
         require(placement_check in (None, "edge", "edge-and-marker"), "unknown placement check")
@@ -61,6 +63,7 @@ class Table:
             self.add_pieces(seat, hand)
         self.rng = rng
         self.seconds = seconds
+        self.early_ballot = early_ballot
         self.discussion = discussion
         self.record = new_record(setup)
         if placement_check:
@@ -247,6 +250,7 @@ class Table:
         return {
             "seat": seat,
             "phase": phase,
+            "early_ballot": self.early_ballot,
             "revision": self.revision,
             "seconds_left": max(0, end - now) if phase in ("discussion", "decision") else None,
             "ready_count": len(self.ready),
@@ -336,3 +340,6 @@ class Table:
                     "text": f"P{seat}: {note['text']}",
                 }
             )
+        if self.early_ballot and not any(self.speaking(i, now) for i in self.game.alive):
+            self.opens = now
+            self.deadline = now + self.seconds

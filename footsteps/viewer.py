@@ -22,9 +22,20 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
     setup = game.view(seat)
     frames = []
 
-    def attach_rotations(frame, revision):
+    def attach_private_activity(frame, revision):
         for row in grouped.get(revision, []):
-            if row.get("kind") == "hand_rotation":
+            if row.get("kind") == "thinking":
+                require(
+                    row["seat"] in game.alive
+                    and not game.winner
+                    and row.get("turn") == game.turn
+                    and row.get("stage") == game.stage,
+                    "thinking trace does not match seat or decision",
+                )
+                frame.setdefault("pending_thinking_traces", []).append(
+                    {k: row[k] for k in ("seat", "model", "label", "thinking")}
+                )
+            elif row.get("kind") == "hand_rotation":
                 seat = row["seat"]
                 require(
                     not game.winner and seat in game.alive and row["face"] in game.hands[seat],
@@ -46,7 +57,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
         if view["stage"] == "move_vote":
             view["pending"] = tuple(map(str, view["pending"]))
         frame = {**view, "kind": kind, "event_turn": turn, "message": message}
-        attach_rotations(frame, len(frames))
+        attach_private_activity(frame, len(frames))
         frames.append(frame)
         return frame
 
@@ -57,7 +68,7 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
         attached = [
             applied_note(game, event, row)
             for row in grouped.get(revision, [])
-            if row.get("kind") != "hand_rotation"
+            if row.get("kind") not in ("hand_rotation", "thinking")
         ]
         kind, turn = event["kind"], game.turn
         message = describe(game, event, game.actor if omniscient else seat)
@@ -70,7 +81,11 @@ def transcript(record, seat=None, *, omniscient=False, notes=()):
             message = (
                 f"P{nominee} was eliminated." if nominee not in game.alive else "Nomination failed."
             )
+        # A sidecar revision names the state the model saw before making this decision.
+        attempts = frames[-1].pop("pending_thinking_traces", None)
         frame = capture(kind, turn, message)
+        if attempts:
+            frame["thinking_traces"] = attempts
         if kind == "place":
             p = tuple(event["at"])
             frame["placed"] = [tuple(map(str, p)), game.board[p], event["tile"], event["rotation"]]

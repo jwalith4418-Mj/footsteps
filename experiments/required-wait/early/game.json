@@ -1,0 +1,144 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        182,
+        188
+      ],
+      [
+        44,
+        153
+      ],
+      [
+        107,
+        91
+      ]
+    ],
+    "store": [
+      234,
+      16,
+      41
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        41,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 234,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 182
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        182
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 16,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 182
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I've placed a tile at (-1, 0) and proposed moving the marker there. This is a safe first step toward the goal at (0, 0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I agree with P0's proposal to move the marker to (-1, 0). This is a logical first step toward the goal at (0, 0). I vote yes."
+    },
+    {
+      "after_event": 12,
+      "seat": 1,
+      "text": "I agree with P1's proposal to move the marker to (0, 0), which is the goal. This will win the game for Red. I vote yes."
+    },
+    {
+      "after_event": 12,
+      "seat": 0,
+      "text": "P1 has proposed moving the marker from (-1, 0) to (0, 0), which is the goal. This is a winning move for Blue. I approve."
+    }
+  ]
+}

@@ -37,6 +37,23 @@ class LiveDecisions(unittest.TestCase):
             with self.assertRaises(ValueError):
                 fixed_kit(Random(1), 2, *counts)
 
+    def test_nominations_and_passes_are_attributed_before_ballot_reveal(self):
+        table = self.crossing_ballot(5)
+        table.submit(1, table.revision, {"target": None}, 0)
+        table.submit(2, table.revision, {"target": 0}, 0)
+        revision = table.revision
+        table.submit(0, revision, {"vote": False}, 5)
+        for seat in range(4):
+            history = table.view(seat, 5, structured_history=True)["history"]
+            self.assertEqual([r["text"] for r in history[-2:]], ["P1 passed.", "P2 nominated P0."])
+            self.assertNotIn("ballots", history[-1])
+        for seat in (1, 2, 3):
+            table.submit(seat, revision, {"vote": True}, 5)
+        self.assertEqual(
+            table.view(0, 5, structured_history=True)["history"][-1]["ballots"],
+            {0: False, 1: True, 2: True, 3: True},
+        )
+
     def test_discussion_and_sealed_ballots(self):
         table = Table(CROSSING["setup"], Random(1), seconds=20, discussion=5)
         for seat in range(4):
@@ -67,6 +84,68 @@ class LiveDecisions(unittest.TestCase):
         self.assertEqual(table.record["events"][-1], CROSSING["events"][4])
         self.assertEqual(table.view(2, 26)["state"]["marker"], (1, 0))
         self.assertEqual(table.record["remarks"][0]["after_event"], 4)
+
+    def crossing_ballot(self, prefix, *, early=True):
+        table = Table(CROSSING["setup"], Random(1), seconds=20, discussion=5, early_ballot=early)
+        for event in CROSSING["events"][:prefix]:
+            table.commit(event)
+        for seat in range(4):
+            table.join(seat, 0)
+        return table
+
+    def test_last_speaker_opens_both_ballots_with_full_clock_and_public_history(self):
+        # Opening step, removal, then the final step after P3 has been removed.
+        for prefix in (4, 6, 12):
+            with self.subTest(prefix=prefix):
+                table = self.crossing_ballot(prefix)
+                living = table.game.alive
+                if prefix == 12:
+                    self.assertEqual(living, [0, 1, 2])
+                    with self.assertRaises(DecisionConflict):
+                        table.say(3, prefix, "removed", 1)
+                for seat in living[:-1]:
+                    table.say(seat, prefix, "heard", 1)
+                with self.assertRaises(DecisionConflict):
+                    table.submit(0, prefix, {"vote": True}, 2)
+                table.say(living[-1], prefix, "last word", 2)
+                for seat in range(4):
+                    view = table.view(seat, 2, structured_history=True)
+                    self.assertTrue(view["history"][-1]["text"].endswith("last word"))
+                    self.assertEqual(view["phase"], "decision")
+                    self.assertEqual(view["seconds_left"], 20)
+                    self.assertEqual(view["choices"] is not None, seat in living)
+                before = table.view(1, 2)
+                table.submit(0, prefix, {"vote": True}, 2)
+                self.assertEqual(table.view(1, 2), before)
+                with self.assertRaises(DecisionConflict):
+                    table.say(living[-1], prefix, "again", 3)
+                table.tick(22)
+                event = table.record["events"][prefix]
+                self.assertEqual(event["votes"], [True] + [None] * (len(living) - 1))
+                self.assertEqual(table.game.winner, replay(table.record).winner)
+
+    def test_silence_cutoff_and_fixed_mode(self):
+        for early, last_time, accepted, opens in (
+            (True, None, False, 5),
+            (True, 4.99, True, 4.99),
+            (True, 5, False, 5),
+            (False, 2, True, 5),
+        ):
+            with self.subTest(early=early, last_time=last_time):
+                table = self.crossing_ballot(4, early=early)
+                for seat in range(3):
+                    table.say(seat, 4, "spoken", 1)
+                if last_time is not None:
+                    if accepted:
+                        table.say(3, 4, "last", last_time)
+                    else:
+                        with self.assertRaises(DecisionConflict):
+                            table.say(3, 4, "late", last_time)
+                self.assertEqual(len(table.record["remarks"]), 3 + int(accepted))
+                self.assertEqual(table.opens, opens)
+                self.assertEqual(table.view(0, opens)["seconds_left"], 20)
+                table.submit(0, 4, {"vote": True}, opens)
+                self.assertTrue(table.view(0, opens)["voted"])
 
     def test_three_seat_paper_deal_finishes_through_all_deadlines(self):
         setup = paper_setup(Random(13), 3)
@@ -257,6 +336,38 @@ class LoopbackTable(unittest.TestCase):
             with self.assertRaises(HTTPError) as error:
                 urlopen(request, timeout=3)
             self.assertEqual(error.exception.code, 404)
+
+    def test_last_say_response_and_first_vote_snapshots_include_final_speaker(self):
+        self.table.discussion = 5
+        self.table.early_ballot = True
+        for i in range(4):
+            self.api(i, "/ready")
+        for event in CROSSING["events"][1:4]:
+            self.api(
+                0,
+                "/choice",
+                revision=self.table.revision,
+                choice={k: v for k, v in event.items() if k != "kind"},
+            )
+        for i in (3, 0, 2):
+            response = self.api(i, "/say", revision=4, text="heard")
+            self.assertIsNone(response["choices"])
+        self.now = 2
+        last = self.api(1, "/say", revision=4, text="Count the exits.")
+        self.assertEqual(last["phase"], "decision")
+        self.assertEqual(last["seconds_left"], 10)
+        self.assertEqual(read(self.path)["remarks"][-1]["seat"], 1)
+        for i in range(4):
+            snap = Seat(f"http://127.0.0.1:{self.server.server_port}/#{self.tokens[i]}").call(
+                "/session"
+            )
+            self.assertTrue(snap["early_ballot"])
+            self.assertEqual(snap["choices"], {"vote": [True, False]})
+            self.assertEqual(snap["history"][-1]["speaker"], 1)
+            self.assertTrue(snap["history"][-1]["text"].endswith("Count the exits."))
+        before = self.api(0)
+        self.api(1, "/choice", revision=4, choice={"vote": False})
+        self.assertEqual(before, self.api(0))
 
     def test_model_seat_transport_and_discussion_checkpoint(self):
         base = f"http://127.0.0.1:{self.server.server_port}/#"

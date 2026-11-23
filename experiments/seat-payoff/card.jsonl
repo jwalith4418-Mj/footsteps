@@ -1,0 +1,8 @@
+{"case": "proposal", "seat": 1, "team": "red", "choice": "stay", "aligned": true, "calls": [{"tool": "stay", "tokens": 184, "seconds": 2.834}]}
+{"case": "proposal-blue", "seat": 1, "team": "blue", "choice": [0, 0], "aligned": true, "calls": [{"tool": "propose_step", "tokens": 191, "seconds": 2.758}]}
+{"case": "exit", "seat": 0, "team": "red", "choice": true, "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.583}, {"tool": "vote_move", "tokens": 27, "seconds": 0.566}]}
+{"case": "exit", "seat": 1, "team": "red", "choice": true, "aligned": false, "calls": [{"tool": "vote_move", "tokens": 212, "seconds": 3.312}]}
+{"case": "exit", "seat": 2, "team": "blue", "choice": true, "aligned": true, "calls": [{"tool": null, "tokens": 240, "seconds": 3.619}, {"tool": "vote_move", "tokens": 27, "seconds": 0.555}]}
+{"case": "wrong-summary", "seat": 0, "team": "red", "choice": true, "aligned": false, "calls": [{"tool": "vote_move", "tokens": 27, "seconds": 0.85}]}
+{"case": "trap-red", "seat": 1, "team": "red", "choice": false, "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.671}, {"tool": "vote_move", "tokens": 27, "seconds": 0.548}]}
+{"case": "trap-blue", "seat": 1, "team": "blue", "choice": true, "aligned": false, "calls": [{"tool": null, "tokens": 240, "seconds": 3.602}, {"tool": "vote_move", "tokens": 27, "seconds": 0.533}]}

@@ -78,3 +78,23 @@ The [pivotal removal ballots](pivotal-votes/README.md) measure whether the same 
 The [persistent listener](persistent-listener/README.md) follows one seat through a public accusation, a removal vote, private compaction and the next turn.
 
 The [persistent runner panel](persistent-panel/README.md) compares build inspection and movement updates on solitaire floors, then follows conflicting public ballots across compaction and into a full social table.
+
+The [complete-game timing study](game-efficiency/README.md) separates time spent choosing from time waiting for the GPU, compares two seat policies, and replays an illustrative per-player reserve against the observed deadlines.
+
+The [paired RANA speaker trial](rana-speakers/README.md) gives the base and abliterated 27B models identical removal discussions, a separate private role check, and a matched pair of complete games.
+
+The [early-ballot timing study](early-ballot/README.md) compares discussion clocks on a matched deal and checks whether vote prompts delivered the last speaker's remark.
+
+The [required-choice wait trial](required-wait/README.md) follows two previously missed choices and a fresh same-deal game after making a plain wait return immediately when the player owes an action.
+
+The [ballot polling study](ballot-polling/README.md) compares reveal guidance and waiting tool names on frozen positions, then follows the same small deal with a fourth seat.
+
+The [four-seat move-budget probes](move-budget/README.md) pair a losing outward step with the only viable retreat and replay silent, scripted and model-generated discussion into matched voters.
+
+The [private pregame analysis study](pregame-analysis/README.md) asks two local models to discover useful principles before the deal, restores their own notes after compaction, and tests transfer to movement ballots on both teams.
+
+The [open social tables](open-tables/README.md) follow two fresh deals with the live movement clock, discussion and independent persistent seats.
+
+The [proposer and voter comparison](exit-interest/README.md) crosses private team assignments on two actual EXIT proposals and a nonterminal step into a permanent dead end.
+
+The [native thinking-budget study](ballot-thinking/README.md) measures whether time spent thinking changes an actual movement ballot and preserves full local traces in an owner-only board viewer.

@@ -8,10 +8,11 @@ from getpass import getpass
 from http.client import HTTPException
 from pathlib import Path
 
-from .action_tools import apply_call, build_tools, function, receipt
+from .action_tools import BALLOT_TOOLS, PREPARATIONS, apply_call, build_tools, function, receipt
 from .decision_notes import open_private
-from .game import require
+from .game import movement_winner, require
 from .ollama import INCOMPLETE_COMPACT, Seat, ServiceError, request
+from .role_knowledge import NOMINATION_VISIBILITY
 from .seat_tools import tile
 
 CONTEXT_WINDOWS = (4096, 8192, 16384, 32768)
@@ -68,17 +69,28 @@ def history_page(
     }
 
 
+MOVEMENT_CLOCK = (
+    "Each build uses one net tile from the store. At a movement ballot, store_count is the "
+    "number of later movement opportunities if play continues. Staying or rejecting a step "
+    "leaves the marker in place and uses this turn's opportunity. Check EXIT first, even on "
+    "the final turn. Otherwise an empty store wins for Red before nominations. "
+    "Nominations and removals leave the store count unchanged. Eliminated hands are set aside."
+)
+
+
 SYSTEM = (
     "You play the same seat throughout a Footsteps game. Blue wins when the shared marker enters EXIT, "
     "whoever proposed the step. Red wins if the last movement opportunity ends short of EXIT or all "
-    "Blue players are removed. Removed players share the team's result. Everyone knows both goals "
-    "and the starting counts. Red knows the starting Red roster. Blue knows its own team. "
+    "Blue players are removed. Removed players share the team's result. Both win conditions "
+    "and the starting team sizes are public. Red knows the starting Red roster. Blue knows its own team. "
     "The builder places a held piece at an empty adjacent square, then separately proposes staying "
     "or taking one legal step from the marker. To step, the source must allow exit toward the "
     "destination and the destination must allow entry on its facing side. North increases y. "
-    "Rotation is an absolute number of clockwise quarter turns from the printed face, 0 through 3. "
+    + MOVEMENT_CLOCK
+    + " Rotation is an absolute number of clockwise quarter turns from the printed face, 0 through 3. "
     "Living seats vote on steps; a tie follows the builder's own ballot. Removal requires a strict "
-    "majority. Everyone hears public remarks, and either team can bluff. "
+    f"majority. {NOMINATION_VISIBILITY} "
+    "Everyone hears public remarks, and either team can bluff. "
     "Call exactly one tool per reply. Use literal piece handles, seats and coordinates. "
     "Use history to check evidence and compact to retain private notes. The host clock continues "
     "during all calls. An accepted decision is final. Reading and preparing tiles are private."
@@ -108,6 +120,10 @@ HISTORY["function"]["parameters"]["required"] = []
 HISTORY["function"]["parameters"]["properties"]["kind"]["enum"] = list(HISTORY_KINDS)
 
 
+class UnavailableTool(ValueError):
+    """The reply named a function outside the schema sent for that inference."""
+
+
 class Session:
     def __init__(
         self,
@@ -117,6 +133,7 @@ class Session:
         inspect_rotations=False,
         movement_context=False,
         wait_at_notice=True,
+        review_terminal_choices=False,
         context=8192,
     ):
         require(context in CONTEXT_WINDOWS, f"choose a context size from {CONTEXT_WINDOWS}")
@@ -124,6 +141,8 @@ class Session:
         self.seat = seat
         self.hand_mode = "fit" if inspect_rotations else "hand"
         self.wait_at_notice = wait_at_notice
+        self.review_terminal_choices = review_terminal_choices
+        self.reviewed_revision = None
         self.movement_context = movement_context
         self.sleep = sleep
         self.cursor = 0
@@ -202,6 +221,88 @@ class Session:
             **({"red_teammates": state["teammates"]} if "teammates" in state else {}),
         }
 
+    def private_objective(self):
+        seat = self.snap["seat"]
+        team = self.snap["state"]["role"]
+        if team == "red":
+            payoff = (
+                "You lose if the marker enters EXIT. You win if the last movement ends short "
+                "of EXIT or all Blue players are removed."
+            )
+        else:
+            payoff = (
+                "You win if the marker enters EXIT. You lose if the last movement ends short "
+                "of EXIT or all Blue players are removed."
+            )
+        return f"You are P{seat} on {team.title()}. Your only objective is for your team to win. {payoff}"
+
+    def movement_winners(self):
+        state = self.snap["state"]
+        if state["stage"] == "move_vote":
+            steps = [state["pending"]]
+        elif state["stage"] == "propose" and self.snap["choices"]:
+            steps = [p for p in self.snap["choices"]["to"] if p is not None]
+        else:
+            return {}
+        landings = [state["marker"], *steps]
+        return {
+            tuple(p): movement_winner(tuple(p), tuple(state["goal"]), state["store_count"])
+            for p in landings
+        }
+
+    def movement_results(self):
+        state = self.snap["state"]
+        winners = self.movement_winners()
+        if not any(winners.values()):
+            return {}
+        marker = tuple(state["marker"])
+
+        def outcome(winner):
+            if winner is None:
+                return "Play continues."
+            result = "win" if winner == state["role"] else "lose"
+            return f"{winner.title()} wins. You {result}."
+
+        if state["stage"] == "move_vote":
+            return {
+                "if_table_votes_yes": outcome(winners[tuple(state["pending"])]),
+                "if_table_votes_no": outcome(winners[marker]),
+            }
+        return {
+            "if_stay_or_step_rejected": outcome(winners[marker]),
+            "if_step_approved": [
+                {**xy(p), "result": outcome(w)} for p, w in winners.items() if p != marker
+            ],
+        }
+
+    def review_movement(self, revision, choice):
+        """One private check of a terminal tradeoff. Repeating the same choice commits it."""
+        winners = self.movement_winners()
+        if not winners:
+            return None
+        state = self.snap["state"]
+        landing = state["marker"]
+        if state["stage"] == "propose":
+            landing = choice["to"] or landing
+        elif choice["vote"]:
+            landing = state["pending"]
+        winner = winners[tuple(landing)]
+        team = state["role"]
+        if winner != team and team in winners.values():
+            reason = f"Another legal landing wins immediately for your team, {team.title()}."
+        elif winner and winner != team and any(w != winner for w in winners.values()):
+            reason = f"This landing wins for {winner.title()}. You are {team.title()} and would lose. Another legal choice avoids that immediate loss."
+        else:
+            return None
+        if self.reviewed_revision == revision:
+            return None
+        self.reviewed_revision = revision
+        return {
+            "submitted": False,
+            "private_review": reason + " Choose again. Repeating this choice confirms it.",
+            **self.movement_results(),
+        }
+
     def state(self):
         s = self.snap
         g = s["state"]
@@ -229,6 +330,7 @@ class Session:
             "marker": xy(g["marker"]),
             "builder": g["actor"],
             "nominator": g["nominator"],
+            **{key: g[key] for key in ("upcoming_builders", "remaining_nominators") if key in g},
             "alive": g["alive"],
             "store_count": g["store_count"],
             "winner": g["winner"],
@@ -272,18 +374,25 @@ class Session:
     def tools(self):
         wait_tool = function(
             "wait",
-            "Sleep without inference until a visible change after the last cursor you read. Waiting while owing a decision may time out.",
-            {"after_cursor": "integer"},
+            "Sleep until a visible change. Returns immediately when you owe a choice. "
+            "Use force=true to sleep through that choice and risk a timeout. "
+            "An older after_cursor returns immediately.",
+            {"after_cursor": "integer", "force": "boolean"},
         )
-        if self.wait_at_notice:
-            wait_tool["function"]["description"] = (
-                "Call wait() to sleep until your seat sees a change since this update. "
-                "An explicit after_cursor is optional. Waiting while owing a decision may time out."
-            )
-            wait_tool["function"]["parameters"]["required"] = []
+        wait_tool["function"]["parameters"]["required"] = (
+            [] if self.wait_at_notice else ["after_cursor"]
+        )
         specs = [
-            function("get_state", "Read your current board, held pieces and legal choices.", {}),
-            function("get_role", "Read your authoritative private team assignment.", {}),
+            function(
+                "get_state",
+                "Read your seat and team, board, held pieces, legal choices and turn order. "
+                "Upcoming builders start next turn, up to one lap as the bag allows. "
+                "Remaining nominators are listed next first. Removal changes both orders.",
+                {},
+            ),
+            function(
+                "get_role", "Read your seat number, private team and any known Red teammates.", {}
+            ),
             HISTORY,
             function(
                 "compact",
@@ -302,16 +411,39 @@ class Session:
             specs.extend(build_tools(self.snap, self.hand_mode))
         return specs
 
-    def wait(self, after):
+    def wait(self, after, *, force=False):
         require(0 <= after <= self.cursor, "use a cursor from this session")
+        if after == self.cursor and self.snap["choices"] is not None and not force:
+            tools = build_tools(self.snap, self.hand_mode)
+            return self.opportunity() | {
+                "wait_status": "action_required",
+                "message": "Your choice is due now. Submit a decision.",
+                "decision_tools": [
+                    t["function"]["name"]
+                    for t in tools
+                    if t["function"]["name"] not in PREPARATIONS
+                ],
+            }
         while self.cursor == after and self.snap["phase"] != "over":
             self.sleep(0.15)
             self.refresh()
         return self.opportunity()
 
+    def ballot_guidance(self):
+        s = self.snap
+        if s["phase"] == "discussion":
+            action = "Speak now or wait() to listen." if s["can_speak"] else "Use wait() to listen."
+            return f"Voting has not opened. {action}"
+        if s["choices"] is not None:
+            tool = BALLOT_TOOLS[s["state"]["stage"]]
+            return f"Your ballot is due now. Cast it with {tool}."
+        return "Use wait() for a visible change."
+
     def execute(self, name, args, offered, revision):
         spec = next((t["function"] for t in offered if t["function"]["name"] == name), None)
-        require(spec is not None and isinstance(args, dict), "choose one available function")
+        if spec is None:
+            raise UnavailableTool("That function was not offered for this request.")
+        require(isinstance(args, dict), "expected a function argument object")
         schema = spec["parameters"]
         types = {"integer": int, "boolean": bool, "string": str}
         require(
@@ -329,7 +461,21 @@ class Session:
         notice_cursor = self.cursor
         self.refresh()
         if name == "history":
-            return history_page(self.snap["history"], **args)
+            page = history_page(self.snap["history"], **args)
+            state = self.snap["state"]
+            stage = state["stage"]
+            if (
+                stage in BALLOT_TOOLS
+                and self.snap["phase"] in ("discussion", "decision")
+                and (args.get("kind") == stage or ("kind" not in args and "voter" in args))
+                and args.get("turn", state["turn"]) == state["turn"]
+                and "before" not in args
+            ):
+                page["pending_ballot"] = (
+                    "The current tally enters history only when ballots are revealed. "
+                    + self.ballot_guidance()
+                )
+            return page
         if name == "get_role":
             return self.role()
         if name == "get_state":
@@ -340,7 +486,9 @@ class Session:
             self.reset()
             return {"compacted": True}
         if name == "wait":
-            return self.wait(args.get("after_cursor", notice_cursor))
+            after = args.get("after_cursor", notice_cursor)
+            require(0 <= after <= notice_cursor, "use a cursor from the opportunity you saw")
+            return self.wait(after, force=args.get("force", False))
         require(revision == self.snap["revision"], "the decision changed; read the new opportunity")
         if name == "speak":
             self.seat.call("/say", {"revision": revision, "text": args["text"]})
@@ -370,6 +518,10 @@ class Session:
                             xy(p) for p in result["legal_steps_after_build"]
                         ]
                 return result
+            if self.review_terminal_choices and name in ("propose_step", "stay", "vote_move"):
+                review = self.review_movement(revision, choice)
+                if review is not None:
+                    return review
             self.seat.call("/choice", {"revision": revision, "choice": choice})
         self.refresh()
         return {
@@ -404,6 +556,15 @@ class Session:
             offered = [t for t in offered if t["function"]["name"] == "compact"]
             notice["context_request"] = (
                 "Call compact with a short private note about evidence or a plan. Your current state is restored automatically."
+            )
+        if notice["owe_action"]:
+            notice["private_objective"] = self.private_objective()
+            notice.update(self.movement_results())
+        if notice["can_speak"]:
+            notice["remark_audience"] = (
+                "Speak to the whole table in your own voice. Your seat number is shown automatically. "
+                "Keep your private briefing to yourself unless revealing it advances your team's goal. "
+                "You may bluff, speak about the public floor or stay silent."
             )
         update = {"role": "user", "content": json.dumps(notice)}
         body = {
@@ -474,6 +635,23 @@ class Session:
                 raise
             self.refresh()
             result = {"error": str(exc), "current": self.opportunity()}
+            if isinstance(exc, UnavailableTool):
+                # A reply can arrive after a remark, ballot opening or change of turn.
+                # Report the tools for the same snapshot as current, never execute the old call.
+                available = offered if compact_required else self.tools()
+                result["available_tools"] = (
+                    [t["function"]["name"] for t in available]
+                    if self.snap["phase"] != "over"
+                    and self.snap["seat"] in self.snap["state"]["alive"]
+                    else []
+                )
+                if (
+                    name.startswith("vote_")
+                    and self.snap["state"]["stage"] in BALLOT_TOOLS
+                    and self.snap["phase"] in ("discussion", "decision")
+                    and not compact_required
+                ):
+                    result["pending_ballot"] = self.ballot_guidance()
         if name != "compact" or "error" in result:
             if name is None or not isinstance(args, dict):
                 self.messages.append({"role": "user", "content": json.dumps(result)})
@@ -494,6 +672,17 @@ class Session:
             "forced_compaction": force_compact,
             "num_ctx": self.context,
             "num_predict": body["options"]["num_predict"],
+            "opportunity": {
+                key: notice[key]
+                for key in (
+                    "turn",
+                    "stage",
+                    "phase",
+                    "can_speak",
+                    "owe_action",
+                    "seconds_left_in_phase",
+                )
+            },
             "tool": name,
             "tool_offered": any(t["function"]["name"] == name for t in offered),
             "arguments": args,
@@ -526,6 +715,11 @@ def main():
         action="store_true",
         help="show the marker and available or proposed landing in movement updates",
     )
+    cli.add_argument(
+        "--review-terminal-choices",
+        action="store_true",
+        help="privately confirm an avoidable loss or passing up an immediate win",
+    )
     cli.add_argument("--trace", type=Path, help="new private JSONL tool trace")
     args = cli.parse_args()
     seat = Seat(getpass("Private seat link: ").strip())
@@ -534,6 +728,7 @@ def main():
         seat,
         inspect_rotations=args.inspect_rotations,
         movement_context=args.movement_context,
+        review_terminal_choices=args.review_terminal_choices,
         context=args.context,
     )
 

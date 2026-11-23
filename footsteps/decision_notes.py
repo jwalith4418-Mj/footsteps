@@ -82,8 +82,16 @@ def notes_for_record(record, notes):
             raise ValueError("decision note version or table ID does not match this record")
         rev = row.get("revision")
         rotation = row.get("kind") == "hand_rotation"
-        if type(rev) is not int or not 0 <= rev < len(record["events"]) + int(rotation):
+        thinking = row.get("kind") == "thinking"
+        if type(rev) is not int or not 0 <= rev < len(record["events"]) + int(rotation or thinking):
             raise ValueError("decision note refers to an event outside this record")
+        if thinking:
+            if type(row.get("seat")) is not int or not all(
+                isinstance(row.get(k), str) for k in ("model", "label", "thinking")
+            ):
+                raise ValueError("invalid private thinking trace")
+            grouped.setdefault(rev, []).append(row)
+            continue
         if rotation:
             if not (
                 type(row.get("seat")) is int

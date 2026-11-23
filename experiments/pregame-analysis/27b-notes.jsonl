@@ -1,0 +1,6 @@
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "open", "seed": 1, "sha256": "dc868e7c06fa0c962b51fb80bf31e45ffa833a097c101351f76198f0c362caf2", "words": 198, "tokens": 240, "attempt_limits": [512]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "invariants", "seed": 1, "sha256": "25d3f07ca4d6ed69bb7d55c6a732607dd4c469f0cdc49c048a06a8688f02733e", "words": 197, "tokens": 238, "attempt_limits": [512]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "open", "seed": 2, "sha256": "c69297ac1be7b0fab6b1df7221dc3f27bea85ba66448238a6f3cedcf7948641d", "words": 175, "tokens": 219, "attempt_limits": [512]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "invariants", "seed": 2, "sha256": "6fdbc249a97eab972c75ceb2d8f3cdbf0b9da117d42f25dfb957985d013ec990", "words": 187, "tokens": 236, "attempt_limits": [512]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "open", "seed": 3, "sha256": "7ee2a537beb01c321a74f9ca6d327c876a49117c125fe5689414835b5eebef07", "words": 232, "tokens": 290, "attempt_limits": [512]}
+{"model": "footsteps-qwen3.8:27b-rana-layout", "cue": "invariants", "seed": 3, "sha256": "4bc7b30be4de3ca5360cc9b24316e686ddfcdab18afe748d2cc14bcacbb16b91", "words": 368, "tokens": 526, "attempt_limits": [512, 1024]}

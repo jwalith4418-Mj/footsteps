@@ -24,15 +24,22 @@ def speaking_seconds(seat, revision):
     return 0
 
 
-def play_seat(seat, model, queue, log, trace, context, request_budget):
-    session = Session(seat, inspect_rotations=True, movement_context=True, context=context)
+def play_seat(seat, model, queue, log, trace, context, request_budget, session_class=Session):
+    session = session_class(seat, inspect_rotations=True, movement_context=True, context=context)
     queued = 0
     discussion = None
 
+    last_remark = None
+
     def infer(port, path, body, budget):
-        nonlocal discussion
+        nonlocal discussion, last_remark
         submitted = monotonic()
         revision = session.snap["revision"]
+        if any(t["function"]["name"] in ("vote_move", "vote_removal") for t in body["tools"]):
+            notice = json.loads(body["messages"][-1]["content"])
+            for entry in notice["latest"]:
+                if entry["kind"] == "remark" and entry["event"] == revision:
+                    last_remark = entry["speaker"]
         if session.snap["phase"] == "discussion":
             discussion = {
                 "revision": revision,
@@ -57,29 +64,44 @@ def play_seat(seat, model, queue, log, trace, context, request_budget):
     while session.snap["phase"] != "over":
         queued = 0
         discussion = None
+        last_remark = None
         row = measured_step(session, model, infer=infer, budget=request_budget)
         if row:
             print(json.dumps(row), file=trace, flush=True)
             public = public_call(row, model, False)
             public["queue_seconds"] = round(queued, 3)
             public["discussion"] = discussion
+            if last_remark is not None:
+                public["ballot_prompt_last_speaker"] = last_remark
             print(json.dumps(public), file=log, flush=True)
 
 
-def play(root, private, model, context, seconds, discussion_seconds):
+def play(
+    root,
+    private,
+    model,
+    context,
+    seconds,
+    discussion_seconds,
+    *,
+    table=None,
+    session_class=Session,
+    guest=None,
+):
     private.mkdir(exist_ok=False)
-    table = Table(
-        {
-            "roles": ["blue", "red", "blue"],
-            "start": [-2, 0],
-            "goal": [0, 0],
-            "hands": [[40, 0], [65, 0], [68, 0]],
-            "store": [65, 40, 255],
-        },
-        Random(103),
-        seconds=seconds,
-        discussion=discussion_seconds,
-    )
+    if table is None:
+        table = Table(
+            {
+                "roles": ["blue", "red", "blue"],
+                "start": [-2, 0],
+                "goal": [0, 0],
+                "hands": [[40, 0], [65, 0], [68, 0]],
+                "store": [65, 40, 255],
+            },
+            Random(103),
+            seconds=seconds,
+            discussion=discussion_seconds,
+        )
     with (
         live_table(root, table, model, context=context) as (_, seats),
         ThreadPoolExecutor(1) as queue,
@@ -91,17 +113,23 @@ def play(root, private, model, context, seconds, discussion_seconds):
                 (root / f"seat-{i}.jsonl").open("x") as log,
                 open_private(private / f"seat-{i}.jsonl") as trace,
             ):
-                play_seat(seats[i], model, queue, log, trace, context, seconds)
+                if guest is not None and i == guest.seat:
+                    guest.play(seats[i], trace)
+                    return
+                play_seat(seats[i], model, queue, log, trace, context, table.seconds, session_class)
 
-        with ThreadPoolExecutor(3) as clients:
+        with ThreadPoolExecutor(len(seats)) as clients:
             list(clients.map(run, seats))
         timing = {
             "model": model,
             "num_ctx": context,
-            "decision_seconds": seconds,
-            "discussion_seconds": discussion_seconds,
+            "decision_seconds": table.seconds,
+            "discussion_seconds": table.discussion,
+            "early_ballot": table.early_ballot,
             "play_seconds": round(monotonic() - start, 2),
         }
+        if guest is not None:
+            timing["guest_seat"] = guest.seat
         timing["resident"] = resident_model(model)
         (root / "timing.json").write_text(json.dumps(timing, indent=2) + "\n")
 
@@ -135,7 +163,7 @@ def report(root):
     service_seconds = 0
     compact_seconds = 0
     compactions = 0
-    for i in range(3):
+    for i in range(len(g.roles)):
         calls = list(map(json.loads, (root / f"seat-{i}.jsonl").read_text().splitlines()))
         for c in calls:
             latencies.append(c["inference_seconds"])

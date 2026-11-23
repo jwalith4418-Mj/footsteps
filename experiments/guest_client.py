@@ -23,6 +23,8 @@ def main():
         deadline = time.monotonic() + args.wait
         while True:
             for packet in sorted(ROOT.glob("*.request.json")):
+                if (ROOT / (packet.name.split(".")[0] + ".expired")).exists():
+                    continue
                 if not packet.with_name(packet.name.replace(".request.", ".reply.")).exists():
                     print(packet.read_text())
                     return
@@ -34,6 +36,8 @@ def main():
                 return
             time.sleep(0.15)
     packet = ROOT / f"{args.id:04}.request.json"
+    if (ROOT / f"{args.id:04}.expired").exists():
+        sys.exit("This opportunity expired. Read the next packet.")
     request = json.loads(packet.read_text())
     reply = json.loads(args.reply)
     if not isinstance(reply, dict) or not isinstance(reply.get("observation"), str):

@@ -48,14 +48,25 @@ The persistent player receives one function schema for each action available to 
 
 | Tools | How the values fit together |
 |---|---|
-| `get_state()`, `get_role()` | Read authoritative facts for this seat. Held pieces show their printed face, current rotation, entrances and exits. Board tiles show the face after rotation. State supplies build squares, possible steps or nomination targets when the seat can use them. |
+| `get_role()` | Read your seat number, team and public starting team counts. A Red seat also receives its fellow Red seat numbers. |
+| `get_state()` | Read the same private identity plus the board and turn order. Held pieces show their printed face, current rotation, entrances and exits. Board tiles show the face after rotation. State supplies build squares, possible steps or nomination targets when the seat can use them. |
 | `inspect_rotations_at`, `orient_tile`, `preview_placement`, `place_tile` | Inspection compares one held piece at one candidate square. Its rows use the same `rotation` value accepted by `orient_tile`. Only orienting changes the copy in hand. Both preview and placement take that handle and square. Placement commits its current rotation. The marker stays on its original square throughout. |
 | `return_tile` | Return the named held copy to the store. Its handle leaves this seat's hand. |
 | `propose_step`, `stay`, `vote_move` | A step takes one destination. Stay takes no arguments. On a step proposal, `approve: true` votes to land on that square and `false` votes to stay. |
-| `nominate`, `pass_nomination`, `vote_removal` | Nominate takes another living seat's integer ID. Pass takes no arguments. The removal ballot identifies the nominee. `approve: true` votes to remove that player. Ballots remain private until the group reveal. |
+| `nominate`, `pass_nomination`, `vote_removal` | Nominate takes another living seat's integer ID. Pass takes no arguments. Every seat immediately sees who passed or who nominated whom. A nomination opens a removal ballot. `approve: true` votes to remove that player. Ballots remain private until the group reveal. |
 | `speak`, `history` | Speech is public and attributed. History pages distinguish a speaker's claim from a revealed ballot. Use `{"kind":"move_vote","turn":1,"voter":0}` to check P0's first-turn movement ballot when a later vote is also visible. A revealed null ballot denotes a missed vote. |
 | `compact`, `wait` | Compact takes short player-authored notes. Wait normally takes no arguments and starts at the visible update the player just saw. An intervening remark wakes it immediately. An optional `after_cursor` names an earlier visible-state update. History pagination uses entry IDs instead. |
+
+In `get_state()`, `builder` is the seat whose turn this is. `upcoming_builders` lists the following turns in order, up to one lap of living seats and only as far as the bag allows. Reaching EXIT or removing players can change that forecast. During nominations and removal ballots, `remaining_nominators` lists the seats still due a nomination this turn, next first. For example, if P0 builds and P1 nominates P0 at a four-seat table, the remaining nominators during the ballot are P2, P3, P0. If the vote removes P0, only P2 and P3 still get a nomination, and P1 is due to build next.
 
 Accepted decisions identify the action and the revision at which it committed. The nested `current` field describes the seat's resulting opportunity. Reads and hand preparations return their own results. Rejections return an explanation and the current opportunity, subject to the original referee deadline.
 
 When extending an action, check that a value returned by one tool can be used in the next, that the description matches the actual parameter schema in every supported mode, and that the receipt distinguishes a private preparation from a committed event. Exercise a rejected argument and a stale revision as well as the successful sequence. [Local transport and runner](table.md#persistent-ollama-seat)
+
+### Previewing a decision
+
+A build preview can show a specific oriented tile and the steps it would open. A movement proposal or ballot has conditional consequences. The persistent seat's private decision notice names its own team objective. When a movement outcome ends the game, the notice describes what follows if the table approves or rejects. It uses the marker, destination, bag and referee's terminal rule. A seat that can speak receives a reminder of the audience. Its private role remains available from `get_role()`.
+
+With `python -m footsteps.session --model MODEL --review-terminal-choices`, the seat gets one private opportunity per movement decision to reconsider an avoidable immediate loss or forgoing an available immediate win. The first such call returns `submitted: false` and the possible outcomes. The next legal movement choice commits, including the original choice. The clock keeps running. Only the committed action reaches the referee. A pending ballot supplies no information about other votes. A nonterminal directed trap receives no special treatment. [Paired decisions and live games](../experiments/seat-payoff/README.md)
+
+Nominating someone opens a public vote and identifies the accuser. Predicting its result would require assumptions about other seats. A remark could be previewed privately as attributed text, but once heard it can change what a listener believes even if the speaker retracts it. These are reasons to keep previews local and conditional when extending the tools.

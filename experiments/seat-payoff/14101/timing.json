@@ -1,0 +1,14 @@
+{
+  "model": "qwen3.5:9b-q8_0",
+  "num_ctx": 16384,
+  "decision_seconds": 60,
+  "discussion_seconds": 30,
+  "early_ballot": true,
+  "play_seconds": 366.9,
+  "resident": {
+    "size": 9537260092,
+    "size_vram": 9537260092,
+    "context_length": 16384,
+    "digest": "a8ee95bc3592ebaa624014ca8b429d25e0ef5f45030dc35786da7ff7e9e1b60a"
+  }
+}

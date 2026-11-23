@@ -61,6 +61,12 @@ class PersistentRuntime(unittest.TestCase):
             self.assertNotIn(secret, metrics)
             rows = list(map(json.loads, metrics.splitlines()))
             self.assertTrue(rows[0]["forced_compaction"])
+            opening = rows[0]["opportunity"]
+            self.assertEqual(
+                set(opening),
+                {"turn", "stage", "phase", "can_speak", "owe_action", "seconds_left_in_phase"},
+            )
+            self.assertEqual((opening["stage"], opening["owe_action"]), ("place", True))
             self.assertEqual(rows[1]["filters"], {})
             self.assertTrue(rows[1]["error"])
             self.assertEqual(rows[2]["tool"], "unavailable_tool")

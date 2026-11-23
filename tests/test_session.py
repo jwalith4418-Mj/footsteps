@@ -5,7 +5,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from random import Random
 from tempfile import TemporaryDirectory
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from footsteps.record import read
 from footsteps.session import Session, main
@@ -75,6 +75,127 @@ class PersistentSeat(unittest.TestCase):
             self.assertEqual(json.loads(trace.read_text())["tool"], "stay")
             self.assertEqual(trace.stat().st_mode & 0o077, 0)
 
+    def test_model_sees_its_actual_payoff_after_compaction_and_keeps_it_private(self):
+        from experiments.persistent_runtime import public_call
+
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for seat in range(4):
+            table.join(seat, 0)
+        for seat, team, outcome in ((3, "Red", "lose"), (1, "Blue", "win")):
+            peer = ProjectedSeat(table, seat)
+            session = Session(peer)
+            session.execute(
+                "compact",
+                {"summary": "Entering EXIT wins for Red."},
+                session.tools(),
+                table.revision,
+            )
+            for now in (0, 5):
+                peer.now = now
+
+                reply = {
+                    "message": {"tool_calls": [{"function": {"name": "get_role", "arguments": {}}}]}
+                }
+                infer = Mock(return_value=reply)
+                row = session.step("script", infer=infer)
+                notice = json.loads(infer.call_args.args[2]["messages"][-1]["content"])
+                if now == 5:
+                    self.assertIn(f"P{seat} on {team}", notice["private_objective"])
+                    self.assertIn(
+                        f"You {outcome} if the marker enters EXIT", notice["private_objective"]
+                    )
+                else:
+                    self.assertNotIn("private_objective", notice)
+                self.assertEqual("remark_audience" in notice, now == 0)
+                self.assertNotIn(
+                    "private_objective", public_call(row, "script", False)["opportunity"]
+                )
+                self.assertNotIn("private_objective", session.opportunity())
+
+    def test_proposal_results_follow_exit_precedence_and_leave_the_builder_free_to_choose(self):
+        for team, exit_result, stay_result in (
+            ("blue", "Blue wins. You win.", "Red wins. You lose."),
+            ("red", "Blue wins. You lose.", "Red wins. You win."),
+        ):
+            roles = ["blue", team, "blue", "red"]
+            table = Table(CROSSING["setup"] | {"roles": roles}, Random(1))
+            for event in CROSSING["events"][:11]:
+                table.commit(event)
+            for seat in range(4):
+                table.join(seat, 0)
+            session = Session(ProjectedSeat(table, 1))
+            fn = {"name": "propose_step", "arguments": {"x": 2, "y": 0}}
+            reply = Mock(return_value={"message": {"tool_calls": [{"function": fn}]}})
+            session.step("script", infer=reply)
+            notice = json.loads(reply.call_args.args[2]["messages"][-1]["content"])
+            self.assertIn({"x": 2, "y": 0, "result": exit_result}, notice["if_step_approved"])
+            self.assertEqual(notice["if_stay_or_step_rejected"], stay_result)
+            self.assertEqual(table.game.pending, (2, 0))
+            self.assertEqual(
+                session.movement_results(),
+                {"if_table_votes_yes": exit_result, "if_table_votes_no": stay_result},
+            )
+
+    def test_review_is_private_and_can_be_confirmed_or_revised_before_timeout(self):
+        for second_vote in (True, False):
+            table = Table(
+                CROSSING["setup"] | {"roles": ["blue", "red", "blue", "red"]},
+                Random(1),
+                discussion=0,
+            )
+            for event in CROSSING["events"][:11]:
+                table.commit(event)
+            for seat in range(4):
+                table.join(seat, 0)
+            s = Session(ProjectedSeat(table, 1), review_terminal_choices=True)
+
+            def call(name, session=s, **args):
+                return session.execute(name, args, session.tools(), session.snap["revision"])
+
+            rev = table.revision
+            before = table.view(0, 0)
+            self.assertFalse(call("propose_step", x=2, y=0)["submitted"])
+            self.assertEqual(table.view(0, 0), before)
+            self.assertTrue(call("propose_step", x=2, y=0)["accepted"])
+            self.assertEqual(table.revision, rev + 1)
+            # The same landing during the ballot is a new decision.
+            deadline = table.deadline
+            self.assertFalse(call("vote_move", approve=True)["submitted"])
+            self.assertEqual(table.votes, {})
+            self.assertEqual(table.deadline, deadline)
+            self.assertTrue(call("vote_move", approve=second_vote)["accepted"])
+            self.assertIs(table.votes[1], second_vote)
+
+    def test_review_compares_possible_landings_before_the_final_turn(self):
+        setup = CROSSING["setup"] | {"roles": ["blue", "red", "blue", "red"], "store": [18, 12, 1]}
+        table = Table(setup, Random(1), discussion=0)
+        for event in CROSSING["events"][:10]:
+            # With one extra tile the second draw takes two and needs a return.
+            table.commit(
+                event | {"tiles": [18, 1]}
+                if event["kind"] == "draw" and table.game.turn == 2
+                else event
+            )
+        table.commit(CROSSING["events"][10])
+        table.commit({"kind": "discard", "tile": 1})
+        for seat in range(4):
+            table.join(seat, 0)
+        s = Session(ProjectedSeat(table, 1), review_terminal_choices=True)
+        warning = s.execute("propose_step", {"x": 2, "y": 0}, s.tools(), table.revision)
+        self.assertEqual(warning["if_stay_or_step_rejected"], "Play continues.")
+        self.assertIn("would lose", warning["private_review"])
+        self.assertTrue(s.execute("stay", {}, s.tools(), table.revision)["accepted"])
+
+    def test_review_allows_an_unavoidable_final_loss(self):
+        table = Table({"roles": ["blue"], "hands": [[0]], "goal": [4, 0], "store": [0]}, Random(1))
+        table.join(0, 0)
+        table.submit(0, table.revision, {"tile": 0, "rotation": 0, "at": [0, 1]}, 0)
+        s = Session(ProjectedSeat(table, 0), review_terminal_choices=True)
+        self.assertTrue(s.execute("stay", {}, s.tools(), table.revision)["accepted"])
+        self.assertEqual(table.game.winner, "red")
+
     def test_sealed_wait_and_recovery_across_turns(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
         for i in range(4):
@@ -133,6 +254,112 @@ class PersistentSeat(unittest.TestCase):
             call("history", before=statement["id"], kind="move_vote", voter=3)["entries"], [vote]
         )
 
+    def test_requestable_identity_and_turn_order_through_a_builders_removal(self):
+        setup = CROSSING["setup"] | {"roles": ["blue", "red", "blue", "red"], "store": [18, 12] * 4}
+        table = Table(setup, Random(1), discussion=0)
+        for event in CROSSING["events"][:5]:
+            table.commit(event)
+        for seat in range(4):
+            table.join(seat, 0)
+        blue, red = (Session(ProjectedSeat(table, seat)) for seat in (2, 3))
+
+        def read_tool(session, name):
+            return session.execute(name, {}, session.tools(), session.snap["revision"])
+
+        for seat, team, session in ((2, "blue", blue), (3, "red", red)):
+            state = read_tool(session, "get_state")
+            role = read_tool(session, "get_role")
+            self.assertEqual((role["seat"], role["team"]), (seat, team))
+            self.assertEqual({k: state[k] for k in role}, role)
+            self.assertEqual((state["builder"], state["nominator"]), (0, 1))
+            self.assertEqual(state["upcoming_builders"], [1, 2, 3, 0])
+            self.assertEqual(state["remaining_nominators"], [1, 2, 3, 0])
+        self.assertNotIn("red_teammates", read_tool(blue, "get_state"))
+        self.assertEqual(read_tool(red, "get_state")["red_teammates"], [1])
+        table.submit(1, table.revision, {"target": 0}, 0)
+        self.assertEqual(read_tool(blue, "get_state")["remaining_nominators"], [2, 3, 0])
+        for seat in range(4):
+            table.submit(seat, table.revision, {"vote": True}, 0)
+        state = read_tool(blue, "get_state")
+        self.assertEqual((state["builder"], state["upcoming_builders"]), (0, [1, 2, 3]))
+        self.assertEqual(state["remaining_nominators"], [2, 3])
+        for seat in (2, 3):
+            table.submit(seat, table.revision, {"target": None}, 0)
+        state = read_tool(blue, "get_state")
+        self.assertEqual((state["builder"], state["upcoming_builders"]), (1, [2, 3, 1]))
+        self.assertNotIn("remaining_nominators", state)
+
+    def test_pending_ballot_history_and_unavailable_vote_tools(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 2)
+        player = Session(peer)
+
+        def ask(name, **args):
+            fn = {"name": name, "arguments": args}
+            return player.step(
+                "mock", infer=lambda *_: {"message": {"tool_calls": [{"function": fn}]}}
+            )["result"]
+
+        for kind, tool in (("move_vote", "vote_move"), ("eliminate_vote", "vote_removal")):
+            with self.subTest(kind=kind):
+                discussion = ask("history", kind=kind)
+                self.assertEqual(discussion["entries"], [])
+                self.assertIn("Speak now", discussion["pending_ballot"])
+                self.assertIn("not opened", ask(tool, approve=True)["pending_ballot"])
+                for query in (
+                    {"kind": "propose"},
+                    {"kind": kind, "turn": 99},
+                    {"kind": kind, "before": 3},
+                ):
+                    self.assertNotIn("pending_ballot", ask("history", **query))
+                self.assertIn("error", ask("history", kind=kind, speaker=1))
+                table.say(2, table.revision, "I have spoken.", peer.now)
+                self.assertNotIn("Speak now", ask("history", voter=0)["pending_ballot"])
+                peer.now = table.opens
+                due = ask("history", kind=kind, voter=0)
+                self.assertIn(tool, due["pending_ballot"])
+                table.submit(0, table.revision, {"vote": False}, peer.now)
+                self.assertEqual(ask("history", kind=kind, voter=0), due)
+                if kind == "eliminate_vote":
+                    self.assertIn(tool, ask("vote_eliminate", approve=True)["pending_ballot"])
+                self.assertTrue(ask(tool, approve=True)["accepted"])
+                submitted = ask("history", kind=kind)
+                self.assertEqual(submitted["entries"], [])
+                self.assertIn("wait()", submitted["pending_ballot"])
+                for i in (1, 3):
+                    table.submit(i, table.revision, {"vote": True}, peer.now)
+                revealed = ask("history", kind=kind, voter=0)
+                self.assertNotIn("pending_ballot", revealed)
+                self.assertIs(revealed["entries"][-1]["requested_ballot"], False)
+                if kind == "move_vote":
+                    table.submit(1, table.revision, {"target": 3}, peer.now)
+
+    def test_unoffered_action_reports_tools_for_the_refreshed_opportunity(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 2)
+        player = Session(peer)
+
+        def vote_at_opening(*_):
+            peer.now = table.opens
+            fn = {"name": "vote_move", "arguments": {"approve": True}}
+            return {"message": {"tool_calls": [{"function": fn}]}}
+
+        result = player.step("mock", infer=vote_at_opening)["result"]
+        self.assertIn("error", result)
+        self.assertIn("vote_move", result["available_tools"])
+        self.assertNotIn("speak", result["available_tools"])
+        self.assertTrue(result["current"]["owe_action"])
+        self.assertEqual(table.votes, {})
+        self.assertTrue(player.step("mock", infer=vote_at_opening)["result"]["accepted"])
+
     def test_removed_seat_observes_result_without_using_inference(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
         for i in range(4):
@@ -155,6 +382,80 @@ class PersistentSeat(unittest.TestCase):
         self.assertEqual(session.snap["state"]["winner"], t.game.winner)
         self.assertIsNotNone(t.game.winner)
 
+    def test_wait_returns_the_owed_decision_without_spending_time(self):
+        for prefix, names in (
+            (1, ["place_tile"]),
+            (2, ["return_tile"]),
+            (3, ["propose_step", "stay"]),
+            (4, ["vote_move"]),
+            (5, ["nominate", "pass_nomination"]),
+            (6, ["vote_removal"]),
+        ):
+            with self.subTest(prefix=prefix):
+                table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
+                for event in CROSSING["events"][:prefix]:
+                    table.commit(event)
+                for i in range(4):
+                    table.join(i, 0)
+                seat = table.game.queue[0] if table.game.stage == "nominate" else table.game.actor
+                session = Session(
+                    ProjectedSeat(table, seat), sleep=lambda _: self.fail("blocked on own choice")
+                )
+                result = session.execute("wait", {}, session.tools(), table.revision)
+                self.assertEqual(result["wait_status"], "action_required")
+                self.assertEqual(result["decision_tools"], names)
+                self.assertTrue(result["owe_action"])
+                self.assertEqual(result["seconds_left_in_phase"], 30)
+                self.assertEqual(table.revision, prefix)
+
+    def test_forced_wait_expires_current_choice_but_cannot_carry_into_the_next(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 0)
+        session = Session(peer, sleep=lambda _: setattr(peer, "now", table.deadline))
+        original = session.cursor
+        result = session.execute("wait", {"force": True}, session.tools(), table.revision)
+        self.assertTrue(table.record["events"][-1]["timeout"])
+        self.assertEqual(result["stage"], "discard")
+        self.assertTrue(result["owe_action"])
+        session.sleep = lambda _: self.fail("stale force consumed the next choice")
+        result = session.execute(
+            "wait", {"after_cursor": original, "force": True}, session.tools(), table.revision
+        )
+        self.assertEqual(result["stage"], "discard")
+        with self.assertRaises(ValueError):
+            session.execute("wait", {"force": 1}, session.tools(), table.revision)
+        with self.assertRaises(ValueError):
+            session.execute(
+                "wait",
+                {"after_cursor": session.cursor + 1, "force": True},
+                session.tools(),
+                table.revision,
+            )
+
+    def test_force_in_flight_when_a_choice_opens_returns_the_new_opportunity(self):
+        table = Table(CROSSING["setup"], Random(1), seconds=30, discussion=5)
+        for event in CROSSING["events"][:4]:
+            table.commit(event)
+        for i in range(4):
+            table.join(i, 0)
+        peer = ProjectedSeat(table, 1)
+        session = Session(peer, sleep=lambda _: self.fail("slept through newly opened ballot"))
+
+        def cross_cutoff(*_):
+            peer.now = table.opens
+            return {
+                "message": {
+                    "tool_calls": [{"function": {"name": "wait", "arguments": {"force": True}}}]
+                }
+            }
+
+        result = session.step("script", infer=cross_cutoff)["result"]
+        self.assertTrue(result["owe_action"])
+        self.assertEqual(result["phase"], "decision")
+        self.assertEqual(result["seconds_left_in_phase"], 30)
+
     def test_hidden_ballot_during_wait_only_wakes_at_public_reveal(self):
         t = Table(CROSSING["setup"], Random(1), seconds=30, discussion=0)
         for i in range(4):
@@ -162,6 +463,7 @@ class PersistentSeat(unittest.TestCase):
         for e in CROSSING["events"][1:4]:
             t.submit(0, t.revision, {k: v for k, v in e.items() if k != "kind"}, 0)
         peer = ProjectedSeat(t, 2)
+        t.submit(2, t.revision, {"vote": True}, 0)
         polls = []
 
         def advance(_):

@@ -1,0 +1,157 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "blue",
+      "red",
+      "blue"
+    ],
+    "hands": [
+      [
+        182,
+        188
+      ],
+      [
+        44,
+        153
+      ],
+      [
+        107,
+        91
+      ]
+    ],
+    "store": [
+      234,
+      16,
+      41
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        41,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 41,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 234
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null,
+      "timeout": true
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        234
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        -1
+      ],
+      "tile": 234,
+      "rotation": 0,
+      "timeout": true
+    },
+    {
+      "kind": "discard",
+      "tile": 153,
+      "timeout": true
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true
+      ]
+    }
+  ],
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I've placed tile H3 at (-1,0) and proposed moving the marker there. This is a solid first step toward the goal at (0,0). Let's see how others vote."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "I support the move to (-1, 0). This is a safe step toward the goal at (0, 0). The tile at (-1, 0) has exits on E, which allows entry from W. The marker is at (-2, 0), so moving to (-1, 0) is valid."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "I support the move to (-1, 0). It's a safe step toward the goal at (0, 0). The tile at (-1, 0) has exits on E, which allows entry from W. The marker is at (-2, 0), so moving to (-1, 0) is valid."
+    },
+    {
+      "after_event": 12,
+      "seat": 1,
+      "text": "I support the move to (0, 0). This is the goal! The tile at (-1, 0) has exits on E, which allows entry from W. The marker is at (-1, 0), so moving to (0, 0) is valid and will win for Red."
+    },
+    {
+      "after_event": 12,
+      "seat": 0,
+      "text": "P1 has proposed moving the marker from (-1, 0) to (0, 0), which is the goal! This tile at (-1, 0) has exits on E, allowing entry from W. The move is valid and would win for Blue if approved. Let's vote yes."
+    },
+    {
+      "after_event": 12,
+      "seat": 2,
+      "text": "I support the move to (0, 0). This is the goal! The tile at (-1, 0) has exits on E, allowing entry from W. The marker is at (-1, 0), so moving to (0, 0) is valid and will win for Blue."
+    }
+  ]
+}

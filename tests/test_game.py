@@ -108,11 +108,23 @@ class Rules(unittest.TestCase):
             g.apply({"kind": "nominate", "target": None})
         self.assertEqual((g.actor, g.stage, g.alive), (1, "draw", [1, 2, 3]))
 
+    def test_builder_forecast_counts_the_pending_return_and_final_draw(self):
+        for prefix in range(len(EXAMPLE["events"]) + 1):
+            with self.subTest(prefix=prefix):
+                state = before(prefix).view()
+                # T1 draws both tiles, then returns one. T2 is the last build.
+                self.assertEqual(state["upcoming_builders"], [1] if state["turn"] == 1 else [])
+                if state["stage"] not in ("nominate", "eliminate_vote"):
+                    self.assertNotIn("remaining_nominators", state)
+
     def test_all_blue_gone(self):
         r = deepcopy(EXAMPLE)
         r["setup"]["roles"] = ["red", "red", "red", "blue"]
         r["events"] = r["events"][:7]
-        self.assertEqual(replay(r).winner, "red")
+        game = replay(r)
+        self.assertEqual(game.winner, "red")
+        self.assertEqual(game.view()["upcoming_builders"], [])
+        self.assertNotIn("remaining_nominators", game.view())
 
     def test_final_draw_and_posthumous_win(self):
         g = before(11)

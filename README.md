@@ -32,7 +32,7 @@ New tables and solitaire games put EXIT at (0, 0). The usual layout starts at (�
 
 For the experimental placement interface, add `--placement-check edge-and-marker` to the table command. Builders identify a neighboring tile, read the directed edge into the new tile and say whether the marker occupies the chosen origin. `--placement-check edge` asks only about the edge. [Worked positions and results](experiments/placement-check/README.md)
 
-For three players, add `--seats 3` to deal two Blue roles and one Red. Open the private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
+For three players, add `--seats 3` to deal two Blue roles and one Red. Add `--early-ballot` to open voting as soon as every living player has finished speaking. Open the private seat links printed in the host terminal. Each player selects **Ready to play**. The last ready seat starts the clock. The default deal uses the four-seat paper kit. Add `--crossing` for the public two-turn example setup, `--seconds 90` for longer decisions, or `--discussion 0` to go straight to voting. Each run needs a fresh output path.
 
 For rotation assistance, an Ollama seat can use `--rotation-aid table` or `--rotation-aid tool`. The latter lets it request one held face by number. Add `--named-rotations` for literal clockwise turn names. [Comparison and tool-use observations](experiments/rotation/README.md)
 
@@ -73,7 +73,7 @@ direnv allow                      # Once per checkout, and after editing .envrc
 
 Use `./scripts/resume-codex.sh --last` to resume the latest project conversation, or pass a session ID. The helper loads the locked development shell, selects the Footsteps workspace, and requests on-demand approvals for operations such as pushing to GitHub. Host policy governs which approvals are available. For a one-off development command, use `direnv exec . python -m unittest discover -s tests`.
 
-The [persistent-runner stocktake](docs/stocktake.md) lists the next experiments, migration dependencies, human playtest and coverage gaps. Use Issues for work and discussion. Submit mechanical decisions, worked examples and experimental results in the same PR as their implementation. [Contribution workflow](CONTRIBUTING.md) · [Worker guide](AGENTS.md) · [Design decisions](docs/decisions.md) · [Playtesting](docs/playtesting.md) · [Open issues](https://github.com/othercriteria/footsteps/issues)
+The [project stocktake](docs/stocktake.md) ranks the next model experiments and identifies independent work on replay analysis, human playtests and client reliability. Use Issues for work and discussion. Submit mechanical decisions, worked examples and experimental results in the same PR as their implementation. [Contribution workflow](CONTRIBUTING.md) · [Worker guide](AGENTS.md) · [Design decisions](docs/decisions.md) · [Playtesting](docs/playtesting.md) · [Open issues](https://github.com/othercriteria/footsteps/issues)
 
 Code and technical materials use MIT. The original rulebook, worked game prose and game art use CC BY 4.0. [License scope and texts](LICENSE)
 

@@ -1,0 +1,359 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "roles": [
+      "red",
+      "red",
+      "blue",
+      "blue"
+    ],
+    "hands": [
+      [
+        41,
+        107
+      ],
+      [
+        71,
+        234
+      ],
+      [
+        121,
+        74
+      ],
+      [
+        153,
+        45
+      ]
+    ],
+    "store": [
+      44,
+      188,
+      16
+    ],
+    "start": [
+      -2,
+      0
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        44,
+        188
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        0
+      ],
+      "tile": 44,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 41
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -1,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 2
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        16,
+        41
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        1
+      ],
+      "tile": 16,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 41
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        true,
+        true
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": null
+    },
+    {
+      "kind": "nominate",
+      "target": 0
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 2
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "nominate",
+      "target": 2
+    },
+    {
+      "kind": "eliminate_vote",
+      "votes": [
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        41
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -1,
+        1
+      ],
+      "tile": 41,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": [
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        false,
+        false,
+        true,
+        true
+      ]
+    }
+  ],
+  "table_id": "ebd39061c66757685ad14e1c3d6c0a31",
+  "remarks": [
+    {
+      "after_event": 4,
+      "seat": 0,
+      "text": "I proposed moving to (-1, 0). This is a safe step away from the goal at (0, 0). We need to avoid reaching EXIT at (0, 0) as Red. Let's see how others vote on this move."
+    },
+    {
+      "after_event": 4,
+      "seat": 3,
+      "text": "I vote Yes to move the marker to (-1, 0). This brings us closer to the goal at (0, 0)."
+    },
+    {
+      "after_event": 4,
+      "seat": 1,
+      "text": "P0 proposed moving to (-1, 0). I'm P1 on Red. The marker is at (-2, 0), goal at (0, 0). Moving to (-1, 0) doesn't reach the goal yet. We need to get closer to (0, 0). I'll vote Yes to allow this step as it's a valid move toward the goal."
+    },
+    {
+      "after_event": 4,
+      "seat": 2,
+      "text": "P0 proposed moving to (-1, 0). I support this move as it advances us toward the goal at (0, 0). The tile placed at (-1, 0) has exits E, which allows entry from W. The marker is at (-2, 0), and (-1, 0) is adjacent to the west. This seems like a valid step. I vote Yes on this proposal."
+    },
+    {
+      "after_event": 9,
+      "seat": 0,
+      "text": "I nominated P2 for removal. As Red, we need to eliminate Blue players to win. P2 is a Blue player, and removing them could help us achieve victory by reducing the number of opponents who can move the marker toward EXIT."
+    },
+    {
+      "after_event": 9,
+      "seat": 3,
+      "text": "I oppose removing P2. We need all players to advance the marker toward the goal at (0, 0). Removing a teammate weakens our team's ability to win."
+    },
+    {
+      "after_event": 9,
+      "seat": 1,
+      "text": "P0 nominated P2 for removal. As P1 on Red, I need to consider this carefully. Removing a teammate could be strategic if it helps us win, but we must ensure we don't lose by having all Blue players removed or the marker reaching EXIT. Let me think about the implications before voting."
+    },
+    {
+      "after_event": 9,
+      "seat": 2,
+      "text": "P0 nominated me (P2) for removal. This is a surprise since I voted Yes on the move proposal. As P2 on Blue, I want my team to win by getting the marker to EXIT at (0, 0). Being removed would hurt our chances. I will vote No to keep myself in the game and help Blue advance toward victory."
+    },
+    {
+      "after_event": 14,
+      "seat": 1,
+      "text": "P1 proposed moving to (0, 0), which is the goal/EXIT. As Red, we lose if the marker enters EXIT. This move would end the game with a loss for us. I must vote No to prevent this step from being taken."
+    },
+    {
+      "after_event": 14,
+      "seat": 3,
+      "text": "I vote Yes to move the marker to (0, 0). This is the goal location and will win for Blue!"
+    },
+    {
+      "after_event": 14,
+      "seat": 2,
+      "text": "P1 is bluffing - they're on Red but I'm on Blue and want the marker at (0,0). This move would win for us. I vote Yes."
+    },
+    {
+      "after_event": 14,
+      "seat": 0,
+      "text": "I vote No on the proposed move to (0, 0). This is the EXIT and moving here would end the game with a loss for Red. We must reject this step."
+    },
+    {
+      "after_event": 17,
+      "seat": 3,
+      "text": "I nominated P0 as they're likely Red and trying to block us. We need to coordinate with P2 and P3 to push the marker forward. The tile at (-1,0) has exits E, allowing entry from W. Next move should be to (0,0) if possible."
+    },
+    {
+      "after_event": 17,
+      "seat": 1,
+      "text": "P3 nominated P0 for removal. As Red, I need to vote on whether to remove P0. This is a critical decision for our team's survival."
+    },
+    {
+      "after_event": 17,
+      "seat": 2,
+      "text": "P0 is on Blue, same as me. Removing them hurts our team. I vote No to keep P0 in the game."
+    },
+    {
+      "after_event": 17,
+      "seat": 0,
+      "text": "P3 nominated me for removal. As Red, I want my teammate P1 to survive and prevent Blue from winning. I will vote No to keep P0 alive."
+    },
+    {
+      "after_event": 19,
+      "seat": 0,
+      "text": "I nominated P2 for removal. As Red, I want to eliminate Blue players to prevent them from winning. Removing P2 will hurt their team and help our chances of victory."
+    },
+    {
+      "after_event": 19,
+      "seat": 2,
+      "text": "P0 nominated me (P2) for removal. This is a surprise since I voted Yes on the move proposal. As P2 on Blue, I want my team to win by getting the marker to EXIT at (0, 0). Being removed would hurt our chances. I will vote No to keep myself in the game and help Blue advance toward victory."
+    },
+    {
+      "after_event": 19,
+      "seat": 1,
+      "text": "P0 nominated P2 for removal. As Red, I need to vote on whether to remove P2. This is a critical decision for our team's survival."
+    },
+    {
+      "after_event": 19,
+      "seat": 3,
+      "text": "P0 nominated P2, but P2 is on Blue with me. Removing a teammate hurts our chances of winning. I will vote No to keep P2 alive. We need to focus on moving the marker to (0,0) instead of eliminating teammates."
+    },
+    {
+      "after_event": 21,
+      "seat": 1,
+      "text": "I nominated P2 for removal. As Red, I need to vote on whether to remove P2. This is a critical decision for our team's survival."
+    },
+    {
+      "after_event": 21,
+      "seat": 0,
+      "text": "P1 nominated P2 for removal. As Red, I support removing P2 to weaken Blue's team and increase our chances of winning. I will vote Yes."
+    },
+    {
+      "after_event": 21,
+      "seat": 3,
+      "text": "P1 nominated P2, but P2 is on Blue with me. Removing a teammate hurts our chances of winning. I will vote No to keep P2 alive. We need to focus on moving the marker to (0,0) instead of eliminating teammates."
+    },
+    {
+      "after_event": 21,
+      "seat": 2,
+      "text": "I will vote No to remove P2. As a Blue player, staying in the game is essential for our team's chance to move the marker to EXIT at (0, 0). Removing myself would hurt our chances of winning."
+    },
+    {
+      "after_event": 25,
+      "seat": 2,
+      "text": "I propose moving the marker to (0, 0), which is the EXIT. This will win the game for Blue. I vote Yes on this step."
+    },
+    {
+      "after_event": 25,
+      "seat": 3,
+      "text": "P2 proposed moving to (0, 0), which is the EXIT! This is exactly what we need. I will vote Yes to approve this move and win the game for Blue."
+    },
+    {
+      "after_event": 25,
+      "seat": 0,
+      "text": "P2 proposed moving to (0, 0), which is the EXIT. As Red, I must vote NO to prevent this. The marker would enter EXIT and Blue would win. Vote NO."
+    },
+    {
+      "after_event": 25,
+      "seat": 1,
+      "text": "P2 is proposing to move the marker to (0, 0), which is the EXIT. This would win for Blue immediately. As Red, I must vote No to block this step and prevent an instant loss. We need to stop this move at all costs."
+    }
+  ]
+}

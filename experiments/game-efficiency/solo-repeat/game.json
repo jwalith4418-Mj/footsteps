@@ -1,0 +1,131 @@
+{
+  "format": 3,
+  "rules": "base-1",
+  "setup": {
+    "goal": [
+      0,
+      0
+    ],
+    "hands": [
+      [
+        21,
+        69
+      ]
+    ],
+    "store": [
+      142,
+      238,
+      55,
+      185
+    ],
+    "roles": [
+      "blue"
+    ],
+    "start": [
+      -2,
+      -1
+    ]
+  },
+  "events": [
+    {
+      "kind": "draw",
+      "tiles": [
+        142,
+        185
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -2,
+        0
+      ],
+      "tile": 142,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 185
+    },
+    {
+      "kind": "propose",
+      "to": [
+        -2,
+        0
+      ]
+    },
+    {
+      "kind": "move_vote",
+      "votes": [
+        true
+      ]
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        238,
+        55
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -3,
+        0
+      ],
+      "tile": 21,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 55
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        185,
+        55
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -4,
+        0
+      ],
+      "tile": 185,
+      "rotation": 0
+    },
+    {
+      "kind": "discard",
+      "tile": 55
+    },
+    {
+      "kind": "propose",
+      "to": null
+    },
+    {
+      "kind": "draw",
+      "tiles": [
+        55
+      ]
+    },
+    {
+      "kind": "place",
+      "at": [
+        -5,
+        0
+      ],
+      "tile": 69,
+      "rotation": 0
+    },
+    {
+      "kind": "propose",
+      "to": null
+    }
+  ]
+}

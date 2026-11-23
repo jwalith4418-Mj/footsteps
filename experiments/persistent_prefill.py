@@ -27,11 +27,20 @@ def frozen_request(model, reads):
     return body
 
 
-def measure(output, model, contexts, reads):
+def compact_messages(body):
+    """Remove whitespace only inside serialized JSON message bodies."""
+    for msg in body["messages"]:
+        if msg["role"] in ("user", "tool"):
+            msg["content"] = json.dumps(json.loads(msg["content"]), separators=(",", ":"))
+
+
+def measure(output, model, contexts, reads, *, compact_json=False):
     with output.open("x") as f:
         for ctx in contexts:
             for n in reads:
                 body = frozen_request(model, n)
+                if compact_json:
+                    compact_messages(body)
                 digest = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
                 body["options"]["num_ctx"] = ctx
                 # This standalone experiment owns the model during the block. Unload between
@@ -57,6 +66,7 @@ def measure(output, model, contexts, reads):
                         "num_ctx": ctx,
                         "reads": n,
                         "cache": cache,
+                        "compact_json": compact_json,
                         "input_sha256_before_context_change": digest,
                         "resident": resident,
                     }
@@ -89,7 +99,8 @@ if __name__ == "__main__":
     parser.add_argument("--model", default="qwen3.5:9b-q8_0")
     parser.add_argument("--contexts", type=int, nargs="+", choices=CONTEXT_WINDOWS, required=True)
     parser.add_argument("--reads", type=int, nargs="+", default=[5])
+    parser.add_argument("--compact-json", action="store_true")
     args = parser.parse_args()
     if min(args.reads) < 0:
         parser.error("reads must be nonnegative")
-    measure(args.output, args.model, args.contexts, args.reads)
+    measure(args.output, args.model, args.contexts, args.reads, compact_json=args.compact_json)
